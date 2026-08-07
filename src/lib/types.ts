@@ -19,10 +19,12 @@ export type EventType =
 
 export interface WeeklyStudyProgressLog {
   id: string;
+  person_id?: string;
   week_number: number;
   study_date: string;
   lesson_topic: string;
   notes?: string;
+  created_at?: string;
 }
 
 export interface Person {
@@ -35,6 +37,8 @@ export interface Person {
   study_stage?: string; // Murid, Tujuan Hidup, Kasih, Baptis, etc.
   study_history?: WeeklyStudyProgressLog[];
   notes?: string;
+  archived_at?: string | null;
+  updated_at?: string;
   created_at?: string;
 }
 
@@ -45,6 +49,8 @@ export interface Group {
   leader_id?: string;
   leader_name?: string; // Joined from People
   members_count?: number;
+  archived_at?: string | null;
+  updated_at?: string;
   created_at?: string;
 }
 
@@ -57,12 +63,16 @@ export interface GroupMember {
 }
 
 export interface MissingReason {
+  id?: string;
+  weekly_stat_id?: string;
   person_id?: string;
   person_name: string;
   reason: string;
 }
 
 export interface StudyProgress {
+  id?: string;
+  weekly_stat_id?: string;
   person_id?: string;
   person_name: string;
   stage: string;
@@ -113,9 +123,10 @@ export interface Announcement {
   created_at?: string;
 }
 
-export interface FilterState {
-  search: string;
-  gender: string;
-  status: string;
-  campus: string;
+export interface DiscipleshipFunnelStats {
+  visitors: number;
+  bibleStudies: number;
+  disciples: number;
+  leaders: number;
+  total: number;
 }

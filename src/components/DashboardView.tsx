@@ -116,6 +116,42 @@ export default function DashboardView({ people, groups, stats, onNavigate }: Das
 
       </div>
 
+      {/* DISCIPLESHIP GROWTH FUNNEL VISUALIZER */}
+      <div className="tugu-card p-6 rounded-3xl bg-white border border-slate-200 space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-sm font-bold text-slate-900">
+            Discipleship Growth Funnel (Alur Pertumbuhan Murid)
+          </h3>
+          <span className="text-xs font-mono text-slate-500 font-semibold">{totalPeople} Total Jemaat</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200/80 text-center space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase text-cyan-900">1. Visitor / Reachout</span>
+            <p className="text-2xl font-black text-cyan-950 tabular-nums">{people.filter(p => p.status === 'VISITOR').length}</p>
+            <p className="text-[11px] text-cyan-700 font-medium">Kontak Awal</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-center space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase text-amber-900">2. Belajar Alkitab</span>
+            <p className="text-2xl font-black text-amber-950 tabular-nums">{totalBibleStudies}</p>
+            <p className="text-[11px] text-amber-700 font-medium">1-on-1 Discipleship</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-center space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase text-emerald-900">3. Disciple Aktif</span>
+            <p className="text-2xl font-black text-emerald-950 tabular-nums">{people.filter(p => p.status === 'DISCIPLE').length}</p>
+            <p className="text-[11px] text-emerald-700 font-medium">Sudah Baptis</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200/80 text-center space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase text-purple-900">4. Leaders</span>
+            <p className="text-2xl font-black text-purple-950 tabular-nums">{totalLeaders}</p>
+            <p className="text-[11px] text-purple-700 font-medium">Pemimpin Group</p>
+          </div>
+        </div>
+      </div>
+
       {/* DASHBOARD CONTENT GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

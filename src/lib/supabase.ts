@@ -348,20 +348,48 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
   };
 
   if (isSupabaseConfigured && supabase) {
-    if (stat.id) {
-      const { data, error } = await supabase.from('weekly_stats').update(payload).eq('id', stat.id).select().single();
-      if (error) console.error('Supabase update weekly_stat error:', error);
-      if (!error && data) return data as WeeklyStat;
-    } else {
-      const { data, error } = await supabase.from('weekly_stats').insert([payload]).select().single();
-      if (error) console.error('Supabase insert weekly_stat error:', error);
-      if (!error && data) return data as WeeklyStat;
+    // Upsert on group_id, week_date constraint to prevent duplicates
+    const { data, error } = await supabase
+      .from('weekly_stats')
+      .upsert([payload], { onConflict: 'group_id,week_date' })
+      .select()
+      .single();
+
+    if (!error && data) {
+      const savedStat = data as WeeklyStat;
+
+      // Populate normalized relational tables
+      if (stat.missing_reasons && stat.missing_reasons.length > 0) {
+        await supabase.from('weekly_stat_absences').delete().eq('weekly_stat_id', savedStat.id);
+        const absenceRows = stat.missing_reasons.map(m => ({
+          weekly_stat_id: savedStat.id,
+          person_id: m.person_id || null,
+          person_name: m.person_name,
+          reason: m.reason
+        }));
+        await supabase.from('weekly_stat_absences').insert(absenceRows);
+      }
+
+      if (stat.study_progress && stat.study_progress.length > 0) {
+        await supabase.from('weekly_stat_study_progress').delete().eq('weekly_stat_id', savedStat.id);
+        const progressRows = stat.study_progress.map(sp => ({
+          weekly_stat_id: savedStat.id,
+          person_id: sp.person_id || null,
+          person_name: sp.person_name,
+          stage: sp.stage
+        }));
+        await supabase.from('weekly_stat_study_progress').insert(progressRows);
+      }
+
+      return savedStat;
+    } else if (error) {
+      console.error('Supabase upsert weekly_stat error:', error);
     }
   }
 
   const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
   const newStat: WeeklyStat = { ...payload, id: stat.id || 'ws_' + Date.now() } as WeeklyStat;
-  const updated = [newStat, ...stats.filter(s => s.id !== newStat.id)];
+  const updated = [newStat, ...stats.filter(s => !(s.group_id === newStat.group_id && s.week_date === newStat.week_date))];
   setLocalData(STORAGE_KEYS.STATS, updated);
   return newStat;
 }
