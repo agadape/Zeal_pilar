@@ -3,7 +3,17 @@
 import { useState, useEffect } from 'react';
 import { Group, Person, WeeklyStat, MissingReason, StudyProgress } from '@/lib/types';
 import { fetchGroupMembers } from '@/lib/supabase';
+import { exportStatsToCSV } from '@/lib/exportUtils';
 import confetti from 'canvas-confetti';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  CartesianGrid 
+} from 'recharts';
 import { 
   IconClipboardCheck, 
   IconCopy, 
@@ -15,7 +25,8 @@ import {
   IconChartBar,
   IconTrash,
   IconHistory,
-  IconTrendingUp
+  IconTrendingUp,
+  IconDownload
 } from '@tabler/icons-react';
 
 interface StatistikaViewProps {
@@ -162,8 +173,16 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
   const totalVisitorsRecorded = stats.reduce((acc, curr) => acc + (curr.sunday_visitors_count || 0) + (curr.event_visitors_count || 0), 0);
   const totalBaptismsRecorded = stats.reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
 
-  // Group data max for progress bars
-  const maxReachoutInGroup = Math.max(...stats.map(s => s.reachout_count || 0), 1);
+  // Prepare Recharts trend data chronologically
+  const chartData = [...stats]
+    .sort((a, b) => new Date(a.week_date).getTime() - new Date(b.week_date).getTime())
+    .map(s => ({
+      date: s.week_date.slice(5),
+      group: s.group_name || 'Group',
+      Reachout: s.reachout_count || 0,
+      Visitor: (s.sunday_visitors_count || 0) + (s.event_visitors_count || 0),
+      Disciple: s.active_disciples_count || 0
+    }));
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -178,30 +197,41 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
           <p className="text-xs sm:text-sm text-slate-500 font-medium">Input data jemaat mingguan, simpan ke database, dan visualisasikan grafik perkembangan ministry.</p>
         </div>
 
-        <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-2xl border border-slate-200 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button
-            onClick={() => setActiveSubTab('form')}
-            className={`btn-tactile px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeSubTab === 'form'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            onClick={() => exportStatsToCSV(stats)}
+            className="btn-tactile px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition-all shadow-2xs"
+            title="Download CSV Excel"
           >
-            <IconSend className="w-3.5 h-3.5" stroke={1.5} />
-            <span>Input & Format WA</span>
+            <IconDownload className="w-3.5 h-3.5 text-slate-500" stroke={2} />
+            <span>Export CSV</span>
           </button>
-          
-          <button
-            onClick={() => setActiveSubTab('analytics')}
-            className={`btn-tactile px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              activeSubTab === 'analytics'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <IconChartBar className="w-3.5 h-3.5 text-[#b5852e]" stroke={2} />
-            <span>Visualisasi & Data ({stats.length})</span>
-          </button>
+
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+            <button
+              onClick={() => setActiveSubTab('form')}
+              className={`btn-tactile px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeSubTab === 'form'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <IconSend className="w-3.5 h-3.5" stroke={1.5} />
+              <span>Input & Format WA</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveSubTab('analytics')}
+              className={`btn-tactile px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all ${
+                activeSubTab === 'analytics'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <IconChartBar className="w-3.5 h-3.5 text-[#b5852e]" stroke={2} />
+              <span>Visualisasi & Data ({stats.length})</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -434,7 +464,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
         </div>
       ) : (
-        /* VISUALIZATION & ANALYTICS TAB */
+        /* VISUALIZATION & ANALYTICS TAB WITH RECHARTS */
         <div className="space-y-6">
           
           {/* ANALYTICS SUMMARY CARDS */}
@@ -468,82 +498,83 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
           </div>
 
-          {/* VISUALIZATION CHARTS / PROGRESS BARS */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <div className="tugu-card p-6 rounded-3xl bg-white border border-slate-200 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                  <IconTrendingUp className="w-4 h-4 text-[#b5852e]" stroke={2} />
-                  <span>Perbandingan Reachout Per Small Group</span>
-                </h3>
-              </div>
-
-              {stats.length === 0 ? (
-                <p className="text-xs text-slate-400 py-8 text-center">Belum ada data statistik di database untuk divisualisasikan.</p>
-              ) : (
-                <div className="space-y-3">
-                  {stats.map(s => {
-                    const pct = Math.min(100, Math.round(((s.reachout_count || 0) / maxReachoutInGroup) * 100));
-                    return (
-                      <div key={s.id} className="space-y-1 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900">{s.group_name}</span>
-                          <span className="font-mono font-semibold text-slate-600">{s.reachout_count} Reachouts ({s.week_date})</span>
-                        </div>
-                        <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
-                          <div 
-                            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-[#b5852e] transition-all duration-500" 
-                            style={{ width: `${Math.max(8, pct)}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+          {/* RECHARTS INTERACTIVE TREND CHART */}
+          <div className="tugu-card p-6 rounded-3xl bg-white border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                <IconTrendingUp className="w-4 h-4 text-[#b5852e]" stroke={2} />
+                <span>Grafik Tren Reachout & Visitor Minggu-ke-Minggu</span>
+              </h3>
             </div>
 
-            {/* RECENT SAVED STATS TABLE */}
-            <div className="tugu-card p-6 rounded-3xl bg-white border border-slate-200 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                  <IconHistory className="w-4 h-4 text-emerald-700" stroke={2} />
-                  <span>Riwayat Pelaporan Database</span>
-                </h3>
+            {chartData.length === 0 ? (
+              <p className="text-xs text-slate-400 py-12 text-center">Belum ada data statistik mingguan di database untuk dibuatkan grafik.</p>
+            ) : (
+              <div className="w-full h-72 pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorReachout" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#b5852e" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#b5852e" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorVisitor" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#059669" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#059669" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
+                    <YAxis stroke="#94a3b8" fontSize={11} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '12px' }} 
+                    />
+                    <Area type="monotone" dataKey="Reachout" stroke="#b5852e" strokeWidth={2} fillOpacity={1} fill="url(#colorReachout)" />
+                    <Area type="monotone" dataKey="Visitor" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#colorVisitor)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
+            )}
+          </div>
 
-              {stats.length === 0 ? (
-                <p className="text-xs text-slate-400 py-8 text-center">Belum ada entri statistik di database.</p>
-              ) : (
-                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                  {stats.map(s => (
-                    <div key={s.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs">
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-slate-900">{s.group_name}</span>
-                          <span className="font-mono text-[11px] text-slate-500">{s.week_date}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 mt-0.5 tabular-nums">
-                          Disciple: {s.active_disciples_count} | Missing: {s.missing_ibadah_count} | Reachout: {s.reachout_count}
-                        </p>
+          {/* RECENT SAVED STATS TABLE */}
+          <div className="tugu-card p-6 rounded-3xl bg-white border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                <IconHistory className="w-4 h-4 text-emerald-700" stroke={2} />
+                <span>Riwayat Pelaporan Database</span>
+              </h3>
+            </div>
+
+            {stats.length === 0 ? (
+              <p className="text-xs text-slate-400 py-8 text-center">Belum ada entri statistik di database.</p>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                {stats.map(s => (
+                  <div key={s.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-slate-900">{s.group_name}</span>
+                        <span className="font-mono text-[11px] text-slate-500">{s.week_date}</span>
                       </div>
-
-                      {onDeleteStat && (
-                        <button
-                          onClick={() => onDeleteStat(s.id)}
-                          className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
-                          title="Hapus Laporan"
-                        >
-                          <IconTrash className="w-4 h-4" stroke={1.5} />
-                        </button>
-                      )}
+                      <p className="text-[11px] text-slate-600 mt-0.5 tabular-nums">
+                        Disciple: {s.active_disciples_count} | Missing: {s.missing_ibadah_count} | Reachout: {s.reachout_count} | Visitor: {s.sunday_visitors_count}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
+                    {onDeleteStat && (
+                      <button
+                        onClick={() => onDeleteStat(s.id)}
+                        className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
+                        title="Hapus Laporan"
+                      >
+                        <IconTrash className="w-4 h-4" stroke={1.5} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>

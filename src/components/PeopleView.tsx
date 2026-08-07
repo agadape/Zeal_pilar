@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Person, PersonStatus, Gender, WeeklyStudyProgressLog } from '@/lib/types';
+import { exportPeopleToCSV } from '@/lib/exportUtils';
 import { 
   IconUserPlus, 
   IconSearch, 
@@ -14,7 +15,8 @@ import {
   IconBook,
   IconHeartHandshake,
   IconPlus,
-  IconHistory
+  IconHistory,
+  IconDownload
 } from '@tabler/icons-react';
 
 interface PeopleViewProps {
@@ -28,6 +30,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   const [activeCategoryTab, setActiveCategoryTab] = useState<'disciples' | 'bible_study' | 'reachout'>('disciples');
   const [search, setSearch] = useState('');
   const [filterGender, setFilterGender] = useState<string>('ALL');
+  const [filterCampus, setFilterCampus] = useState<string>('ALL');
   
   // Person Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -175,7 +178,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                           (p.campus && p.campus.toLowerCase().includes(search.toLowerCase())) ||
                           (p.notes && p.notes.toLowerCase().includes(search.toLowerCase()));
     const matchesGender = filterGender === 'ALL' || p.gender === filterGender;
-    return matchesSearch && matchesGender;
+    const matchesCampus = filterCampus === 'ALL' || (p.campus && p.campus.toLowerCase().includes(filterCampus.toLowerCase()));
+    return matchesSearch && matchesGender && matchesCampus;
   });
 
   const getStatusBadgeClass = (st: PersonStatus) => {
@@ -199,13 +203,25 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Direktori & Progress Jemaat</h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">Pemisahan data Disciple, Belajar Alkitab (BA), serta Reachout & Tamu Ibadah.</p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="btn-tactile btn-primary shrink-0"
-        >
-          <IconUserPlus className="w-4 h-4" stroke={2} />
-          <span>Tambah Orang Baru</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            onClick={() => exportPeopleToCSV(people)}
+            className="btn-tactile px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition-all shadow-2xs"
+            title="Download CSV Excel Data Jemaat"
+          >
+            <IconDownload className="w-4 h-4 text-slate-500" stroke={2} />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={openAddModal}
+            className="btn-tactile btn-primary"
+          >
+            <IconUserPlus className="w-4 h-4" stroke={2} />
+            <span>Tambah Orang Baru</span>
+          </button>
+        </div>
       </div>
 
       {/* CATEGORY TABS (DISCIPLES vs BIBLE STUDY vs REACHOUT) */}
@@ -260,7 +276,21 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
           />
         </div>
 
-        <div className="flex items-center space-x-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <select
+            value={filterCampus}
+            onChange={e => setFilterCampus(e.target.value)}
+            className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2 focus:outline-none font-medium"
+          >
+            <option value="ALL">Semua Kampus</option>
+            <option value="UGM">UGM</option>
+            <option value="UNY">UNY</option>
+            <option value="Atma Jaya">Atma Jaya</option>
+            <option value="STIPRAM">STIPRAM</option>
+            <option value="BPC Staff">BPC Staff</option>
+            <option value="General">General / Umumm</option>
+          </select>
+
           <select
             value={filterGender}
             onChange={e => setFilterGender(e.target.value)}
