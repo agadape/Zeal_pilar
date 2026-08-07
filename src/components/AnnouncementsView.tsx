@@ -137,8 +137,9 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl overflow-y-auto max-h-[90vh] w-full custom-scrollbar">
+        <div className="fixed inset-0 z-[100] flex justify-end">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
+          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 flex flex-col animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <h3 className="text-lg font-bold text-slate-900">Buat Pengumuman Baru</h3>
                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
