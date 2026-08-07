@@ -114,7 +114,10 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Events & Duty Roster</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center space-x-3">
+            <IconCalendarEvent className="w-7 h-7 text-white shrink-0" stroke={1.5} />
+            <span>Events & Duty Roster</span>
+          </h1>
           <p className="text-xs sm:text-sm text-slate-400">Jadwal Persekutuan Doa Anggota (PDA), Doa Youth, P&W Night, dan penugasan petugas pelayanan.</p>
         </div>
         <button

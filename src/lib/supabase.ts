@@ -106,7 +106,7 @@ export async function fetchGroups(): Promise<Group[]> {
     `).order('group_name');
     
     if (!error && data) {
-      return data.map((g: any) => ({
+      return data.map((g: Record<string, unknown> & { people?: { full_name?: string } }) => ({
         ...g,
         leader_name: g.people?.full_name || 'Belum ditugaskan'
       })) as Group[];
@@ -176,11 +176,11 @@ export async function fetchGroupMembers(groupId: string): Promise<Person[]> {
       .select('person_id, people (*)')
       .eq('group_id', groupId);
     if (!error && data) {
-      return data.map((item: any) => item.people).filter(Boolean) as Person[];
+      return (data as unknown as Array<{ person_id: string; people: Person | null }>).map(item => item.people).filter(Boolean) as Person[];
     }
   }
 
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as any);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
   
   const memberPersonIds = members.filter(m => m.group_id === groupId).map(m => m.person_id);
@@ -199,7 +199,7 @@ export async function updateGroupMembers(groupId: string, personIds: string[]): 
     return true;
   }
 
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as any);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
   const filtered = members.filter(m => m.group_id !== groupId);
   const newEntries: GroupMember[] = personIds.map(pid => ({
     id: 'gm_' + Math.random().toString(36).substr(2, 9),
@@ -221,7 +221,7 @@ export async function fetchWeeklyStats(): Promise<WeeklyStat[]> {
     `).order('week_date', { ascending: false });
 
     if (!error && data) {
-      return data.map((ws: any) => ({
+      return data.map((ws: Record<string, unknown> & { groups?: { group_name?: string } }) => ({
         ...ws,
         group_name: ws.groups?.group_name || 'Group'
       })) as WeeklyStat[];
@@ -276,6 +276,14 @@ export async function saveEvent(event: Omit<MinistryEvent, 'id'> & { id?: string
   return newEvent;
 }
 
+export async function deleteEvent(id: string): Promise<void> {
+  if (isSupabaseConfigured && supabase) {
+    await supabase.from('events').delete().eq('id', id);
+  }
+  const events = getLocalData<MinistryEvent[]>(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
+  setLocalData(STORAGE_KEYS.EVENTS, events.filter(e => e.id !== id));
+}
+
 // ---------------- ANNOUNCEMENTS API ----------------
 
 export async function fetchAnnouncements(): Promise<Announcement[]> {
@@ -298,3 +306,12 @@ export async function saveAnnouncement(announcement: Omit<Announcement, 'id'> & 
   setLocalData(STORAGE_KEYS.ANNOUNCEMENTS, updated);
   return newAnn;
 }
+
+export async function deleteAnnouncement(id: string): Promise<void> {
+  if (isSupabaseConfigured && supabase) {
+    await supabase.from('announcements').delete().eq('id', id);
+  }
+  const announcements = getLocalData<Announcement[]>(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
+  setLocalData(STORAGE_KEYS.ANNOUNCEMENTS, announcements.filter(a => a.id !== id));
+}
+

@@ -16,12 +16,12 @@ import {
 
 interface StatistikaViewProps {
   groups: Group[];
-  people: Person[];
-  stats: WeeklyStat[];
+  people?: Person[];
+  stats?: WeeklyStat[];
   onSaveStat: (stat: Omit<WeeklyStat, 'id'> & { id?: string }) => Promise<void>;
 }
 
-export default function StatistikaView({ groups, people, stats, onSaveStat }: StatistikaViewProps) {
+export default function StatistikaView({ groups, onSaveStat }: StatistikaViewProps) {
   const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '');
   const [weekDate, setWeekDate] = useState<string>(new Date().toISOString().split('T')[0]);
   
@@ -156,7 +156,10 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Statistika Minggu</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center space-x-3">
+            <IconClipboardCheck className="w-7 h-7 text-white shrink-0" stroke={1.5} />
+            <span>Statistika Minggu</span>
+          </h1>
           <p className="text-xs sm:text-sm text-slate-400">Input data jemaat mingguan, auto-load anggota group, dan ekspor pesan WhatsApp 1-klik!</p>
         </div>
       </div>
