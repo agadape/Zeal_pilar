@@ -1,16 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { isSupabaseConfigured } from '@/lib/supabase';
 import { 
   IconLayoutDashboard, 
   IconUserPlus, 
   IconUsersGroup, 
   IconClipboardCheck, 
   IconCalendarEvent, 
-  IconSpeakerphone,
-  IconDatabase,
-  IconDeviceLaptop
+  IconSpeakerphone
 } from '@tabler/icons-react';
 
 interface NavbarProps {
@@ -57,19 +54,6 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className={`flex items-center space-x-2 text-xs px-3 py-1.5 rounded-lg border ${
-              isSupabaseConfigured 
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                : 'bg-zinc-900 text-slate-300 border-white/15'
-            }`}>
-              {isSupabaseConfigured ? (
-                <IconDatabase className="w-3.5 h-3.5 text-emerald-400" stroke={1.5} />
-              ) : (
-                <IconDeviceLaptop className="w-3.5 h-3.5 text-slate-400" stroke={1.5} />
-              )}
-              <span className="font-medium">{isSupabaseConfigured ? 'Supabase Connected' : 'Local Demo Mode'}</span>
-            </div>
-
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
