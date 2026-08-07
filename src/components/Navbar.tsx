@@ -7,7 +7,8 @@ import {
   IconUsersGroup, 
   IconClipboardCheck, 
   IconCalendarEvent, 
-  IconSpeakerphone
+  IconSpeakerphone,
+  IconRefresh
 } from '@tabler/icons-react';
 
 interface NavbarProps {
@@ -26,14 +27,14 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 tugu-card border-b border-white/10 bg-zinc-950/90 backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 bg-white/95 border-b border-slate-200 backdrop-blur-md shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* BRAND & STATUS ROW */}
+        {/* BRAND & ACTION ROW */}
         <div className="flex items-center justify-between h-16 sm:h-20">
           
           <div className="flex items-center space-x-3.5">
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-white/20 shadow-md bg-black flex items-center justify-center shrink-0">
+            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-white flex items-center justify-center shrink-0">
               <Image 
                 src="/logo.jpg" 
                 alt="ZEAL Logo" 
@@ -44,12 +45,12 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white">TUGU</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 border border-white/15 text-slate-300 font-mono font-medium tracking-widest uppercase">
+                <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900">GKDI TUGU</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-bold tracking-wider uppercase border border-amber-200">
                   ZEAL JOGJA
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-normal">Youth & Campus Ministry Portal</p>
+              <p className="text-xs text-slate-500 font-medium">Youth & Campus Ministry Portal</p>
             </div>
           </div>
 
@@ -61,17 +62,18 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
                   window.location.reload();
                 }
               }}
-              title="Reset Cache / Force Re-sync"
-              className="btn-tactile text-xs px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white transition-colors"
+              title="Reset Cache / Refresh"
+              className="btn-tactile text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1.5 transition-colors"
             >
-              Reset Cache
+              <IconRefresh className="w-3.5 h-3.5 text-slate-500" stroke={2} />
+              <span>Reset Cache</span>
             </button>
           </div>
 
         </div>
 
         {/* NAVIGATION TABS */}
-        <nav className="flex space-x-1 overflow-x-auto pb-3 pt-1 no-scrollbar border-t border-white/5">
+        <nav className="flex space-x-1.5 overflow-x-auto pb-3 pt-1 no-scrollbar border-t border-slate-100">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -79,13 +81,13 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`btn-tactile flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`btn-tactile flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                   isActive
-                    ? 'bg-white text-black font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-[#b5852e] text-white shadow-sm font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-black' : 'text-slate-400'}`} stroke={1.5} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} stroke={1.5} />
                 <span>{item.label}</span>
               </button>
             );

@@ -156,28 +156,28 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center space-x-3">
-            <IconClipboardCheck className="w-7 h-7 text-white shrink-0" stroke={1.5} />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center space-x-3">
+            <IconClipboardCheck className="w-7 h-7 text-[#b5852e] shrink-0" stroke={1.5} />
             <span>Statistika Minggu</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">Input data jemaat mingguan, auto-load anggota group, dan ekspor pesan WhatsApp 1-klik!</p>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Input data jemaat mingguan, auto-load anggota group, dan ekspor pesan WhatsApp 1-klik!</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* FORM SECTION */}
-        <div className="lg:col-span-2 tugu-card p-6 rounded-2xl border border-white/10 space-y-6">
+        <div className="lg:col-span-2 tugu-card p-6 rounded-3xl border border-slate-200 bg-white space-y-6">
           <form onSubmit={handleSave} className="space-y-6">
             
             {/* GROUP & DATE SELECTOR */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-white/10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-slate-100">
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Pilih Small Group *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Pilih Small Group *</label>
                 <select
                   value={selectedGroupId}
                   onChange={e => setSelectedGroupId(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-[#b5852e]"
                 >
                   {groups.map(g => (
                     <option key={g.id} value={g.id}>
@@ -188,12 +188,12 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Tanggal Ibadah *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Tanggal Ibadah *</label>
                 <input
                   type="date"
                   value={weekDate}
                   onChange={e => setWeekDate(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none"
                 />
               </div>
             </div>
@@ -201,18 +201,18 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
             {/* MEMBER CHECK-IN TABLE */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                  <IconUsers className="w-4 h-4 text-emerald-400" stroke={1.5} />
+                <h3 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+                  <IconUsers className="w-4 h-4 text-emerald-700" stroke={1.5} />
                   <span>Daftar Anggota Group ({groupMembers.length})</span>
                 </h3>
-                <span className="text-[11px] font-mono text-slate-400">Centang missing / BA</span>
+                <span className="text-[11px] font-mono text-slate-500 font-semibold">Centang missing / BA</span>
               </div>
 
               {loadingMembers ? (
                 <p className="text-xs font-mono text-slate-400 py-4">Memuat anggota group...</p>
               ) : groupMembers.length === 0 ? (
-                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center space-x-2">
-                  <IconAlertCircle className="w-4 h-4 shrink-0" stroke={1.5} />
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center space-x-2 font-medium">
+                  <IconAlertCircle className="w-4 h-4 shrink-0 text-amber-700" stroke={1.5} />
                   <span>Belum ada anggota yang di-assign ke group ini. Buka tab <strong>Groups & Leaders</strong> untuk menambahkan anggota.</span>
                 </div>
               ) : (
@@ -224,43 +224,43 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
                     const studyStage = studyProgresses.find(sp => sp.person_id === m.id)?.stage || '';
 
                     return (
-                      <div key={m.id} className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                      <div key={m.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-white">{m.full_name}</span>
+                          <span className="font-bold text-slate-900">{m.full_name}</span>
                           
                           <div className="flex items-center space-x-4 text-xs">
-                            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+                            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700 font-medium">
                               <input
                                 type="checkbox"
                                 checked={isMissing}
                                 onChange={e => handleToggleMissing(m, e.target.checked)}
-                                className="rounded bg-zinc-900 border-white/20 text-amber-500 focus:ring-0"
+                                className="rounded bg-white border-slate-300 text-amber-600 focus:ring-0"
                               />
-                              <span className={isMissing ? 'text-amber-400 font-bold' : ''}>Missing</span>
+                              <span className={isMissing ? 'text-amber-800 font-bold' : ''}>Missing</span>
                             </label>
 
-                            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+                            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700 font-medium">
                               <input
                                 type="checkbox"
                                 checked={isStudying}
                                 onChange={e => handleToggleStudy(m, e.target.checked)}
-                                className="rounded bg-zinc-900 border-white/20 text-emerald-500 focus:ring-0"
+                                className="rounded bg-white border-slate-300 text-emerald-600 focus:ring-0"
                               />
-                              <span className={isStudying ? 'text-emerald-400 font-bold' : ''}>Belajar Alkitab</span>
+                              <span className={isStudying ? 'text-emerald-800 font-bold' : ''}>Belajar Alkitab</span>
                             </label>
                           </div>
                         </div>
 
                         {/* SUB INPUTS FOR MISSING REASON / STUDY STAGE */}
                         {(isMissing || isStudying) && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-white/5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200">
                             {isMissing && (
                               <input
                                 type="text"
                                 placeholder="Alasan missing (Luar kota/OJT/Sakit)"
                                 value={missingReason}
                                 onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
-                                className="bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white"
+                                className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
                               />
                             )}
                             {isStudying && (
@@ -269,7 +269,7 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
                                 placeholder="Stage BA (Murid/Tujuan Hidup)"
                                 value={studyStage}
                                 onChange={e => handleUpdateStudyStage(m.id, e.target.value)}
-                                className="bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white"
+                                className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
                               />
                             )}
                           </div>
@@ -284,62 +284,62 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
             {/* METRICS COUNTERS */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
               <div>
-                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Reachout</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Reachout</label>
                 <input
                   type="number"
                   min="0"
                   value={reachoutCount}
                   onChange={e => setReachoutCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-black text-center tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Visitor Ibadah</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Visitor Ibadah</label>
                 <input
                   type="number"
                   min="0"
                   value={sundayVisitorsCount}
                   onChange={e => setSundayVisitorsCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-black text-center tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Visitor Acara</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Visitor Acara</label>
                 <input
                   type="number"
                   min="0"
                   value={eventVisitorsCount}
                   onChange={e => setEventVisitorsCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-black text-center tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Baptis</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Baptis</label>
                 <input
                   type="number"
                   min="0"
                   value={baptismsCount}
                   onChange={e => setBaptismsCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-black text-center tabular-nums"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Catatan Tambahan</label>
+              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Tambahan</label>
               <textarea
                 rows={2}
                 placeholder="Catatan perkembangan atau info khusus group..."
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 resize-none"
               />
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-white/10">
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={handleCopyWA}
@@ -363,29 +363,29 @@ export default function StatistikaView({ groups, onSaveStat }: StatistikaViewPro
         </div>
 
         {/* LIVE WHATSAPP TEMPLATE PREVIEW */}
-        <div className="tugu-card p-6 rounded-2xl border border-white/10 space-y-4 flex flex-col justify-between">
+        <div className="tugu-card p-6 rounded-3xl border border-slate-200 bg-white space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <IconSparkles className="w-4 h-4 text-cyan-400" stroke={1.5} />
+              <h3 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+                <IconSparkles className="w-4 h-4 text-amber-600" stroke={1.5} />
                 <span>Live Preview Format WA</span>
               </h3>
               <button
                 onClick={handleCopyWA}
-                className="btn-tactile text-xs text-slate-300 hover:text-white flex items-center space-x-1 font-mono"
+                className="btn-tactile text-xs text-[#b5852e] hover:text-amber-900 flex items-center space-x-1 font-bold font-mono"
               >
-                {copied ? <IconCheck className="w-3.5 h-3.5 text-emerald-400" stroke={2} /> : <IconCopy className="w-3.5 h-3.5" stroke={1.5} />}
+                {copied ? <IconCheck className="w-3.5 h-3.5 text-emerald-600" stroke={2} /> : <IconCopy className="w-3.5 h-3.5" stroke={1.5} />}
                 <span>Copy</span>
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-950 border border-white/15 font-mono text-xs text-emerald-300 whitespace-pre-wrap leading-relaxed select-all">
+            <div className="p-4 rounded-2xl bg-slate-900 text-emerald-400 font-mono text-xs whitespace-pre-wrap leading-relaxed select-all shadow-inner">
               {generateWAText()}
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-400 space-y-1">
-            <p className="font-semibold text-white">Petunjuk:</p>
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs text-amber-900 space-y-1 font-medium">
+            <p className="font-bold text-slate-900">Petunjuk:</p>
             <p>Klik <strong>Simpan & Copy WA</strong> untuk menyimpan laporan ke database Supabase dan otomatis menyalin format ke clipboard WhatsApp.</p>
           </div>
         </div>

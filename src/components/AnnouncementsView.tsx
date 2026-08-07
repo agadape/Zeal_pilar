@@ -47,11 +47,11 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center space-x-3">
-            <IconSpeakerphone className="w-7 h-7 text-white shrink-0" stroke={1.5} />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center space-x-3">
+            <IconSpeakerphone className="w-7 h-7 text-[#b5852e] shrink-0" stroke={1.5} />
             <span>Visi & Pengumuman</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">Pusat visi kerohanian ZEAL Tugu Jogja, komitmen Saat Teduh, dan pengumuman resmi leadership.</p>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Pusat visi kerohanian ZEAL Tugu Jogja, komitmen Saat Teduh, dan pengumuman resmi leadership.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -62,40 +62,40 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
         </button>
       </div>
 
-      {/* SPIRITUAL COMMITMENT BANNER */}
-      <div className="tugu-card p-6 rounded-2xl border border-white/15 bg-zinc-900/80 space-y-4">
-        <div className="flex items-center space-x-2 text-amber-400 font-mono text-xs font-bold uppercase tracking-wider">
-          <IconFlame className="w-4 h-4 text-amber-400" stroke={1.5} />
+      {/* SPIRITUAL COMMITMENT BANNER - GKDI PILLARS */}
+      <div className="tugu-card p-6 rounded-3xl border border-amber-200/80 bg-gradient-to-r from-amber-50/60 via-white to-amber-50/30 space-y-4">
+        <div className="flex items-center space-x-2 text-amber-900 font-mono text-xs font-bold uppercase tracking-wider">
+          <IconFlame className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
           <span>Pilar Kerohanian Leaders Tugu Jogja</span>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-            <div className="flex items-center space-x-2 text-white font-bold text-sm">
-              <IconBook className="w-4 h-4 text-emerald-400" stroke={1.5} />
+          <div className="p-4 rounded-2xl bg-white border border-amber-200/60 space-y-1 shadow-2xs">
+            <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
+              <IconBook className="w-4 h-4 text-emerald-700" stroke={1.5} />
               <span>Saat Teduh Harian</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed font-medium">
               Memulai setiap hari dengan doa dan perenungan Firman Tuhan.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-            <div className="flex items-center space-x-2 text-white font-bold text-sm">
-              <IconUserCheck className="w-4 h-4 text-cyan-400" stroke={1.5} />
+          <div className="p-4 rounded-2xl bg-white border border-amber-200/60 space-y-1 shadow-2xs">
+            <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
+              <IconUserCheck className="w-4 h-4 text-cyan-700" stroke={1.5} />
               <span>Discipleship 1-on-1</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed font-medium">
               Memuridkan dengan keterbukaan dan bimbingan personal secara konsisten.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-            <div className="flex items-center space-x-2 text-white font-bold text-sm">
-              <IconSparkles className="w-4 h-4 text-purple-400" stroke={1.5} />
+          <div className="p-4 rounded-2xl bg-white border border-amber-200/60 space-y-1 shadow-2xs">
+            <div className="flex items-center space-x-2 text-slate-900 font-bold text-sm">
+              <IconSparkles className="w-4 h-4 text-purple-700" stroke={1.5} />
               <span>Membangun Rumah Tuhan</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed font-medium">
               Menjaga kebersamaan, semangat outreach, dan ketaatan perpuluhan tepat waktu.
             </p>
           </div>
@@ -105,28 +105,28 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
       {/* ANNOUNCEMENTS LIST */}
       <div className="space-y-4">
         {announcements.map(a => (
-          <div key={a.id} className="tugu-card p-6 rounded-2xl border border-white/10 space-y-3 relative">
+          <div key={a.id} className="tugu-card p-6 rounded-3xl border border-slate-200 bg-white space-y-3 relative">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 {a.is_pinned && (
-                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold uppercase flex items-center space-x-1">
-                    <IconPin className="w-3 h-3" stroke={1.5} />
+                  <span className="px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300/80 text-[10px] font-mono font-bold uppercase flex items-center space-x-1">
+                    <IconPin className="w-3 h-3 text-[#b5852e]" stroke={1.5} />
                     <span>PINNED</span>
                   </span>
                 )}
-                <span className="text-xs text-slate-400 font-mono">Ditulis oleh: <strong className="text-white">{a.author_name}</strong></span>
+                <span className="text-xs text-slate-500 font-mono">Ditulis oleh: <strong className="text-slate-900">{a.author_name}</strong></span>
               </div>
               
               <button
                 onClick={() => onDeleteAnnouncement(a.id)}
-                className="btn-tactile text-xs text-rose-400 hover:text-rose-300 font-mono"
+                className="btn-tactile text-xs text-rose-600 hover:text-rose-700 font-mono font-semibold"
               >
                 Hapus
               </button>
             </div>
 
-            <h3 className="text-lg font-bold text-white tracking-tight">{a.title}</h3>
-            <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{a.content}</p>
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight">{a.title}</h3>
+            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">{a.content}</p>
 
             <div className="pt-2 text-[10px] font-mono text-slate-400">
               Diposting: {new Date(a.created_at || Date.now()).toLocaleDateString('id-ID', { dateStyle: 'full' })}
@@ -137,48 +137,48 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="tugu-card w-full max-w-lg rounded-2xl p-6 border border-white/20 space-y-6 animate-fade-in bg-zinc-950">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="text-lg font-bold text-white">Buat Pengumuman Baru</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white p-1">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-lg font-bold text-slate-900">Buat Pengumuman Baru</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
                 <IconX className="w-5 h-5" stroke={1.5} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Judul Pengumuman *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Judul Pengumuman *</label>
                 <input
                   type="text"
                   required
                   placeholder="Judul visi atau pengumuman..."
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Nama Penulis</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Penulis</label>
                 <input
                   type="text"
                   placeholder="Bang Daniel / Om Hendra"
                   value={authorName}
                   onChange={e => setAuthorName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Isi Pengumuman *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Isi Pengumuman *</label>
                 <textarea
                   rows={4}
                   required
                   placeholder="Pesan visi atau arahan kegiatan..."
                   value={content}
                   onChange={e => setContent(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white resize-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 resize-none"
                 />
               </div>
 
@@ -188,12 +188,12 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
                   id="pinCheck"
                   checked={isPinned}
                   onChange={e => setIsPinned(e.target.checked)}
-                  className="rounded bg-zinc-900 border-white/20 text-amber-500"
+                  className="rounded bg-white border-slate-300 text-amber-600 focus:ring-0"
                 />
-                <label htmlFor="pinCheck" className="text-xs text-slate-300 font-mono">Pin pengumuman di paling atas</label>
+                <label htmlFor="pinCheck" className="text-xs text-slate-700 font-mono font-medium">Pin pengumuman di paling atas</label>
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

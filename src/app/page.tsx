@@ -121,7 +121,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white flex flex-col justify-between selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between selection:bg-[#b5852e] selection:text-white">
       
       <div>
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -129,8 +129,8 @@ export default function Home() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {loading ? (
             <div className="py-24 text-center space-y-3">
-              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-sm text-slate-400 font-medium">Memuat portal Tugu Leaders...</p>
+              <div className="w-8 h-8 border-2 border-[#b5852e] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-slate-500 font-medium">Memuat portal Tugu Leaders...</p>
             </div>
           ) : (
             <>
@@ -191,10 +191,10 @@ export default function Home() {
       </div>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 py-6 bg-black/60 text-xs text-slate-500 text-center">
+      <footer className="border-t border-slate-200 py-6 bg-white text-xs text-slate-500 text-center font-medium">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>© 2026 ZEAL Youth & Campus Ministry (GKDI Jogja) • Tugu Leaders Portal</p>
-          <div className="flex items-center space-x-4 text-slate-400">
+          <div className="flex items-center space-x-4 text-slate-500">
             <span>Vercel Deploy Ready</span>
             <span>•</span>
             <span>Supabase Database Schema</span>

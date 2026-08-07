@@ -93,8 +93,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Small Groups & Leaders</h1>
-          <p className="text-xs sm:text-sm text-slate-400">Atur kelompok kecil (PDG Brother/Sister), tetapkan Pemimpin, dan mapping anggota kelompok.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Small Groups & Leaders</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Atur kelompok kecil (PDG Brother/Sister), tetapkan Pemimpin, dan mapping anggota kelompok.</p>
         </div>
         <button
           onClick={openAddGroupModal}
@@ -108,12 +108,12 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
       {/* GROUPS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {groups.map(g => (
-          <div key={g.id} className="tugu-card tugu-card-interactive p-6 rounded-2xl space-y-4 relative flex flex-col justify-between border border-white/10">
+          <div key={g.id} className="tugu-card tugu-card-interactive p-6 rounded-3xl space-y-4 relative flex flex-col justify-between bg-white border border-slate-200">
             
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold border uppercase tracking-wider ${
-                  g.category === 'BROTHER' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-pink-500/20 text-pink-300 border-pink-500/30'
+                <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold border uppercase tracking-wider ${
+                  g.category === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'
                 }`}>
                   {g.category} GROUP
                 </span>
@@ -121,13 +121,13 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={() => openEditGroupModal(g)}
-                    className="btn-tactile p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-colors"
+                    className="btn-tactile p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors border border-slate-200"
                   >
                     <IconEdit className="w-4 h-4" stroke={1.5} />
                   </button>
                   <button
                     onClick={() => onDeleteGroup(g.id)}
-                    className="btn-tactile p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                    className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
                   >
                     <IconTrash className="w-4 h-4" stroke={1.5} />
                   </button>
@@ -135,20 +135,20 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
               </div>
 
               <div>
-                <h3 className="text-xl font-bold text-white tracking-tight">{g.group_name}</h3>
-                <div className="flex items-center space-x-2 text-xs text-slate-300 mt-1">
-                  <IconShield className="w-4 h-4 text-purple-400" stroke={1.5} />
-                  <span>Pemimpin: <strong className="text-white">{g.leader_name}</strong></span>
+                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">{g.group_name}</h3>
+                <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium mt-1">
+                  <IconShield className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
+                  <span>Pemimpin: <strong className="text-slate-900">{g.leader_name}</strong></span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
               <button
                 onClick={() => openManageMembersModal(g)}
-                className="btn-tactile w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center justify-center space-x-2 transition-colors"
+                className="btn-tactile w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 transition-colors border border-slate-200"
               >
-                <IconUsersGroup className="w-4 h-4" stroke={1.5} />
+                <IconUsersGroup className="w-4 h-4 text-slate-600" stroke={1.5} />
                 <span>Kelola Anggota Group</span>
               </button>
             </div>
@@ -159,36 +159,36 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
 
       {/* CREATE / EDIT GROUP MODAL */}
       {isGroupModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="tugu-card w-full max-w-md rounded-2xl p-6 border border-white/20 space-y-6 animate-fade-in bg-zinc-950">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h3 className="text-lg font-bold text-white">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="tugu-card w-full max-w-md rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-lg font-bold text-slate-900">
                 {editingGroup ? 'Edit Small Group' : 'Buat Small Group Baru'}
               </h3>
-              <button onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-white p-1">
+              <button onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
                 <IconX className="w-5 h-5" stroke={1.5} />
               </button>
             </div>
 
             <form onSubmit={handleGroupSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Nama Small Group *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Small Group *</label>
                 <input
                   type="text"
                   required
                   placeholder="Contoh: Eve's Circle / Pelita"
                   value={groupName}
                   onChange={e => setGroupName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Kategori *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kategori *</label>
                 <select
                   value={category}
                   onChange={e => setCategory(e.target.value as Gender)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
                 >
                   <option value="SISTER">SISTER</option>
                   <option value="BROTHER">BROTHER</option>
@@ -196,11 +196,11 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Tugaskan Pemimpin Group (Leader)</label>
+                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Tugaskan Pemimpin Group (Leader)</label>
                 <select
                   value={leaderId}
                   onChange={e => setLeaderId(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
                 >
                   <option value="">-- Pilih Leader dari User Table --</option>
                   {people
@@ -213,7 +213,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
                 </select>
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsGroupModalOpen(false)}
@@ -236,21 +236,21 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
 
       {/* MANAGE MEMBERS MODAL */}
       {managingMembersGroup && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="tugu-card w-full max-w-lg rounded-2xl p-6 border border-white/20 space-y-6 animate-fade-in bg-zinc-950 max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] flex flex-col">
             
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-lg font-bold text-white">Anggota: {managingMembersGroup.group_name}</h3>
-                <p className="text-xs text-slate-400">Pilih jemaat yang masuk ke dalam small group ini.</p>
+                <h3 className="text-lg font-bold text-slate-900">Anggota: {managingMembersGroup.group_name}</h3>
+                <p className="text-xs text-slate-500 font-medium">Pilih jemaat yang masuk ke dalam small group ini.</p>
               </div>
-              <button onClick={() => setManagingMembersGroup(null)} className="text-slate-400 hover:text-white p-1">
+              <button onClick={() => setManagingMembersGroup(null)} className="text-slate-400 hover:text-slate-700 p-1">
                 <IconX className="w-5 h-5" stroke={1.5} />
               </button>
             </div>
 
             {loadingMembers ? (
-              <div className="py-12 text-center text-slate-400 text-xs font-mono">Memuat anggota group...</div>
+              <div className="py-12 text-center text-slate-500 text-xs font-mono">Memuat anggota group...</div>
             ) : (
               <div className="overflow-y-auto space-y-2 pr-1 flex-1">
                 {people
@@ -261,21 +261,21 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
                       <div
                         key={p.id}
                         onClick={() => handleToggleMember(p.id)}
-                        className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                        className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-white/15 border-white text-white font-semibold'
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                            ? 'bg-amber-50/80 border-[#b5852e] text-slate-900 font-bold'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                         }`}
                       >
                         <div className="flex items-center space-x-3">
                           <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                            isSelected ? 'bg-white text-black border-white' : 'border-slate-500'
+                            isSelected ? 'bg-[#b5852e] text-white border-[#b5852e]' : 'border-slate-300 bg-white'
                           }`}>
                             {isSelected && <IconCheck className="w-3 h-3 stroke-[3]" />}
                           </div>
                           <div>
-                            <span className="text-xs font-semibold">{p.full_name}</span>
-                            <span className="block text-[11px] font-mono text-slate-400">{p.status} {p.campus ? `• ${p.campus}` : ''}</span>
+                            <span className="text-xs font-bold">{p.full_name}</span>
+                            <span className="block text-[11px] font-mono text-slate-500">{p.status} {p.campus ? `• ${p.campus}` : ''}</span>
                           </div>
                         </div>
                       </div>
@@ -284,8 +284,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-4 border-t border-white/10">
-              <span className="text-xs font-mono text-slate-400">{selectedMemberIds.length} Anggota terpilih</span>
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              <span className="text-xs font-mono text-slate-500 font-semibold">{selectedMemberIds.length} Anggota terpilih</span>
               <div className="space-x-3">
                 <button
                   type="button"
