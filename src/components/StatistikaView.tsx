@@ -297,52 +297,82 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
                       return (
                         <div key={m.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-slate-900">{m.full_name}</span>
+                          <div className="flex flex-col space-y-2">
+                            <span className="text-sm font-bold text-slate-900">{m.full_name}</span>
                             
-                            <div className="flex items-center space-x-4 text-xs">
-                              <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700 font-medium">
-                                <input
-                                  type="checkbox"
-                                  checked={isMissing}
-                                  onChange={e => handleToggleMissing(m, e.target.checked)}
-                                  className="rounded bg-white border-slate-300 text-amber-600 focus:ring-0"
-                                />
-                                <span className={isMissing ? 'text-amber-800 font-bold' : ''}>Missing</span>
-                              </label>
-
-                              <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700 font-medium">
-                                <input
-                                  type="checkbox"
-                                  checked={isStudying}
-                                  onChange={e => handleToggleStudy(m, e.target.checked)}
-                                  className="rounded bg-white border-slate-300 text-emerald-600 focus:ring-0"
-                                />
-                                <span className={isStudying ? 'text-emerald-800 font-bold' : ''}>Belajar Alkitab</span>
-                              </label>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleMissing(m, !isMissing)}
+                                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center space-x-1.5 ${
+                                  isMissing 
+                                    ? 'bg-amber-100 border-amber-300 text-amber-800 shadow-inner'
+                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                }`}
+                              >
+                                <span>{isMissing ? '❌ Missing' : '✅ Hadir'}</span>
+                              </button>
+                              
+                              <button
+                                type="button"
+                                onClick={() => handleToggleStudy(m, !isStudying)}
+                                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center space-x-1.5 ${
+                                  isStudying 
+                                    ? 'bg-emerald-100 border-emerald-300 text-emerald-800 shadow-inner'
+                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                }`}
+                              >
+                                <span>{isStudying ? '📖 Sedang BA' : 'Non-BA'}</span>
+                              </button>
                             </div>
                           </div>
 
                           {/* SUB INPUTS FOR MISSING REASON / STUDY STAGE */}
                           {(isMissing || isStudying) && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+                            <div className="grid grid-cols-1 gap-3 pt-3 mt-1 border-t border-slate-200">
                               {isMissing && (
-                                <input
-                                  type="text"
-                                  placeholder="Alasan missing (Luar kota/OJT/Sakit)"
-                                  value={missingReason}
-                                  onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
-                                  className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
-                                />
+                                <div className="space-y-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Ketik alasan spesifik..."
+                                    value={missingReason}
+                                    onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
+                                    className="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900 font-semibold focus:outline-none focus:border-amber-400"
+                                  />
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].map(r => (
+                                      <button 
+                                        type="button" 
+                                        key={r} 
+                                        onClick={() => handleUpdateMissingReason(m.id, r)} 
+                                        className="px-2.5 py-1 text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold transition-colors"
+                                      >
+                                        {r}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
                               )}
+                              
                               {isStudying && (
-                                <input
-                                  type="text"
-                                  placeholder="Stage BA (Murid/Tujuan Hidup)"
-                                  value={studyStage}
-                                  onChange={e => handleUpdateStudyStage(m.id, e.target.value)}
-                                  className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
-                                />
+                                <div>
+                                  <select
+                                    value={studyStage}
+                                    onChange={e => handleUpdateStudyStage(m.id, e.target.value)}
+                                    className="w-full bg-emerald-50/50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-900 font-bold focus:outline-none focus:border-emerald-400"
+                                  >
+                                    <option value="">-- Pilih Topik BA --</option>
+                                    <option value="Mencari Tuhan">1. Mencari Tuhan</option>
+                                    <option value="Firman Tuhan">2. Firman Tuhan</option>
+                                    <option value="Murid Yesus">3. Murid Yesus</option>
+                                    <option value="Dosa">4. Dosa</option>
+                                    <option value="Salib">5. Salib</option>
+                                    <option value="Pertobatan">6. Pertobatan</option>
+                                    <option value="Baptisan">7. Baptisan</option>
+                                    <option value="Gereja">8. Gereja</option>
+                                    <option value="Roh Kudus">9. Roh Kudus</option>
+                                  </select>
+                                </div>
                               )}
                             </div>
                           )}

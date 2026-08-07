@@ -26,11 +26,40 @@ interface PeopleViewProps {
   onSaveBALog?: (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
 }
 
+const DEFAULT_CAMPUSES = ['UGM', 'UNY', 'Atma Jaya', 'STIPRAM', 'UPN', 'AMPTA', 'ISI', 'UMY', 'UAJY', 'Sanata Dharma', 'Bukan Mahasiswa'];
+
+function getCampusList(): string[] {
+  if (typeof window === 'undefined') return DEFAULT_CAMPUSES;
+  try {
+    const stored = localStorage.getItem('tugu_campus_list');
+    if (stored) {
+      const parsed = JSON.parse(stored) as string[];
+      // Merge defaults + custom, deduplicate
+      return Array.from(new Set([...DEFAULT_CAMPUSES, ...parsed]));
+    }
+  } catch { /* ignore */ }
+  return DEFAULT_CAMPUSES;
+}
+
+function saveCampusToList(name: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const stored = localStorage.getItem('tugu_campus_list');
+    const existing: string[] = stored ? JSON.parse(stored) : [];
+    if (!existing.includes(name) && !DEFAULT_CAMPUSES.includes(name)) {
+      localStorage.setItem('tugu_campus_list', JSON.stringify([...existing, name]));
+    }
+  } catch { /* ignore */ }
+}
+
 export default function PeopleView({ people, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
   const [activeCategoryTab, setActiveCategoryTab] = useState<'disciples' | 'bible_study' | 'reachout'>('disciples');
   const [search, setSearch] = useState('');
   const [filterGender, setFilterGender] = useState<string>('ALL');
   const [filterCampus, setFilterCampus] = useState<string>('ALL');
+  const [campusList, setCampusList] = useState<string[]>(getCampusList);
+  const [addingCampus, setAddingCampus] = useState(false);
+  const [newCampusInput, setNewCampusInput] = useState('');
   
   // Person Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -450,9 +479,9 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
 
       {/* WEEKLY BA TRACKER MODAL */}
       {trackingBAPerson && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm">
-          <div className="flex items-center justify-center min-h-screen p-4 sm:p-6">
-            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <div className="flex items-start justify-center min-h-full py-10 px-4 sm:px-6">
+            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative h-fit">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
@@ -569,9 +598,9 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
 
       {/* CREATE / EDIT PERSON MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm">
-          <div className="flex items-center justify-center min-h-screen p-4 sm:p-6">
-            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <div className="flex items-start justify-center min-h-full py-10 px-4 sm:px-6">
+            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative h-fit">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <h3 className="text-lg font-bold text-slate-900">
                   {editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
@@ -610,13 +639,74 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
 
                   <div>
                     <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kampus / Univ</label>
-                    <input
-                      type="text"
-                      placeholder="UGM / UNY / Atma Jaya / STIPRAM"
-                      value={campus}
-                      onChange={e => setCampus(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                    />
+                    {!addingCampus ? (
+                      <div className="flex gap-2">
+                        <select
+                          value={campus}
+                          onChange={e => setCampus(e.target.value)}
+                          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                        >
+                          <option value="">-- Pilih Kampus --</option>
+                          {campusList.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => { setAddingCampus(true); setNewCampusInput(''); }}
+                          title="Tambah kampus baru"
+                          className="shrink-0 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[#b5852e] text-xs font-bold transition-colors"
+                        >
+                          + Univ
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          autoFocus
+                          type="text"
+                          placeholder="Nama kampus baru..."
+                          value={newCampusInput}
+                          onChange={e => setNewCampusInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const trimmed = newCampusInput.trim();
+                              if (trimmed) {
+                                saveCampusToList(trimmed);
+                                setCampusList(getCampusList());
+                                setCampus(trimmed);
+                              }
+                              setAddingCampus(false);
+                            }
+                            if (e.key === 'Escape') setAddingCampus(false);
+                          }}
+                          className="flex-1 bg-white border border-[#b5852e] rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const trimmed = newCampusInput.trim();
+                            if (trimmed) {
+                              saveCampusToList(trimmed);
+                              setCampusList(getCampusList());
+                              setCampus(trimmed);
+                            }
+                            setAddingCampus(false);
+                          }}
+                          className="shrink-0 px-2.5 py-2 rounded-xl bg-[#b5852e] hover:bg-amber-700 text-white text-xs font-bold transition-colors"
+                        >
+                          Simpan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAddingCampus(false)}
+                          className="shrink-0 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors border border-slate-200"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

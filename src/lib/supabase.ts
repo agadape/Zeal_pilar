@@ -18,7 +18,8 @@ import {
   INITIAL_ANNOUNCEMENTS 
 } from './mockData';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseUrlRaw = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseUrl = supabaseUrlRaw.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
@@ -137,9 +138,11 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
   if (isSupabaseConfigured && supabase) {
     if (person.id) {
       const { data, error } = await supabase.from('people').update(payload).eq('id', person.id).select().single();
+      if (error) console.error("Supabase error (savePerson update):", error);
       if (!error && data) return { ...data, study_history: person.study_history } as Person;
     } else {
       const { data, error } = await supabase.from('people').insert([payload]).select().single();
+      if (error) console.error("Supabase error (savePerson insert):", error);
       if (!error && data) return { ...data, study_history: person.study_history } as Person;
     }
   }
@@ -162,6 +165,7 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
 export async function fetchUpcomingMilestones(): Promise<UpcomingMilestone[]> {
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('upcoming_milestones').select('*');
+    if (error) console.error("Supabase error (fetchUpcomingMilestones):", error);
     if (!error && data) {
       return (data as UpcomingMilestone[])
         .map(m => {
@@ -260,7 +264,7 @@ export async function handoverGroupLeadership(params: {
     }
 
     // 2. Enrich leadership_history row with reason and notes
-    await supabase
+    const { error: historyErr } = await supabase
       .from('group_leadership_history')
       .update({
         handover_reason: reason,
@@ -269,6 +273,8 @@ export async function handoverGroupLeadership(params: {
       .eq('group_id', group_id)
       .eq('leader_id', new_leader_id)
       .is('ended_at', null);
+
+    if (historyErr) console.error('Handover history update error:', historyErr);
 
     return true;
   }
@@ -291,6 +297,7 @@ export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> 
 
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('bible_study_logs').insert([payload]).select().single();
+    if (error) console.error("Supabase error (saveBibleStudyLog):", error);
     if (!error && data) {
       // Update people.study_stage to current latest stage
       await supabase.from('people').update({
@@ -315,6 +322,7 @@ export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> 
 export async function deletePerson(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
     const { error } = await supabase.from('people').delete().eq('id', id);
+    if (error) console.error("Supabase error (deletePerson):", error);
     if (!error) return true;
   }
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
@@ -331,6 +339,7 @@ export async function fetchGroups(): Promise<Group[]> {
       *,
       people:leader_id (full_name)
     `).order('group_name');
+    if (error) console.error("Supabase error (fetchGroups):", error);
     
     if (!error && data) {
       return data.map((g: Record<string, unknown> & { people?: { full_name?: string } }) => ({
@@ -360,6 +369,7 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
         category: group.category,
         leader_id: group.leader_id
       }).eq('id', group.id).select().single();
+      if (error) console.error("Supabase error (saveGroup update):", error);
       if (!error && data) return data as Group;
     } else {
       const { data, error } = await supabase.from('groups').insert([{
@@ -367,6 +377,7 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
         category: group.category,
         leader_id: group.leader_id
       }]).select().single();
+      if (error) console.error("Supabase error (saveGroup insert):", error);
       if (!error && data) return data as Group;
     }
   }
@@ -387,6 +398,7 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
 export async function deleteGroup(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
     const { error } = await supabase.from('groups').delete().eq('id', id);
+    if (error) console.error("Supabase error (deleteGroup):", error);
     if (!error) return true;
   }
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
@@ -402,6 +414,7 @@ export async function fetchGroupMembers(groupId: string): Promise<Person[]> {
       .from('group_members')
       .select('person_id, people (*)')
       .eq('group_id', groupId);
+    if (error) console.error("Supabase error (fetchGroupMembers):", error);
     if (!error && data) {
       return (data as unknown as Array<{ person_id: string; people: Person | null }>).map(item => item.people).filter(Boolean) as Person[];
     }
