@@ -211,8 +211,8 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
 
       {/* EVENT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm">
+          <div className="flex items-center justify-center min-h-screen p-4 sm:p-6">
             <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <h3 className="text-lg font-bold text-slate-900">
