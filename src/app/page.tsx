@@ -21,8 +21,10 @@ import {
   saveWeeklyStat,
   fetchEvents, 
   saveEvent,
+  deleteEvent,
   fetchAnnouncements, 
-  saveAnnouncement 
+  saveAnnouncement,
+  deleteAnnouncement 
 } from '@/lib/supabase';
 
 export default function Home() {
@@ -99,13 +101,27 @@ export default function Home() {
     await loadAllData();
   };
 
+  const handleDeleteEvent = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus event ini?')) {
+      await deleteEvent(id);
+      await loadAllData();
+    }
+  };
+
   const handleSaveAnnouncement = async (ann: Omit<Announcement, 'id'> & { id?: string }) => {
     await saveAnnouncement(ann);
     await loadAllData();
   };
 
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
+      await deleteAnnouncement(id);
+      await loadAllData();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col justify-between selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#09090b] text-white flex flex-col justify-between selection:bg-white selection:text-black">
       
       <div>
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -158,6 +174,7 @@ export default function Home() {
                   events={events} 
                   people={people} 
                   onSaveEvent={handleSaveEvent} 
+                  onDeleteEvent={handleDeleteEvent}
                 />
               )}
 
@@ -165,6 +182,7 @@ export default function Home() {
                 <AnnouncementsView 
                   announcements={announcements} 
                   onSaveAnnouncement={handleSaveAnnouncement} 
+                  onDeleteAnnouncement={handleDeleteAnnouncement}
                 />
               )}
             </>

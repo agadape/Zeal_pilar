@@ -103,3 +103,10 @@ export interface Announcement {
   is_pinned: boolean;
   created_at?: string;
 }
+
+export interface FilterState {
+  search: string;
+  gender: string;
+  status: string;
+  campus: string;
+}

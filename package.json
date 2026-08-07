@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
+    "@tabler/icons-react": "^3.46.0",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^0.475.0",
     "next": "^15.1.7",

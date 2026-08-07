@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react';
 import { Group, Person, WeeklyStat, MissingReason, StudyProgress } from '@/lib/types';
 import { fetchGroupMembers } from '@/lib/supabase';
 import confetti from 'canvas-confetti';
-import { ClipboardList, Copy, Check, Sparkles, Send, Calendar, Users, AlertCircle } from 'lucide-react';
+import { 
+  IconClipboardCheck, 
+  IconCopy, 
+  IconCheck, 
+  IconSparkles, 
+  IconSend, 
+  IconUsers, 
+  IconAlertCircle 
+} from '@tabler/icons-react';
 
 interface StatistikaViewProps {
   groups: Group[];
@@ -114,7 +122,7 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
     const text = generateWAText();
     navigator.clipboard.writeText(text);
     setCopied(true);
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -148,21 +156,21 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Statistika Minggu</h1>
-          <p className="text-sm text-slate-400">Input data jemaat mingguan, auto-load anggota group, dan ekspor pesan WhatsApp 1-klik!</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Statistika Minggu</h1>
+          <p className="text-xs sm:text-sm text-slate-400">Input data jemaat mingguan, auto-load anggota group, dan ekspor pesan WhatsApp 1-klik!</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* FORM SECTION */}
-        <div className="lg:col-span-2 glass-panel p-6 rounded-2xl border border-white/10 space-y-6">
+        <div className="lg:col-span-2 tugu-card p-6 rounded-2xl border border-white/10 space-y-6">
           <form onSubmit={handleSave} className="space-y-6">
             
             {/* GROUP & DATE SELECTOR */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-white/10">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Pilih Small Group *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Pilih Small Group *</label>
                 <select
                   value={selectedGroupId}
                   onChange={e => setSelectedGroupId(e.target.value)}
@@ -177,12 +185,12 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Tanggal Ibadah *</label>
+                <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Tanggal Ibadah *</label>
                 <input
                   type="date"
                   value={weekDate}
                   onChange={e => setWeekDate(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
                 />
               </div>
             </div>
@@ -190,18 +198,18 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
             {/* MEMBER CHECK-IN TABLE */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                  <IconUsers className="w-4 h-4 text-emerald-400" stroke={1.5} />
                   <span>Daftar Anggota Group ({groupMembers.length})</span>
                 </h3>
-                <span className="text-xs text-slate-400">Centang missing / BA</span>
+                <span className="text-[11px] font-mono text-slate-400">Centang missing / BA</span>
               </div>
 
               {loadingMembers ? (
-                <p className="text-xs text-slate-400 py-4">Memuat anggota group...</p>
+                <p className="text-xs font-mono text-slate-400 py-4">Memuat anggota group...</p>
               ) : groupMembers.length === 0 ? (
                 <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <IconAlertCircle className="w-4 h-4 shrink-0" stroke={1.5} />
                   <span>Belum ada anggota yang di-assign ke group ini. Buka tab <strong>Groups & Leaders</strong> untuk menambahkan anggota.</span>
                 </div>
               ) : (
@@ -214,7 +222,7 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
 
                     return (
                       <div key={m.id} className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between text-xs">
                           <span className="font-semibold text-white">{m.full_name}</span>
                           
                           <div className="flex items-center space-x-4 text-xs">
@@ -273,58 +281,58 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
             {/* METRICS COUNTERS */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Reachout</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Reachout</label>
                 <input
                   type="number"
                   min="0"
                   value={reachoutCount}
                   onChange={e => setReachoutCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Visitor Ibadah</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Visitor Ibadah</label>
                 <input
                   type="number"
                   min="0"
                   value={sundayVisitorsCount}
                   onChange={e => setSundayVisitorsCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Visitor Acara</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Visitor Acara</label>
                 <input
                   type="number"
                   min="0"
                   value={eventVisitorsCount}
                   onChange={e => setEventVisitorsCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Baptis</label>
+                <label className="block text-[11px] font-mono font-semibold text-slate-400 uppercase mb-1">Baptis</label>
                 <input
                   type="number"
                   min="0"
                   value={baptismsCount}
                   onChange={e => setBaptismsCount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-bold text-center tabular-nums"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Catatan Tambahan</label>
+              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase mb-1">Catatan Tambahan</label>
               <textarea
                 rows={2}
                 placeholder="Catatan perkembangan atau info khusus group..."
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white resize-none"
               />
             </div>
 
@@ -332,18 +340,18 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
               <button
                 type="button"
                 onClick={handleCopyWA}
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center space-x-2"
+                className="btn-tactile btn-secondary"
               >
-                <Copy className="w-4 h-4" />
-                <span>{copied ? 'Tersalin ke Clipboard!' : 'Preview / Copy WA Saja'}</span>
+                <IconCopy className="w-4 h-4" stroke={1.5} />
+                <span>{copied ? 'Tersalin ke Clipboard!' : 'Copy WA Saja'}</span>
               </button>
 
               <button
                 type="submit"
                 disabled={saving}
-                className="btn-glow px-6 py-2.5 rounded-xl bg-white text-black font-bold text-sm flex items-center space-x-2 shadow-lg shadow-white/10"
+                className="btn-tactile btn-primary"
               >
-                <Send className="w-4 h-4" />
+                <IconSend className="w-4 h-4" stroke={2} />
                 <span>{saving ? 'Menyimpan...' : 'Simpan & Copy WA'}</span>
               </button>
             </div>
@@ -352,18 +360,18 @@ export default function StatistikaView({ groups, people, stats, onSaveStat }: St
         </div>
 
         {/* LIVE WHATSAPP TEMPLATE PREVIEW */}
-        <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4 flex flex-col justify-between">
+        <div className="tugu-card p-6 rounded-2xl border border-white/10 space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
+              <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                <IconSparkles className="w-4 h-4 text-cyan-400" stroke={1.5} />
                 <span>Live Preview Format WA</span>
               </h3>
               <button
                 onClick={handleCopyWA}
-                className="text-xs text-slate-300 hover:text-white flex items-center space-x-1"
+                className="btn-tactile text-xs text-slate-300 hover:text-white flex items-center space-x-1 font-mono"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <IconCheck className="w-3.5 h-3.5 text-emerald-400" stroke={2} /> : <IconCopy className="w-3.5 h-3.5" stroke={1.5} />}
                 <span>Copy</span>
               </button>
             </div>
