@@ -23,13 +23,34 @@ export const supabase = isSupabaseConfigured
 // ==========================================
 
 const STORAGE_KEYS = {
-  PEOPLE: 'tugu_people',
-  GROUPS: 'tugu_groups',
-  GROUP_MEMBERS: 'tugu_group_members',
-  STATS: 'tugu_stats',
-  EVENTS: 'tugu_events',
-  ANNOUNCEMENTS: 'tugu_announcements',
+  PEOPLE: 'tugu_people_v2',
+  GROUPS: 'tugu_groups_v2',
+  GROUP_MEMBERS: 'tugu_group_members_v2',
+  STATS: 'tugu_stats_v2',
+  EVENTS: 'tugu_events_v2',
+  ANNOUNCEMENTS: 'tugu_announcements_v2',
 };
+
+// Automatic one-time purge of legacy seed data cached in browser LocalStorage
+if (typeof window !== 'undefined') {
+  const PURGE_KEY = 'tugu_legacy_purged_v3';
+  if (!localStorage.getItem(PURGE_KEY)) {
+    localStorage.removeItem('tugu_people');
+    localStorage.removeItem('tugu_groups');
+    localStorage.removeItem('tugu_group_members');
+    localStorage.removeItem('tugu_stats');
+    localStorage.removeItem('tugu_events');
+    localStorage.removeItem('tugu_announcements');
+    localStorage.removeItem('tugu_people_v2');
+    localStorage.removeItem('tugu_groups_v2');
+    localStorage.setItem(PURGE_KEY, 'true');
+  }
+}
+
+export function clearLocalCache(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.clear();
+}
 
 function getLocalData<T>(key: string, initialDefault: T): T {
   if (typeof window === 'undefined') return initialDefault;

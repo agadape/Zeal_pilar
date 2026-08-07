@@ -56,7 +56,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
             <div className={`flex items-center space-x-2 text-xs px-3 py-1.5 rounded-lg border ${
               isSupabaseConfigured 
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
@@ -69,6 +69,19 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               )}
               <span className="font-medium">{isSupabaseConfigured ? 'Supabase Connected' : 'Local Demo Mode'}</span>
             </div>
+
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  localStorage.clear();
+                  window.location.reload();
+                }
+              }}
+              title="Reset Cache / Force Re-sync"
+              className="btn-tactile text-xs px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white transition-colors"
+            >
+              Reset Cache
+            </button>
           </div>
 
         </div>
