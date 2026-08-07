@@ -75,21 +75,51 @@ function setLocalData<T>(key: string, value: T): void {
 // ---------------- PEOPLE API ----------------
 
 export async function fetchPeople(): Promise<Person[]> {
+  const parsePersonData = (rawPeople: Person[]): Person[] => {
+    return rawPeople.map(p => {
+      if (p.study_stage && p.study_stage.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(p.study_stage);
+          return {
+            ...p,
+            study_stage: parsed.current || p.study_stage,
+            study_history: parsed.history || []
+          };
+        } catch {
+          // Keep raw study_stage if JSON parse fails
+        }
+      }
+      return p;
+    });
+  };
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('people').select('*').order('full_name');
-    if (!error && data) return data as Person[];
+    if (!error && data) return parsePersonData(data as Person[]);
   }
-  return getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
+  return parsePersonData(getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE));
 }
 
-export async function savePerson(person: Omit<Person, 'id'> & { id?: string }): Promise<Person> {
+export async function savePerson(person: Omit<Person, 'id'> & { id?: string; study_history?: Person['study_history'] }): Promise<Person> {
+  const payload = { ...person };
+  
+  // If study_history exists, bundle it into study_stage JSON for Supabase TEXT column compatibility
+  if (person.study_history && person.study_history.length > 0) {
+    payload.study_stage = JSON.stringify({
+      current: person.study_stage || 'Belajar Alkitab',
+      history: person.study_history
+    });
+  }
+
+  delete payload.study_history;
+
   if (isSupabaseConfigured && supabase) {
     if (person.id) {
-      const { data, error } = await supabase.from('people').update(person).eq('id', person.id).select().single();
-      if (!error && data) return data as Person;
+      const { data, error } = await supabase.from('people').update(payload).eq('id', person.id).select().single();
+      if (!error && data) return { ...data, study_history: person.study_history } as Person;
     } else {
-      const { data, error } = await supabase.from('people').insert([person]).select().single();
-      if (!error && data) return data as Person;
+      const { data, error } = await supabase.from('people').insert([payload]).select().single();
+      if (!error && data) return { ...data, study_history: person.study_history } as Person;
     }
   }
 

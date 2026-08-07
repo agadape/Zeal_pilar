@@ -17,6 +17,14 @@ export type EventType =
   | 'RETREAT' 
   | 'PMK_OUTREACH';
 
+export interface WeeklyStudyProgressLog {
+  id: string;
+  week_number: number;
+  study_date: string;
+  lesson_topic: string;
+  notes?: string;
+}
+
 export interface Person {
   id: string;
   full_name: string;
@@ -25,6 +33,7 @@ export interface Person {
   campus?: string; // ATMA, UGM, UNY, STIPRAM, OTHER
   status: PersonStatus;
   study_stage?: string; // Murid, Tujuan Hidup, Kasih, Baptis, etc.
+  study_history?: WeeklyStudyProgressLog[];
   notes?: string;
   created_at?: string;
 }
