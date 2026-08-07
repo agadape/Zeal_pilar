@@ -285,100 +285,111 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                 ) : groupMembers.length === 0 ? (
                   <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center space-x-2 font-medium">
                     <IconAlertCircle className="w-4 h-4 shrink-0 text-amber-700" stroke={1.5} />
-                    <span>Belum ada anggota yang di-assign ke group ini. Buka tab <strong>Groups & Leaders</strong> untuk menambahkan anggota.</span>
+                    <span>Belum ada anggota yang di-assign ke group ini.</span>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                    {groupMembers.map(m => {
-                      const isMissing = missingMembers.some(mm => mm.person_id === m.id);
-                      const missingReason = missingMembers.find(mm => mm.person_id === m.id)?.reason || '';
-                      const isStudying = studyProgresses.some(sp => sp.person_id === m.id);
-                      const studyStage = studyProgresses.find(sp => sp.person_id === m.id)?.stage || '';
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200">
+                            <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">Nama Jemaat</th>
+                            <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Kehadiran / Alasan Missing</th>
+                            <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Progres BA (Bible Study)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {groupMembers.map(m => {
+                            const isMissing = missingMembers.some(mm => mm.person_id === m.id);
+                            const missingReason = missingMembers.find(mm => mm.person_id === m.id)?.reason || '';
+                            const isStudying = studyProgresses.some(sp => sp.person_id === m.id);
+                            const studyStage = studyProgresses.find(sp => sp.person_id === m.id)?.stage || '';
 
-                      return (
-                        <div key={m.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                          <div className="flex flex-col space-y-2">
-                            <span className="text-sm font-bold text-slate-900">{m.full_name}</span>
-                            
-                            <div className="flex items-center space-x-2">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleMissing(m, !isMissing)}
-                                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center space-x-1.5 ${
-                                  isMissing 
-                                    ? 'bg-amber-100 border-amber-300 text-amber-800 shadow-inner'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                }`}
-                              >
-                                <span>{isMissing ? '❌ Missing' : '✅ Hadir'}</span>
-                              </button>
-                              
-                              <button
-                                type="button"
-                                onClick={() => handleToggleStudy(m, !isStudying)}
-                                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center space-x-1.5 ${
-                                  isStudying 
-                                    ? 'bg-emerald-100 border-emerald-300 text-emerald-800 shadow-inner'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                }`}
-                              >
-                                <span>{isStudying ? '📖 Sedang BA' : 'Non-BA'}</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* SUB INPUTS FOR MISSING REASON / STUDY STAGE */}
-                          {(isMissing || isStudying) && (
-                            <div className="grid grid-cols-1 gap-3 pt-3 mt-1 border-t border-slate-200">
-                              {isMissing && (
-                                <div className="space-y-2">
-                                  <input
-                                    type="text"
-                                    placeholder="Ketik alasan spesifik..."
-                                    value={missingReason}
-                                    onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
-                                    className="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-900 font-semibold focus:outline-none focus:border-amber-400"
-                                  />
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].map(r => (
-                                      <button 
-                                        type="button" 
-                                        key={r} 
-                                        onClick={() => handleUpdateMissingReason(m.id, r)} 
-                                        className="px-2.5 py-1 text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold transition-colors"
-                                      >
-                                        {r}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {isStudying && (
-                                <div>
+                            return (
+                              <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="px-4 py-3">
+                                  <span className="text-sm font-bold text-slate-900">{m.full_name}</span>
+                                </td>
+                                
+                                <td className="px-4 py-3">
                                   <select
-                                    value={studyStage}
-                                    onChange={e => handleUpdateStudyStage(m.id, e.target.value)}
-                                    className="w-full bg-emerald-50/50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-900 font-bold focus:outline-none focus:border-emerald-400"
+                                    value={isMissing ? (missingReason || 'Lainnya') : 'Hadir'}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === 'Hadir') {
+                                        handleToggleMissing(m, false);
+                                      } else {
+                                        handleToggleMissing(m, true);
+                                        handleUpdateMissingReason(m.id, val === 'Lainnya' ? 'Izin / Luar kota' : val);
+                                      }
+                                    }}
+                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none transition-colors border ${
+                                      isMissing 
+                                        ? 'bg-amber-50 text-amber-900 border-amber-200 focus:border-amber-400' 
+                                        : 'bg-emerald-50/50 text-emerald-800 border-emerald-100 hover:bg-emerald-50'
+                                    }`}
                                   >
-                                    <option value="">-- Pilih Topik BA --</option>
-                                    <option value="Mencari Tuhan">1. Mencari Tuhan</option>
-                                    <option value="Firman Tuhan">2. Firman Tuhan</option>
-                                    <option value="Murid Yesus">3. Murid Yesus</option>
-                                    <option value="Dosa">4. Dosa</option>
-                                    <option value="Salib">5. Salib</option>
-                                    <option value="Pertobatan">6. Pertobatan</option>
-                                    <option value="Baptisan">7. Baptisan</option>
-                                    <option value="Gereja">8. Gereja</option>
-                                    <option value="Roh Kudus">9. Roh Kudus</option>
+                                    <option value="Hadir">✅ Hadir Ibadah</option>
+                                    <optgroup label="Alasan Missing (Tidak Hadir)">
+                                      <option value="Sakit">Sakit</option>
+                                      <option value="Pulang Kampung">Pulang Kampung</option>
+                                      <option value="Kerja/OJT">Kerja / OJT</option>
+                                      <option value="Tugas Kampus">Tugas Kampus</option>
+                                      <option value="MIA">MIA (Missing In Action)</option>
+                                      <option value="Lainnya">Lainnya...</option>
+                                    </optgroup>
                                   </select>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                                  
+                                  {isMissing && missingReason && !['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].includes(missingReason) && (
+                                    <input
+                                      type="text"
+                                      placeholder="Ketik alasan spesifik..."
+                                      value={missingReason}
+                                      onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
+                                      className="mt-2 w-full bg-white border border-amber-200 rounded-lg px-3 py-1.5 text-[11px] text-amber-900 focus:outline-none focus:border-amber-400 shadow-sm"
+                                    />
+                                  )}
+                                </td>
+                                
+                                <td className="px-4 py-3">
+                                  <select
+                                    value={isStudying ? (studyStage || 'Murid') : 'Non-BA'}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === 'Non-BA') {
+                                        handleToggleStudy(m, false);
+                                      } else {
+                                        handleToggleStudy(m, true);
+                                        handleUpdateStudyStage(m.id, val);
+                                      }
+                                    }}
+                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none transition-colors border ${
+                                      isStudying
+                                        ? 'bg-indigo-50 text-indigo-900 border-indigo-200 focus:border-indigo-400'
+                                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    <option value="Non-BA">-- Tidak Sedang BA --</option>
+                                    <optgroup label="Topik Pelajaran BA">
+                                      <option value="Mencari Tuhan">1. Mencari Tuhan</option>
+                                      <option value="Firman Tuhan">2. Firman Tuhan</option>
+                                      <option value="Murid Yesus">3. Murid Yesus</option>
+                                      <option value="Dosa">4. Dosa</option>
+                                      <option value="Salib">5. Salib</option>
+                                      <option value="Pertobatan">6. Pertobatan</option>
+                                      <option value="Baptisan">7. Baptisan</option>
+                                      <option value="Gereja">8. Gereja</option>
+                                      <option value="Roh Kudus">9. Roh Kudus</option>
+                                      <option value="Murid">Lainnya...</option>
+                                    </optgroup>
+                                  </select>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
