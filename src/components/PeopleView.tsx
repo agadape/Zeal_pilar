@@ -3,21 +3,21 @@
 import { useState } from 'react';
 import { Person, PersonStatus, Gender, WeeklyStudyProgressLog } from '@/lib/types';
 import { exportPeopleToCSV } from '@/lib/exportUtils';
-import { 
+import {
   IconUserPlus, 
   IconSearch, 
   IconEdit, 
   IconTrash, 
-  IconX, 
-  IconCheck, 
   IconPhone,
   IconUsers,
   IconBook,
   IconHeartHandshake,
   IconPlus,
   IconHistory,
-  IconDownload
+  IconDownload,
+  IconCheck
 } from '@tabler/icons-react';
+import FormPanel from './FormPanel';
 
 interface PeopleViewProps {
   people: Person[];
@@ -63,6 +63,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   
   // Person Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submittingPerson, setSubmittingPerson] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
 
   // Form State
@@ -75,7 +76,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   const [baptismDate, setBaptismDate] = useState('');
   const [studyStage, setStudyStage] = useState('');
   const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [submittingBA, setSubmittingBA] = useState(false);
 
   // BA Weekly Progress Tracker State
   const [trackingBAPerson, setTrackingBAPerson] = useState<Person | null>(null);
@@ -124,7 +125,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) return;
-    setSubmitting(true);
+    setSubmittingPerson(true);
+    setSubmittingBA(true);
     try {
       await onSavePerson({
         id: editingPerson?.id,
@@ -140,8 +142,9 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
         notes: notes.trim() || undefined
       });
       setIsModalOpen(false);
+    setSubmittingPerson(false);
     } finally {
-      setSubmitting(false);
+      setSubmittingBA(false);
     }
   };
 
@@ -172,7 +175,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     const updatedHistory = [...existingLogs, newLog].sort((a, b) => a.week_number - b.week_number);
     const updatedStage = `Minggu ${newLogWeekNum}: ${newLogTopic.trim()}`;
 
-    setSubmitting(true);
+    setSubmittingBA(true);
     try {
       if (onSaveBALog) {
         await onSaveBALog({
@@ -197,7 +200,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
       }
       setTrackingBAPerson(null);
     } finally {
-      setSubmitting(false);
+      setSubmittingBA(false);
     }
   };
 
@@ -478,21 +481,17 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
       )}
 
       {/* WEEKLY BA TRACKER MODAL */}
-      {trackingBAPerson && (
-        <div className="fixed inset-0 z-[100] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
-          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Track Progress BA: {trackingBAPerson.full_name}</h3>
-                <p className="text-xs text-slate-500 font-medium">Catat materi Belajar Alkitab mingguan secara terstruktur.</p>
-              </div>
-              <button onClick={() => setTrackingBAPerson(null)} className="text-slate-400 hover:text-slate-700 p-1">
-                <IconX className="w-5 h-5" stroke={1.5} />
-              </button>
-            </div>
-
+      <FormPanel
+        isOpen={!!trackingBAPerson}
+        onClose={() => setTrackingBAPerson(null)}
+        title={`Track Progress BA: ${trackingBAPerson?.full_name}`}
+        subtitle="Catat materi Belajar Alkitab mingguan secara terstruktur."
+        onSubmit={handleAddBALog}
+        submitLabel="Tambah Log Sesi"
+        isSubmitDisabled={submittingBA}
+      >
+        {trackingBAPerson && (
+          <>
             {/* TIMELINE OF PAST WEEKS */}
             <div className="space-y-3">
               <h4 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
@@ -518,7 +517,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
             </div>
 
             {/* FORM FOR NEW WEEKLY LOG */}
-            <form onSubmit={handleAddBALog} className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="space-y-4 pt-4 border-t border-slate-100">
               <h4 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                 + Tambah Log Sesi Minggu Ini
               </h4>
@@ -587,29 +586,21 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                   <IconCheck className="w-4 h-4" stroke={2} />
                   <span>Simpan Progress Minggu Ini</span>
                 </button>
-              </div>
-
-            </form>
-
+            </div>
           </div>
-          </div>
+          </>
         )}
+      </FormPanel>
 
       {/* CREATE / EDIT PERSON MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
-          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h3 className="text-lg font-bold text-slate-900">
-                  {editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
-                </h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
-                  <IconX className="w-5 h-5" stroke={1.5} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
+      <FormPanel
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
+        onSubmit={handleSubmit}
+        submitLabel="Simpan Data"
+        isSubmitDisabled={submittingPerson}
+      >
                 
                 <div>
                   <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Lengkap *</label>
@@ -784,28 +775,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                   />
                 </div>
 
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="btn-tactile btn-secondary"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="btn-tactile btn-primary"
-                  >
-                    <IconCheck className="w-4 h-4" stroke={2} />
-                    <span>Simpan Data</span>
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-        )}
+              </FormPanel>
 
     </div>
   );

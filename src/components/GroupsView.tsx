@@ -25,6 +25,7 @@ interface GroupsViewProps {
 
 export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [submittingGroup, setSubmittingGroup] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   
   // Group Form
@@ -77,6 +78,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
       leader_id: leaderId || undefined
     });
     setIsGroupModalOpen(false);
+    setSubmittingGroup(false);
   };
 
   const handleHandoverSubmit = async (e: React.FormEvent) => {

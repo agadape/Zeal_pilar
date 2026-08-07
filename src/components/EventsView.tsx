@@ -13,6 +13,7 @@ import {
   IconX, 
   IconCheck 
 } from '@tabler/icons-react';
+import FormPanel from './FormPanel';
 
 interface EventsViewProps {
   events: MinistryEvent[];
@@ -24,6 +25,7 @@ interface EventsViewProps {
 export default function EventsView({ events, people, onSaveEvent, onDeleteEvent }: EventsViewProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<MinistryEvent | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Event Form State
   const [title, setTitle] = useState('');
@@ -76,6 +78,7 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
+    setSubmitting(true);
 
     const roster: EventRoster[] = [];
     if (speakerId) roster.push({ id: '', event_id: '', person_id: speakerId, role: 'SPEAKER' });
@@ -94,6 +97,7 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
     });
 
     setIsModalOpen(false);
+    setSubmitting(false);
   };
 
   const getTypeBadgeClass = (t: EventType) => {
@@ -210,20 +214,14 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
       </div>
 
       {/* EVENT MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
-          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingEvent ? 'Edit Event & Duty Roster' : 'Buat Event & Roster Baru'}
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
-                <IconX className="w-5 h-5" stroke={1.5} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
+      <FormPanel
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingEvent ? 'Edit Event & Duty Roster' : 'Buat Event & Roster Baru'}
+        onSubmit={handleSubmit}
+        submitLabel="Simpan Data"
+        isSubmitDisabled={submitting}
+      >
               <div>
                 <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Judul Kegiatan *</label>
                 <input
@@ -353,27 +351,7 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="btn-tactile btn-secondary"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="btn-tactile btn-primary"
-                >
-                  <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Event</span>
-                </button>
-              </div>
-
-            </form>
-          </div>
-          </div>
-        )}
+              </FormPanel>
 
     </div>
   );
