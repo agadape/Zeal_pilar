@@ -159,8 +159,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
 
       {/* CREATE / EDIT GROUP MODAL */}
       {isGroupModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="tugu-card w-full max-w-md rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto sm:py-8">
+          <div className="tugu-card w-full max-w-md rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] overflow-y-auto my-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <h3 className="text-lg font-bold text-slate-900">
                 {editingGroup ? 'Edit Small Group' : 'Buat Small Group Baru'}
@@ -236,8 +236,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
 
       {/* MANAGE MEMBERS MODAL */}
       {managingMembersGroup && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto sm:py-8">
+          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] flex flex-col my-auto">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
