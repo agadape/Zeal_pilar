@@ -42,6 +42,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   const [phone, setPhone] = useState('');
   const [campus, setCampus] = useState('');
   const [status, setStatus] = useState<PersonStatus>('DISCIPLE');
+  const [birthDate, setBirthDate] = useState('');
+  const [baptismDate, setBaptismDate] = useState('');
   const [studyStage, setStudyStage] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -69,6 +71,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     setPhone('');
     setCampus('');
     setStatus(activeCategoryTab === 'bible_study' ? 'BIBLE_STUDY' : activeCategoryTab === 'reachout' ? 'VISITOR' : 'DISCIPLE');
+    setBirthDate('');
+    setBaptismDate('');
     setStudyStage('');
     setNotes('');
     setIsModalOpen(true);
@@ -81,6 +85,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     setPhone(p.phone_number || '');
     setCampus(p.campus || '');
     setStatus(p.status);
+    setBirthDate(p.birth_date || '');
+    setBaptismDate(p.baptism_date || '');
     setStudyStage(p.study_stage || '');
     setNotes(p.notes || '');
     setIsModalOpen(true);
@@ -98,6 +104,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
         phone_number: phone.trim() || undefined,
         campus: campus.trim() || undefined,
         status,
+        birth_date: birthDate || undefined,
+        baptism_date: baptismDate || undefined,
         study_stage: status === 'BIBLE_STUDY' ? (studyStage.trim() || 'Pelajaran 1: Cinta Alkitab') : undefined,
         study_history: editingPerson?.study_history || [],
         notes: notes.trim() || undefined
@@ -641,6 +649,28 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                       />
                     </div>
                   )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">🎂 Tgl Lahir Jasmani</label>
+                    <input
+                      type="date"
+                      value={birthDate}
+                      onChange={e => setBirthDate(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">✝️ Tgl Baptis (Spiritual Bday)</label>
+                    <input
+                      type="date"
+                      value={baptismDate}
+                      onChange={e => setBaptismDate(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                    />
+                  </div>
                 </div>
 
                 <div>

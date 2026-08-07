@@ -10,7 +10,9 @@ import {
   IconTrash, 
   IconX, 
   IconCheck, 
-  IconShield 
+  IconShield,
+  IconArrowsExchange,
+  IconInfoCircle
 } from '@tabler/icons-react';
 
 interface GroupsViewProps {
@@ -18,9 +20,10 @@ interface GroupsViewProps {
   people: Person[];
   onSaveGroup: (group: Omit<Group, 'id'> & { id?: string }) => Promise<void>;
   onDeleteGroup: (id: string) => Promise<void>;
+  onHandoverLeadership?: (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => Promise<void>;
 }
 
-export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup }: GroupsViewProps) {
+export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   
@@ -33,6 +36,13 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
   const [managingMembersGroup, setManagingMembersGroup] = useState<Group | null>(null);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+
+  // Leader Handover Wizard Modal
+  const [handoverGroup, setHandoverGroup] = useState<Group | null>(null);
+  const [newLeaderId, setNewLeaderId] = useState<string>('');
+  const [handoverReason, setHandoverReason] = useState<string>('GRADUATED');
+  const [handoverNotes, setHandoverNotes] = useState<string>('');
+  const [submittingHandover, setSubmittingHandover] = useState(false);
 
   const openAddGroupModal = () => {
     setEditingGroup(null);
@@ -50,6 +60,13 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
     setIsGroupModalOpen(true);
   };
 
+  const openHandoverModal = (g: Group) => {
+    setHandoverGroup(g);
+    setNewLeaderId('');
+    setHandoverReason('GRADUATED');
+    setHandoverNotes('');
+  };
+
   const handleGroupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!groupName.trim()) return;
@@ -60,6 +77,32 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
       leader_id: leaderId || undefined
     });
     setIsGroupModalOpen(false);
+  };
+
+  const handleHandoverSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!handoverGroup || !newLeaderId) return;
+    setSubmittingHandover(true);
+    try {
+      if (onHandoverLeadership) {
+        await onHandoverLeadership({
+          group_id: handoverGroup.id,
+          new_leader_id: newLeaderId,
+          reason: handoverReason,
+          notes: handoverNotes.trim() || undefined
+        });
+      } else {
+        await onSaveGroup({
+          id: handoverGroup.id,
+          group_name: handoverGroup.group_name,
+          category: handoverGroup.category,
+          leader_id: newLeaderId
+        });
+      }
+      setHandoverGroup(null);
+    } finally {
+      setSubmittingHandover(false);
+    }
   };
 
   const openManageMembersModal = async (g: Group) => {
@@ -120,6 +163,14 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
 
                 <div className="flex items-center space-x-1">
                   <button
+                    onClick={() => openHandoverModal(g)}
+                    title="Handover / Transfer Kepemimpinan Leader"
+                    className="btn-tactile p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors border border-amber-200/80 flex items-center space-x-1 font-mono text-xs font-bold"
+                  >
+                    <IconArrowsExchange className="w-4 h-4 text-[#b5852e]" stroke={2} />
+                    <span>Handover</span>
+                  </button>
+                  <button
                     onClick={() => openEditGroupModal(g)}
                     className="btn-tactile p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors border border-slate-200"
                   >
@@ -156,6 +207,106 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
           </div>
         ))}
       </div>
+
+      {/* LEADER HANDOVER WIZARD MODAL */}
+      {handoverGroup && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
+              
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                    <IconArrowsExchange className="w-5 h-5 text-[#b5852e]" stroke={2} />
+                    <span>Handover Leadership: {handoverGroup.group_name}</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">Proses pergantian Leader dengan pencatatan histori resmi.</p>
+                </div>
+                <button onClick={() => setHandoverGroup(null)} className="text-slate-400 hover:text-slate-700 p-1">
+                  <IconX className="w-5 h-5" stroke={1.5} />
+                </button>
+              </div>
+
+              <form onSubmit={handleHandoverSubmit} className="space-y-4">
+                
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 space-y-1 font-medium">
+                  <div className="flex items-center space-x-1.5 font-bold text-slate-900">
+                    <IconInfoCircle className="w-4 h-4 text-[#b5852e] shrink-0" stroke={1.5} />
+                    <span>Leader Saat Ini: {handoverGroup.leader_name || 'Belum Ada'}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Seluruh riwayat statistik, log Belajar Alkitab, dan anggota kelompok ini akan tetap 100% utuh — hanya kepemimpinan yang dialihkan ke Leader baru.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Pilih Leader Baru *</label>
+                  <select
+                    required
+                    value={newLeaderId}
+                    onChange={e => setNewLeaderId(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-[#b5852e]"
+                  >
+                    <option value="">-- Pilih Leader Baru dari Jemaat --</option>
+                    {people
+                      .filter(p => p.gender === handoverGroup.category && p.id !== handoverGroup.leader_id)
+                      .map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.full_name} ({p.status} • {p.campus || 'Umum'})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Alasan Handover / Pergantian *</label>
+                  <select
+                    value={handoverReason}
+                    onChange={e => setHandoverReason(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none font-medium"
+                  >
+                    <option value="GRADUATED">Lulus Kuliah / Wisuda (Graduated)</option>
+                    <option value="RELOCATED">Pindah Kota / Pekerjaan (Relocated)</option>
+                    <option value="ROTATION">Rotasi Terjadwal Ministry (Rotation)</option>
+                    <option value="OTHER">Lainnya (Other)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Serah Terima (Handover Notes)</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Pesan penggembalaan atau instruksi khusus untuk leader baru..."
+                    value={handoverNotes}
+                    onChange={e => setHandoverNotes(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setHandoverGroup(null)}
+                    className="btn-tactile btn-secondary"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingHandover || !newLeaderId}
+                    className="btn-tactile btn-primary"
+                  >
+                    <IconCheck className="w-4 h-4" stroke={2} />
+                    <span>Konfirmasi Handover Leader</span>
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CREATE / EDIT GROUP MODAL */}
       {isGroupModalOpen && (
@@ -307,6 +458,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup 
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
   fetchGroups, 
   saveGroup, 
   deleteGroup,
+  handoverGroupLeadership,
   fetchWeeklyStats, 
   saveWeeklyStat,
   deleteWeeklyStat,
@@ -98,6 +99,11 @@ export default function Home() {
     }
   };
 
+  const handleHandoverLeadership = async (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => {
+    await handoverGroupLeadership(params);
+    await loadAllData();
+  };
+
   const handleSaveStat = async (stat: Omit<WeeklyStat, 'id'> & { id?: string }) => {
     await saveWeeklyStat(stat);
     await loadAllData();
@@ -172,6 +178,7 @@ export default function Home() {
                   people={people} 
                   onSaveGroup={handleSaveGroup} 
                   onDeleteGroup={handleDeleteGroup} 
+                  onHandoverLeadership={handleHandoverLeadership}
                 />
               )}
 

@@ -34,6 +34,8 @@ export interface Person {
   phone_number?: string;
   campus?: string; // ATMA, UGM, UNY, STIPRAM, OTHER
   status: PersonStatus;
+  birth_date?: string;
+  baptism_date?: string;
   study_stage?: string; // Murid, Tujuan Hidup, Kasih, Baptis, etc.
   study_history?: WeeklyStudyProgressLog[];
   notes?: string;
@@ -52,6 +54,30 @@ export interface Group {
   archived_at?: string | null;
   updated_at?: string;
   created_at?: string;
+}
+
+export interface GroupLeadershipHistory {
+  id: string;
+  group_id: string;
+  leader_id: string;
+  leader_name?: string;
+  started_at: string;
+  ended_at?: string | null;
+  handover_reason?: 'GRADUATED' | 'RELOCATED' | 'ROTATION' | 'OTHER' | string;
+  handover_notes?: string;
+  transferred_by?: string;
+  created_at?: string;
+}
+
+export interface UpcomingMilestone {
+  person_id: string;
+  full_name: string;
+  gender: Gender;
+  milestone_type: 'BIRTHDAY' | 'SPIRITUAL_BIRTHDAY';
+  original_date: string;
+  years_count?: number | null;
+  next_occurrence: string;
+  days_until: number;
 }
 
 export interface GroupMember {

@@ -1,6 +1,6 @@
-'use client';
-
-import { Person, Group, WeeklyStat } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import { Person, Group, WeeklyStat, UpcomingMilestone } from '@/lib/types';
+import { fetchUpcomingMilestones } from '@/lib/supabase';
 import { 
   IconUsers, 
   IconUsersGroup, 
@@ -9,7 +9,9 @@ import {
   IconPlus, 
   IconArrowRight, 
   IconAlertTriangle,
-  IconHomeHeart
+  IconHomeHeart,
+  IconCake,
+  IconCross
 } from '@tabler/icons-react';
 
 interface DashboardViewProps {
@@ -20,6 +22,12 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ people, groups, stats, onNavigate }: DashboardViewProps) {
+  const [milestones, setMilestones] = useState<UpcomingMilestone[]>([]);
+
+  useEffect(() => {
+    fetchUpcomingMilestones().then(data => setMilestones(data));
+  }, [people]);
+
   const totalPeople = people.length;
   const totalLeaders = people.filter(p => p.status === 'LEADER').length;
   const totalBibleStudies = people.filter(p => p.status === 'BIBLE_STUDY').length;
@@ -201,41 +209,89 @@ export default function DashboardView({ people, groups, stats, onNavigate }: Das
           )}
         </div>
 
-        {/* FOLLOW UP / DISCIPLE CARE */}
-        <div className="tugu-card rounded-3xl p-6 space-y-4 flex flex-col justify-between bg-white">
-          <div className="space-y-4">
+        {/* FOLLOW UP & MILESTONES SIDEBAR */}
+        <div className="space-y-6">
+          
+          {/* UPCOMING MILESTONES (BIRTHDAY & SPIRITUAL BIRTHDAY) */}
+          <div className="tugu-card rounded-3xl p-6 space-y-4 bg-white border border-amber-200/80">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-                <IconAlertTriangle className="w-4 h-4 text-amber-600" stroke={1.5} />
-                <span>Follow-up & Care</span>
+                <IconCake className="w-4.5 h-4.5 text-[#b5852e]" stroke={1.5} />
+                <span>Milestone Minggu Ini</span>
               </h2>
+              <span className="text-[11px] font-mono text-slate-500 font-semibold">{milestones.length} Acara</span>
             </div>
-            
+
             <div className="space-y-2.5">
-              {weakPeople.length === 0 ? (
-                <p className="text-xs text-slate-400 py-6 text-center">Semua murid dalam kondisi baik!</p>
+              {milestones.length === 0 ? (
+                <p className="text-xs text-slate-400 py-4 text-center">Belum ada ulang tahun jasmani / rohani dalam 30 hari ke depan.</p>
               ) : (
-                weakPeople.map(p => (
-                  <div key={p.id} className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">{p.full_name}</span>
-                      <span className="px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 font-mono text-[10px] uppercase font-bold">
-                        {p.status}
+                milestones.map((m, idx) => (
+                  <div key={idx} className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/70 text-xs space-y-1">
+                    <div className="flex items-center justify-between font-bold text-slate-900">
+                      <span className="flex items-center space-x-1.5">
+                        {m.milestone_type === 'BIRTHDAY' ? (
+                          <IconCake className="w-3.5 h-3.5 text-pink-600 shrink-0" stroke={1.5} />
+                        ) : (
+                          <IconCross className="w-3.5 h-3.5 text-amber-700 shrink-0" stroke={1.5} />
+                        )}
+                        <span>{m.full_name}</span>
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white border border-amber-300 text-amber-900 font-bold">
+                        {m.days_until === 0 ? 'HARI INI!' : `${m.days_until} Hari Lagi`}
                       </span>
                     </div>
-                    <p className="text-slate-600">{p.notes || 'Perlu di-contact personal.'}</p>
+
+                    <p className="text-[11px] text-slate-600 font-medium">
+                      {m.milestone_type === 'BIRTHDAY' ? (
+                        <>🎂 Ulang tahun jasmani {m.years_count ? `ke-${m.years_count}` : ''}</>
+                      ) : (
+                        <>✝️ Spiritual Birthday {m.years_count ? `ke-${m.years_count} (${m.years_count} Thn Baptis)` : 'Baptis'}</>
+                      )}
+                    </p>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          <button
-            onClick={() => onNavigate('people')}
-            className="btn-tactile w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold text-center transition-colors block border border-slate-200"
-          >
-            Buka Direktori Orang
-          </button>
+          {/* FOLLOW UP / DISCIPLE CARE */}
+          <div className="tugu-card rounded-3xl p-6 space-y-4 flex flex-col justify-between bg-white">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2">
+                  <IconAlertTriangle className="w-4 h-4 text-amber-600" stroke={1.5} />
+                  <span>Follow-up & Care</span>
+                </h2>
+              </div>
+              
+              <div className="space-y-2.5">
+                {weakPeople.length === 0 ? (
+                  <p className="text-xs text-slate-400 py-6 text-center">Semua murid dalam kondisi baik!</p>
+                ) : (
+                  weakPeople.map(p => (
+                    <div key={p.id} className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-900">{p.full_name}</span>
+                        <span className="px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 font-mono text-[10px] uppercase font-bold">
+                          {p.status}
+                        </span>
+                      </div>
+                      <p className="text-slate-600">{p.notes || 'Perlu di-contact personal.'}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => onNavigate('people')}
+              className="btn-tactile w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold text-center transition-colors block border border-slate-200"
+            >
+              Buka Direktori Orang
+            </button>
+          </div>
+
         </div>
 
       </div>

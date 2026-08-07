@@ -1,5 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
-import { Person, Group, GroupMember, WeeklyStat, MinistryEvent, Announcement, WeeklyStudyProgressLog } from './types';
+import { 
+  Person, 
+  Group, 
+  GroupMember, 
+  WeeklyStat, 
+  MinistryEvent, 
+  Announcement, 
+  WeeklyStudyProgressLog, 
+  UpcomingMilestone
+} from './types';
 import { 
   INITIAL_PEOPLE, 
   INITIAL_GROUPS, 
@@ -118,8 +127,11 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
     phone_number: person.phone_number || null,
     campus: person.campus || null,
     status: person.status,
+    birth_date: person.birth_date || null,
+    baptism_date: person.baptism_date || null,
     study_stage: person.study_stage || null,
     notes: person.notes || null,
+    updated_at: new Date().toISOString()
   };
 
   if (isSupabaseConfigured && supabase) {
@@ -143,6 +155,129 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
     setLocalData(STORAGE_KEYS.PEOPLE, updated);
     return newPerson;
   }
+}
+
+// ---------------- UPCOMING MILESTONES API ----------------
+
+export async function fetchUpcomingMilestones(): Promise<UpcomingMilestone[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase.from('upcoming_milestones').select('*');
+    if (!error && data) {
+      return (data as UpcomingMilestone[])
+        .map(m => {
+          const nextDate = new Date(m.next_occurrence);
+          const today = new Date();
+          today.setHours(0,0,0,0);
+
+          if (nextDate < today) {
+            nextDate.setFullYear(today.getFullYear() + 1);
+          }
+
+          const days = Math.ceil((nextDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+          return {
+            ...m,
+            next_occurrence: nextDate.toISOString().split('T')[0],
+            days_until: days
+          };
+        })
+        .filter(m => m.days_until >= 0 && m.days_until <= 30)
+        .sort((a, b) => a.days_until - b.days_until);
+    }
+  }
+
+  // JS Fallback for Local Storage people
+  const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
+  const results: UpcomingMilestone[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  people.forEach(p => {
+    if (p.birth_date) {
+      const bdate = new Date(p.birth_date);
+      const nextBday = new Date(today.getFullYear(), bdate.getMonth(), bdate.getDate());
+      if (nextBday < today) nextBday.setFullYear(today.getFullYear() + 1);
+      const days = Math.ceil((nextBday.getTime() - today.getTime()) / (1000 * 3600 * 24));
+
+      if (days >= 0 && days <= 30) {
+        results.push({
+          person_id: p.id,
+          full_name: p.full_name,
+          gender: p.gender,
+          milestone_type: 'BIRTHDAY',
+          original_date: p.birth_date,
+          years_count: today.getFullYear() - bdate.getFullYear(),
+          next_occurrence: nextBday.toISOString().split('T')[0],
+          days_until: days
+        });
+      }
+    }
+
+    if (p.baptism_date) {
+      const bapDate = new Date(p.baptism_date);
+      const nextBap = new Date(today.getFullYear(), bapDate.getMonth(), bapDate.getDate());
+      if (nextBap < today) nextBap.setFullYear(today.getFullYear() + 1);
+      const days = Math.ceil((nextBap.getTime() - today.getTime()) / (1000 * 3600 * 24));
+
+      if (days >= 0 && days <= 30) {
+        const yearsCount = Math.max(1, today.getFullYear() - bapDate.getFullYear());
+        results.push({
+          person_id: p.id,
+          full_name: p.full_name,
+          gender: p.gender,
+          milestone_type: 'SPIRITUAL_BIRTHDAY',
+          original_date: p.baptism_date,
+          years_count: yearsCount,
+          next_occurrence: nextBap.toISOString().split('T')[0],
+          days_until: days
+        });
+      }
+    }
+  });
+
+  return results.sort((a, b) => a.days_until - b.days_until);
+}
+
+// ---------------- LEADERSHIP HANDOVER API ----------------
+
+export async function handoverGroupLeadership(params: {
+  group_id: string;
+  new_leader_id: string;
+  reason: string;
+  notes?: string;
+}): Promise<boolean> {
+  const { group_id, new_leader_id, reason, notes } = params;
+
+  if (isSupabaseConfigured && supabase) {
+    // 1. Update groups.leader_id (Trigger log_leadership_change will auto-run at DB level!)
+    const { error: groupErr } = await supabase
+      .from('groups')
+      .update({ leader_id: new_leader_id, updated_at: new Date().toISOString() })
+      .eq('id', group_id);
+
+    if (groupErr) {
+      console.error('Handover group update error:', groupErr);
+      return false;
+    }
+
+    // 2. Enrich leadership_history row with reason and notes
+    await supabase
+      .from('group_leadership_history')
+      .update({
+        handover_reason: reason,
+        handover_notes: notes || null
+      })
+      .eq('group_id', group_id)
+      .eq('leader_id', new_leader_id)
+      .is('ended_at', null);
+
+    return true;
+  }
+
+  // Local fallback
+  const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
+  const updated = groups.map(g => g.id === group_id ? { ...g, leader_id: new_leader_id } : g);
+  setLocalData(STORAGE_KEYS.GROUPS, updated);
+  return true;
 }
 
 export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> & { person_id: string }): Promise<WeeklyStudyProgressLog> {
