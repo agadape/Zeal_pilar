@@ -481,7 +481,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
       {trackingBAPerson && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
-          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 flex flex-col animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
+          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
@@ -599,7 +599,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
-          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 flex flex-col animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
+          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <h3 className="text-lg font-bold text-slate-900">
                   {editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
