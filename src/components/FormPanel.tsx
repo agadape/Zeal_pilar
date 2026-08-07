@@ -11,6 +11,16 @@ export default function FormPanel({
   submitLabel = "Simpan",
   cancelLabel = "Batal",
   isSubmitDisabled = false
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  title: string; 
+  subtitle?: string; 
+  children: React.ReactNode; 
+  onSubmit?: (e: React.FormEvent) => void; 
+  submitLabel?: string; 
+  cancelLabel?: string; 
+  isSubmitDisabled?: boolean 
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 

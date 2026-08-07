@@ -580,7 +580,7 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submittingBA}
                   className="btn-tactile btn-primary"
                 >
                   <IconCheck className="w-4 h-4" stroke={2} />
