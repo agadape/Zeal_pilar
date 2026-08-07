@@ -1,0 +1,189 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Navbar from '@/components/Navbar';
+import DashboardView from '@/components/DashboardView';
+import PeopleView from '@/components/PeopleView';
+import GroupsView from '@/components/GroupsView';
+import StatistikaView from '@/components/StatistikaView';
+import EventsView from '@/components/EventsView';
+import AnnouncementsView from '@/components/AnnouncementsView';
+
+import { Person, Group, WeeklyStat, MinistryEvent, Announcement } from '@/lib/types';
+import { 
+  fetchPeople, 
+  savePerson, 
+  deletePerson,
+  fetchGroups, 
+  saveGroup, 
+  deleteGroup,
+  fetchWeeklyStats, 
+  saveWeeklyStat,
+  fetchEvents, 
+  saveEvent,
+  fetchAnnouncements, 
+  saveAnnouncement 
+} from '@/lib/supabase';
+
+export default function Home() {
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Core App State
+  const [people, setPeople] = useState<Person[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [stats, setStats] = useState<WeeklyStat[]>([]);
+  const [events, setEvents] = useState<MinistryEvent[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+
+  // Load all initial data
+  const loadAllData = async () => {
+    setLoading(true);
+    try {
+      const [peopleData, groupsData, statsData, eventsData, annData] = await Promise.all([
+        fetchPeople(),
+        fetchGroups(),
+        fetchWeeklyStats(),
+        fetchEvents(),
+        fetchAnnouncements()
+      ]);
+
+      setPeople(peopleData);
+      setGroups(groupsData);
+      setStats(statsData);
+      setEvents(eventsData);
+      setAnnouncements(annData);
+    } catch (err) {
+      console.error('Data loading error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAllData();
+  }, []);
+
+  // Handlers
+  const handleSavePerson = async (person: Omit<Person, 'id'> & { id?: string }) => {
+    await savePerson(person);
+    await loadAllData();
+  };
+
+  const handleDeletePerson = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus data orang ini?')) {
+      await deletePerson(id);
+      await loadAllData();
+    }
+  };
+
+  const handleSaveGroup = async (group: Omit<Group, 'id'> & { id?: string }) => {
+    await saveGroup(group);
+    await loadAllData();
+  };
+
+  const handleDeleteGroup = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus Small Group ini?')) {
+      await deleteGroup(id);
+      await loadAllData();
+    }
+  };
+
+  const handleSaveStat = async (stat: Omit<WeeklyStat, 'id'> & { id?: string }) => {
+    await saveWeeklyStat(stat);
+    await loadAllData();
+  };
+
+  const handleSaveEvent = async (event: Omit<MinistryEvent, 'id'> & { id?: string }) => {
+    await saveEvent(event);
+    await loadAllData();
+  };
+
+  const handleSaveAnnouncement = async (ann: Omit<Announcement, 'id'> & { id?: string }) => {
+    await saveAnnouncement(ann);
+    await loadAllData();
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col justify-between selection:bg-white selection:text-black">
+      
+      <div>
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {loading ? (
+            <div className="py-24 text-center space-y-3">
+              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-slate-400 font-medium">Memuat portal Tugu Leaders...</p>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <DashboardView 
+                  people={people} 
+                  groups={groups} 
+                  stats={stats} 
+                  onNavigate={setActiveTab} 
+                />
+              )}
+
+              {activeTab === 'people' && (
+                <PeopleView 
+                  people={people} 
+                  onSavePerson={handleSavePerson} 
+                  onDeletePerson={handleDeletePerson} 
+                />
+              )}
+
+              {activeTab === 'groups' && (
+                <GroupsView 
+                  groups={groups} 
+                  people={people} 
+                  onSaveGroup={handleSaveGroup} 
+                  onDeleteGroup={handleDeleteGroup} 
+                />
+              )}
+
+              {activeTab === 'statistika' && (
+                <StatistikaView 
+                  groups={groups} 
+                  people={people} 
+                  stats={stats} 
+                  onSaveStat={handleSaveStat} 
+                />
+              )}
+
+              {activeTab === 'events' && (
+                <EventsView 
+                  events={events} 
+                  people={people} 
+                  onSaveEvent={handleSaveEvent} 
+                />
+              )}
+
+              {activeTab === 'announcements' && (
+                <AnnouncementsView 
+                  announcements={announcements} 
+                  onSaveAnnouncement={handleSaveAnnouncement} 
+                />
+              )}
+            </>
+          )}
+        </main>
+      </div>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/10 py-6 bg-black/60 text-xs text-slate-500 text-center">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>© 2026 ZEAL Youth & Campus Ministry (GKDI Jogja) • Tugu Leaders Portal</p>
+          <div className="flex items-center space-x-4 text-slate-400">
+            <span>Vercel Deploy Ready</span>
+            <span>•</span>
+            <span>Supabase Database Schema</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
