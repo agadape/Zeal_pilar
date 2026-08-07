@@ -46,14 +46,17 @@ export default function DashboardView({ people, groups, stats, onNavigate }: Das
           <div className="space-y-3">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300/60 text-xs font-semibold text-amber-900">
               <IconHomeHeart className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
-              <span>GKDI Jogja • Transisi Pilar ➔ Tugu</span>
+              <span>GKDI Jogja • ZEAL Youth & Campus Ministry</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Inilah Rumah Tuhan &<br />
-              <span className="text-[#b5852e]">Kamu Semua Diundang</span>
+              Rumah Tuhan <br />
+              <span className="text-[#b5852e]">Rumah Kita</span>
             </h1>
             <p className="text-slate-600 text-sm max-w-xl leading-relaxed font-normal">
               Pusat kelola data jemaat, mapping kelompok kecil (PDG), pelaporan Statistika Minggu 1-klik, dan koordinasi pelayanan ZEAL Tugu Jogja.
+            </p>
+            <p className="text-xs font-bold text-[#b5852e] tracking-widest uppercase">
+              ♥ Love God &nbsp;•&nbsp; ♥ Love People &nbsp;•&nbsp; ♥ Love Life
             </p>
           </div>
 

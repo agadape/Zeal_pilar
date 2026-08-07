@@ -123,4 +123,6 @@ Jalankan secara berurutan di **Supabase SQL Editor**:
 ## 🙏 Built for
 
 **ZEAL Youth & Campus Ministry — GKDI Jogja**  
-*"Inilah Rumah Tuhan & Kamu Semua Diundang"*
+*"Love God • Love People • Love Life"*
+
+> 🏛️ **GKDI (Gereja Kristus Ditaati Indonesia)** — *"Rumah Tuhan Rumah Kita"*
