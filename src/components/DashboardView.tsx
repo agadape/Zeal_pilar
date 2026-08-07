@@ -56,7 +56,7 @@ export default function DashboardView({ people, groups, stats, onNavigate }: Das
               Pusat kelola data jemaat, mapping kelompok kecil (PDG), pelaporan Statistika Minggu 1-klik, dan koordinasi pelayanan ZEAL Tugu Jogja.
             </p>
             <p className="text-xs font-bold text-[#b5852e] tracking-widest uppercase">
-              ♥ Love God &nbsp;•&nbsp; ♥ Love People &nbsp;•&nbsp; ♥ Love Life
+              Love God &nbsp;•&nbsp; Love People &nbsp;•&nbsp; Love Life
             </p>
           </div>
 
