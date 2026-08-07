@@ -262,16 +262,45 @@ export async function fetchWeeklyStats(): Promise<WeeklyStat[]> {
 }
 
 export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: string }): Promise<WeeklyStat> {
+  const payload = {
+    group_id: stat.group_id,
+    week_date: stat.week_date,
+    active_disciples_count: stat.active_disciples_count,
+    missing_ibadah_count: stat.missing_ibadah_count,
+    missing_reasons: stat.missing_reasons || [],
+    study_progress: stat.study_progress || [],
+    reachout_count: stat.reachout_count,
+    sunday_visitors_count: stat.sunday_visitors_count,
+    event_visitors_count: stat.event_visitors_count,
+    baptisms_count: stat.baptisms_count,
+    notes: stat.notes || null,
+  };
+
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.from('weekly_stats').insert([stat]).select().single();
-    if (!error && data) return data as WeeklyStat;
+    if (stat.id) {
+      const { data, error } = await supabase.from('weekly_stats').update(payload).eq('id', stat.id).select().single();
+      if (error) console.error('Supabase update weekly_stat error:', error);
+      if (!error && data) return data as WeeklyStat;
+    } else {
+      const { data, error } = await supabase.from('weekly_stats').insert([payload]).select().single();
+      if (error) console.error('Supabase insert weekly_stat error:', error);
+      if (!error && data) return data as WeeklyStat;
+    }
   }
 
   const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
-  const newStat: WeeklyStat = { ...stat, id: 'ws_' + Date.now() } as WeeklyStat;
-  const updated = [newStat, ...stats];
+  const newStat: WeeklyStat = { ...payload, id: stat.id || 'ws_' + Date.now() } as WeeklyStat;
+  const updated = [newStat, ...stats.filter(s => s.id !== newStat.id)];
   setLocalData(STORAGE_KEYS.STATS, updated);
   return newStat;
+}
+
+export async function deleteWeeklyStat(id: string): Promise<void> {
+  if (isSupabaseConfigured && supabase) {
+    await supabase.from('weekly_stats').delete().eq('id', id);
+  }
+  const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
+  setLocalData(STORAGE_KEYS.STATS, stats.filter(s => s.id !== id));
 }
 
 // ---------------- EVENTS API ----------------

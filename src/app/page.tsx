@@ -19,6 +19,7 @@ import {
   deleteGroup,
   fetchWeeklyStats, 
   saveWeeklyStat,
+  deleteWeeklyStat,
   fetchEvents, 
   saveEvent,
   deleteEvent,
@@ -96,6 +97,13 @@ export default function Home() {
     await loadAllData();
   };
 
+  const handleDeleteStat = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus laporan statistik ini?')) {
+      await deleteWeeklyStat(id);
+      await loadAllData();
+    }
+  };
+
   const handleSaveEvent = async (event: Omit<MinistryEvent, 'id'> & { id?: string }) => {
     await saveEvent(event);
     await loadAllData();
@@ -166,6 +174,7 @@ export default function Home() {
                   people={people} 
                   stats={stats} 
                   onSaveStat={handleSaveStat} 
+                  onDeleteStat={handleDeleteStat}
                 />
               )}
 
