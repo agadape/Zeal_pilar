@@ -137,79 +137,81 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto sm:py-8">
-          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-bold text-slate-900">Buat Pengumuman Baru</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
-                <IconX className="w-5 h-5" stroke={1.5} />
-              </button>
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="text-lg font-bold text-slate-900">Buat Pengumuman Baru</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+                  <IconX className="w-5 h-5" stroke={1.5} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Judul Pengumuman *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Judul visi atau pengumuman..."
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Penulis</label>
+                  <input
+                    type="text"
+                    placeholder="Bang Daniel / Om Hendra"
+                    value={authorName}
+                    onChange={e => setAuthorName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Isi Pengumuman *</label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="Pesan visi atau arahan kegiatan..."
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="pinCheck"
+                    checked={isPinned}
+                    onChange={e => setIsPinned(e.target.value ? true : false)}
+                    className="rounded bg-white border-slate-300 text-amber-600 focus:ring-0"
+                  />
+                  <label htmlFor="pinCheck" className="text-xs text-slate-700 font-mono font-medium">Pin pengumuman di paling atas</label>
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="btn-tactile btn-secondary"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-tactile btn-primary"
+                  >
+                    <IconCheck className="w-4 h-4" stroke={2} />
+                    <span>Posting Pengumuman</span>
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Judul Pengumuman *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Judul visi atau pengumuman..."
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Penulis</label>
-                <input
-                  type="text"
-                  placeholder="Bang Daniel / Om Hendra"
-                  value={authorName}
-                  onChange={e => setAuthorName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Isi Pengumuman *</label>
-                <textarea
-                  rows={4}
-                  required
-                  placeholder="Pesan visi atau arahan kegiatan..."
-                  value={content}
-                  onChange={e => setContent(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 resize-none"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="pinCheck"
-                  checked={isPinned}
-                  onChange={e => setIsPinned(e.target.checked)}
-                  className="rounded bg-white border-slate-300 text-amber-600 focus:ring-0"
-                />
-                <label htmlFor="pinCheck" className="text-xs text-slate-700 font-mono font-medium">Pin pengumuman di paling atas</label>
-              </div>
-
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="btn-tactile btn-secondary"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="btn-tactile btn-primary"
-                >
-                  <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Posting Pengumuman</span>
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

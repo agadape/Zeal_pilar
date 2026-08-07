@@ -442,8 +442,9 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
 
       {/* WEEKLY BA TRACKER MODAL */}
       {trackingBAPerson && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto sm:py-8">
-          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
             
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
@@ -555,132 +556,135 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
 
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* CREATE / EDIT PERSON MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto sm:py-8">
-          <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
-                <IconX className="w-5 h-5" stroke={1.5} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Lengkap *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Axel / Sherly"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                />
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl relative">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="text-lg font-bold text-slate-900">
+                  {editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
+                </h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+                  <IconX className="w-5 h-5" stroke={1.5} />
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Gender *</label>
-                  <select
-                    value={gender}
-                    onChange={e => setGender(e.target.value as Gender)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                  >
-                    <option value="BROTHER">BROTHER</option>
-                    <option value="SISTER">SISTER</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kampus / Univ</label>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Lengkap *</label>
                   <input
                     type="text"
-                    placeholder="UGM / UNY / Atma Jaya / STIPRAM"
-                    value={campus}
-                    onChange={e => setCampus(e.target.value)}
+                    required
+                    placeholder="Contoh: Axel / Sherly"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Status Pelayanan *</label>
-                  <select
-                    value={status}
-                    onChange={e => setStatus(e.target.value as PersonStatus)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                  >
-                    <option value="DISCIPLE">DISCIPLE (Murid)</option>
-                    <option value="LEADER">LEADER (Pemimpin)</option>
-                    <option value="BIBLE_STUDY">BIBLE STUDY (Belajar Alkitab)</option>
-                    <option value="VISITOR">VISITOR (Tamu)</option>
-                    <option value="WEAK">WEAK (Butuh Care)</option>
-                    <option value="INACTIVE">INACTIVE</option>
-                  </select>
-                </div>
-
-                {status === 'BIBLE_STUDY' && (
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Stage BA Awal</label>
+                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Gender *</label>
+                    <select
+                      value={gender}
+                      onChange={e => setGender(e.target.value as Gender)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+                    >
+                      <option value="BROTHER">BROTHER</option>
+                      <option value="SISTER">SISTER</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kampus / Univ</label>
                     <input
                       type="text"
-                      placeholder="Pelajaran 1: Cinta Alkitab"
-                      value={studyStage}
-                      onChange={e => setStudyStage(e.target.value)}
+                      placeholder="UGM / UNY / Atma Jaya / STIPRAM"
+                      value={campus}
+                      onChange={e => setCampus(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
                     />
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nomor Phone / WA</label>
-                <input
-                  type="text"
-                  placeholder="0812xxxxxxxx"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Status Pelayanan *</label>
+                    <select
+                      value={status}
+                      onChange={e => setStatus(e.target.value as PersonStatus)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+                    >
+                      <option value="DISCIPLE">DISCIPLE (Murid)</option>
+                      <option value="LEADER">LEADER (Pemimpin)</option>
+                      <option value="BIBLE_STUDY">BIBLE STUDY (Belajar Alkitab)</option>
+                      <option value="VISITOR">VISITOR (Tamu)</option>
+                      <option value="WEAK">WEAK (Butuh Care)</option>
+                      <option value="INACTIVE">INACTIVE</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Follow-up</label>
-                <textarea
-                  rows={2}
-                  placeholder="Info OJT, jadwal wisuda, atau request doa..."
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e] resize-none"
-                />
-              </div>
+                  {status === 'BIBLE_STUDY' && (
+                    <div>
+                      <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Stage BA Awal</label>
+                      <input
+                        type="text"
+                        placeholder="Pelajaran 1: Cinta Alkitab"
+                        value={studyStage}
+                        onChange={e => setStudyStage(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                      />
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="btn-tactile btn-secondary"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-tactile btn-primary"
-                >
-                  <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Data</span>
-                </button>
-              </div>
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nomor Phone / WA</label>
+                  <input
+                    type="text"
+                    placeholder="0812xxxxxxxx"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                  />
+                </div>
 
-            </form>
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Follow-up</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Info OJT, jadwal wisuda, atau request doa..."
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e] resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="btn-tactile btn-secondary"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn-tactile btn-primary"
+                  >
+                    <IconCheck className="w-4 h-4" stroke={2} />
+                    <span>Simpan Data</span>
+                  </button>
+                </div>
+
+              </form>
+            </div>
           </div>
         </div>
       )}
