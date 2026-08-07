@@ -21,9 +21,10 @@ interface PeopleViewProps {
   people: Person[];
   onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
   onDeletePerson: (id: string) => Promise<void>;
+  onSaveBALog?: (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
 }
 
-export default function PeopleView({ people, onSavePerson, onDeletePerson }: PeopleViewProps) {
+export default function PeopleView({ people, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
   const [activeCategoryTab, setActiveCategoryTab] = useState<'disciples' | 'bible_study' | 'reachout'>('disciples');
   const [search, setSearch] = useState('');
   const [filterGender, setFilterGender] = useState<string>('ALL');
@@ -133,17 +134,27 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson }: Peo
 
     setSubmitting(true);
     try {
-      await onSavePerson({
-        id: trackingBAPerson.id,
-        full_name: trackingBAPerson.full_name,
-        gender: trackingBAPerson.gender,
-        phone_number: trackingBAPerson.phone_number,
-        campus: trackingBAPerson.campus,
-        status: 'BIBLE_STUDY',
-        study_stage: updatedStage,
-        study_history: updatedHistory,
-        notes: trackingBAPerson.notes
-      });
+      if (onSaveBALog) {
+        await onSaveBALog({
+          person_id: trackingBAPerson.id,
+          week_number: newLogWeekNum,
+          study_date: newLogDate,
+          lesson_topic: newLogTopic.trim(),
+          notes: newLogNotes.trim() || undefined
+        });
+      } else {
+        await onSavePerson({
+          id: trackingBAPerson.id,
+          full_name: trackingBAPerson.full_name,
+          gender: trackingBAPerson.gender,
+          phone_number: trackingBAPerson.phone_number,
+          campus: trackingBAPerson.campus,
+          status: 'BIBLE_STUDY',
+          study_stage: updatedStage,
+          study_history: updatedHistory,
+          notes: trackingBAPerson.notes
+        });
+      }
       setTrackingBAPerson(null);
     } finally {
       setSubmitting(false);

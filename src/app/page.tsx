@@ -14,6 +14,7 @@ import {
   fetchPeople, 
   savePerson, 
   deletePerson,
+  saveBibleStudyLog,
   fetchGroups, 
   saveGroup, 
   deleteGroup,
@@ -78,6 +79,11 @@ export default function Home() {
       await deletePerson(id);
       await loadAllData();
     }
+  };
+
+  const handleSaveBALog = async (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => {
+    await saveBibleStudyLog(log);
+    await loadAllData();
   };
 
   const handleSaveGroup = async (group: Omit<Group, 'id'> & { id?: string }) => {
@@ -156,6 +162,7 @@ export default function Home() {
                   people={people} 
                   onSavePerson={handleSavePerson} 
                   onDeletePerson={handleDeletePerson} 
+                  onSaveBALog={handleSaveBALog}
                 />
               )}
 

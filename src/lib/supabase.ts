@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Person, Group, GroupMember, WeeklyStat, MinistryEvent, Announcement } from './types';
+import { Person, Group, GroupMember, WeeklyStat, MinistryEvent, Announcement, WeeklyStudyProgressLog } from './types';
 import { 
   INITIAL_PEOPLE, 
   INITIAL_GROUPS, 
@@ -29,6 +29,7 @@ const STORAGE_KEYS = {
   STATS: 'tugu_stats_v2',
   EVENTS: 'tugu_events_v2',
   ANNOUNCEMENTS: 'tugu_announcements_v2',
+  BIBLE_STUDY_LOGS: 'tugu_bs_logs_v2',
 };
 
 // Automatic one-time purge of legacy seed data cached in browser LocalStorage
@@ -72,46 +73,54 @@ function setLocalData<T>(key: string, value: T): void {
   }
 }
 
-// ---------------- PEOPLE API ----------------
+// ---------------- PEOPLE & BIBLE STUDY LOGS API ----------------
 
 export async function fetchPeople(): Promise<Person[]> {
-  const parsePersonData = (rawPeople: Person[]): Person[] => {
-    return rawPeople.map(p => {
-      if (p.study_stage && p.study_stage.trim().startsWith('{')) {
-        try {
-          const parsed = JSON.parse(p.study_stage);
-          return {
-            ...p,
-            study_stage: parsed.current || p.study_stage,
-            study_history: parsed.history || []
-          };
-        } catch {
-          // Keep raw study_stage if JSON parse fails
-        }
-      }
-      return p;
-    });
-  };
-
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.from('people').select('*').order('full_name');
-    if (!error && data) return parsePersonData(data as Person[]);
+    const { data, error } = await supabase.from('people').select(`
+      *,
+      bible_study_logs (*)
+    `).order('full_name');
+
+    if (!error && data) {
+      return data.map((p: Record<string, unknown> & { bible_study_logs?: WeeklyStudyProgressLog[] }) => {
+        const logs = (p.bible_study_logs || []).sort((a, b) => a.week_number - b.week_number);
+        const latestLog = logs[logs.length - 1];
+        const computedStage = latestLog ? `Minggu ${latestLog.week_number}: ${latestLog.lesson_topic}` : (p.study_stage as string);
+        return {
+          ...p,
+          study_stage: computedStage,
+          study_history: logs
+        } as Person;
+      });
+    }
   }
-  return parsePersonData(getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE));
+
+  const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
+  const bsLogs = getLocalData<{ id: string; person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }[]>(STORAGE_KEYS.BIBLE_STUDY_LOGS, []);
+
+  return people.map(p => {
+    const logs = bsLogs.filter(l => l.person_id === p.id).sort((a, b) => a.week_number - b.week_number);
+    const latestLog = logs[logs.length - 1];
+    const computedStage = latestLog ? `Minggu ${latestLog.week_number}: ${latestLog.lesson_topic}` : p.study_stage;
+    return {
+      ...p,
+      study_stage: computedStage,
+      study_history: logs
+    };
+  });
 }
 
 export async function savePerson(person: Omit<Person, 'id'> & { id?: string; study_history?: Person['study_history'] }): Promise<Person> {
-  const payload = { ...person };
-  
-  // If study_history exists, bundle it into study_stage JSON for Supabase TEXT column compatibility
-  if (person.study_history && person.study_history.length > 0) {
-    payload.study_stage = JSON.stringify({
-      current: person.study_stage || 'Belajar Alkitab',
-      history: person.study_history
-    });
-  }
-
-  delete payload.study_history;
+  const payload = {
+    full_name: person.full_name,
+    gender: person.gender,
+    phone_number: person.phone_number || null,
+    campus: person.campus || null,
+    status: person.status,
+    study_stage: person.study_stage || null,
+    notes: person.notes || null,
+  };
 
   if (isSupabaseConfigured && supabase) {
     if (person.id) {
@@ -134,6 +143,38 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
     setLocalData(STORAGE_KEYS.PEOPLE, updated);
     return newPerson;
   }
+}
+
+export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> & { person_id: string }): Promise<WeeklyStudyProgressLog> {
+  const payload = {
+    person_id: log.person_id,
+    week_number: log.week_number,
+    study_date: log.study_date,
+    lesson_topic: log.lesson_topic,
+    notes: log.notes || null,
+  };
+
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase.from('bible_study_logs').insert([payload]).select().single();
+    if (!error && data) {
+      // Update people.study_stage to current latest stage
+      await supabase.from('people').update({
+        study_stage: `Minggu ${log.week_number}: ${log.lesson_topic}`
+      }).eq('id', log.person_id);
+      return data as WeeklyStudyProgressLog;
+    }
+  }
+
+  const logs = getLocalData<WeeklyStudyProgressLog[]>(STORAGE_KEYS.BIBLE_STUDY_LOGS, []);
+  const newLog: WeeklyStudyProgressLog = { ...payload, id: 'bs_' + Date.now() } as WeeklyStudyProgressLog;
+  setLocalData(STORAGE_KEYS.BIBLE_STUDY_LOGS, [...logs, newLog]);
+
+  // Update local person study_stage
+  const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
+  const updatedPeople = people.map(p => p.id === log.person_id ? { ...p, study_stage: `Minggu ${log.week_number}: ${log.lesson_topic}` } : p);
+  setLocalData(STORAGE_KEYS.PEOPLE, updatedPeople);
+
+  return newLog;
 }
 
 export async function deletePerson(id: string): Promise<boolean> {
