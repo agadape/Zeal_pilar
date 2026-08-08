@@ -7,7 +7,9 @@ import {
   MinistryEvent, 
   Announcement, 
   WeeklyStudyProgressLog, 
-  UpcomingMilestone
+  UpcomingMilestone,
+  MissingReason,
+  StudyProgress
 } from './types';
 import { 
   INITIAL_PEOPLE, 
@@ -472,14 +474,21 @@ export async function fetchWeeklyStats(): Promise<WeeklyStat[]> {
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('weekly_stats').select(`
       *,
-      groups:group_id (group_name)
+      groups:group_id (group_name),
+      weekly_stat_absences ( person_id, person_name, reason ),
+      weekly_stat_study_progress ( person_id, person_name, stage )
     `).order('week_date', { ascending: false });
 
     if (!error && data) {
-      return data.map((ws: Record<string, unknown> & { groups?: { group_name?: string } }) => ({
-        ...ws,
-        group_name: ws.groups?.group_name || 'Group'
-      })) as WeeklyStat[];
+      return data.map((ws: Record<string, unknown> & { groups?: { group_name?: string }; weekly_stat_absences?: MissingReason[]; weekly_stat_study_progress?: StudyProgress[] }) => {
+        const { weekly_stat_absences, weekly_stat_study_progress, ...rest } = ws;
+        return {
+          ...rest,
+          group_name: ws.groups?.group_name || 'Group',
+          missing_reasons: weekly_stat_absences || [],
+          study_progress: weekly_stat_study_progress || []
+        };
+      }) as WeeklyStat[];
     }
   }
 
@@ -501,8 +510,6 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
     week_date: stat.week_date,
     active_disciples_count: stat.active_disciples_count,
     missing_ibadah_count: stat.missing_ibadah_count,
-    missing_reasons: stat.missing_reasons || [],
-    study_progress: stat.study_progress || [],
     reachout_count: stat.reachout_count,
     reachouts_list: stat.reachouts_list || [],
     sunday_visitors_count: stat.sunday_visitors_count,
@@ -552,7 +559,12 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
   }
 
   const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
-  const newStat: WeeklyStat = { ...payload, id: stat.id || 'ws_' + Date.now() } as WeeklyStat;
+  const newStat: WeeklyStat = { 
+    ...payload, 
+    id: stat.id || 'ws_' + Date.now(),
+    missing_reasons: stat.missing_reasons || [],
+    study_progress: stat.study_progress || []
+  } as WeeklyStat;
   const updated = [newStat, ...stats.filter(s => !(s.group_id === newStat.group_id && s.week_date === newStat.week_date))];
   setLocalData(STORAGE_KEYS.STATS, updated);
   return newStat;
