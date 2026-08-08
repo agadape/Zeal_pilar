@@ -26,7 +26,8 @@ import {
   IconTrash,
   IconHistory,
   IconTrendingUp,
-  IconDownload
+  IconDownload,
+  IconX
 } from '@tabler/icons-react';
 
 interface StatistikaViewProps {
@@ -40,7 +41,12 @@ interface StatistikaViewProps {
 export default function StatistikaView({ groups, stats = [], onSaveStat, onDeleteStat }: StatistikaViewProps) {
   const [activeSubTab, setActiveSubTab] = useState<'form' | 'analytics'>('form');
   const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '');
-  const [weekDate, setWeekDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const getMostRecentSunday = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay());
+    return d.toISOString().split('T')[0];
+  };
+  const [weekDate, setWeekDate] = useState<string>(getMostRecentSunday());
   
   // Group members loaded dynamically
   const [groupMembers, setGroupMembers] = useState<Person[]>([]);
@@ -48,7 +54,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
   // Form State
   const [missingMembers, setMissingMembers] = useState<MissingReason[]>([]);
-    const [reachoutCount, setReachoutCount] = useState<number>(0);
+  const [reachoutMembers, setReachoutMembers] = useState<{person_id: string, person_name: string}[]>([]);
   const [sundayVisitorsCount, setSundayVisitorsCount] = useState<number>(0);
     const [baptismsCount, setBaptismsCount] = useState<number>(0);
   const [notes, setNotes] = useState<string>('');
@@ -96,13 +102,17 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
     const missingStr = missingMembers.length > 0 
       ? `${missingMembers.length}\n` + missingMembers.map(m => `* ${m.person_name} (${m.reason})`).join('\n')
       : '-';
+    
+    const reachoutStr = reachoutMembers.length > 0 
+      ? `${reachoutMembers.length} (${reachoutMembers.map(r => r.person_name).join(', ')})`
+      : '0';
 
     return `*STATISTIK MINGGU, ${formattedDate}*
 
 >Nama Grups : *${groupName}*
 * Jlh Disciple : ${activeDisciplesCount}
 * Missing Ibadah/reason : ${missingStr}
-* JLh Reachout : ${reachoutCount}
+* JLh Reachout : ${reachoutStr}
 * Visitor ibadah : ${sundayVisitorsCount}
 * Jlh Baptis : ${baptismsCount}${baptismGoal > 0 ? ` (Goal: ${groupTotalBaptisms + baptismsCount}/${baptismGoal})` : ''}${notes ? `\n\nCatatan: ${notes}` : ''}`;
   };
@@ -127,7 +137,8 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
         missing_ibadah_count: missingMembers.length,
         missing_reasons: missingMembers,
         study_progress: [],
-        reachout_count: reachoutCount,
+        reachout_count: reachoutMembers.length,
+        reachouts_list: reachoutMembers,
         sunday_visitors_count: sundayVisitorsCount,
         event_visitors_count: 0,
         baptisms_count: baptismsCount,
@@ -236,7 +247,16 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                   <input
                     type="date"
                     value={weekDate}
-                    onChange={e => setWeekDate(e.target.value)}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (!val) return;
+                      const date = new Date(val);
+                      if (date.getDay() !== 0) {
+                        alert("Hanya bisa memilih hari Minggu!");
+                        return;
+                      }
+                      setWeekDate(val);
+                    }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none"
                   />
                 </div>
@@ -407,15 +427,39 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
               {/* METRICS COUNTERS */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                <div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Reachout</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={reachoutCount}
-                    onChange={e => setReachoutCount(parseInt(e.target.value) || 0)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-black text-center tabular-nums"
-                  />
+                  <div className="flex flex-col gap-2">
+                    <select
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                      onChange={e => {
+                        const pid = e.target.value;
+                        if (!pid) return;
+                        const person = groupMembers.find(m => m.id === pid);
+                        if (person && !reachoutMembers.some(r => r.person_id === pid)) {
+                          setReachoutMembers([...reachoutMembers, { person_id: pid, person_name: person.full_name }]);
+                        }
+                        e.target.value = ""; // reset
+                      }}
+                    >
+                      <option value="">+ Siapa yang Reachout?</option>
+                      {groupMembers.map(m => (
+                        <option key={m.id} value={m.id}>{m.full_name}</option>
+                      ))}
+                    </select>
+                    {reachoutMembers.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {reachoutMembers.map(r => (
+                          <span key={r.person_id} className="inline-flex items-center px-2 py-1 rounded bg-[#b5852e]/10 text-[#b5852e] text-[10px] font-bold border border-[#b5852e]/20">
+                            {r.person_name}
+                            <button type="button" onClick={() => setReachoutMembers(prev => prev.filter(p => p.person_id !== r.person_id))} className="ml-1 hover:text-red-500 transition-colors">
+                              <IconX className="w-3 h-3" stroke={2} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -597,30 +641,60 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
             {stats.length === 0 ? (
               <p className="text-xs text-slate-400 py-8 text-center">Belum ada entri statistik di database.</p>
             ) : (
-              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                {stats.map(s => (
-                  <div key={s.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-bold text-slate-900">{s.group_name}</span>
-                        <span className="font-mono text-[11px] text-slate-500">{s.week_date}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 mt-0.5 tabular-nums">
-                        Disciple: {s.active_disciples_count} | Missing: {s.missing_ibadah_count} | Reachout: {s.reachout_count} | Visitor: {s.sunday_visitors_count}
-                      </p>
-                    </div>
-
-                    {onDeleteStat && (
-                      <button
-                        onClick={() => onDeleteStat(s.id)}
-                        className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
-                        title="Hapus Laporan"
-                      >
-                        <IconTrash className="w-4 h-4" stroke={1.5} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+              <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table className="w-full text-left border-collapse min-w-[600px] bg-white">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+                      <th className="px-4 py-3.5 font-bold">Grup & Tanggal</th>
+                      <th className="px-4 py-3.5 font-bold text-center">Disciple</th>
+                      <th className="px-4 py-3.5 font-bold text-center">Missing</th>
+                      <th className="px-4 py-3.5 font-bold text-center">Reachout</th>
+                      <th className="px-4 py-3.5 font-bold text-center">Visitor</th>
+                      <th className="px-4 py-3.5 font-bold text-center">Baptis</th>
+                      <th className="px-4 py-3.5 text-right font-bold">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {stats.map(s => (
+                      <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-extrabold text-slate-900 text-sm tracking-tight">{s.group_name}</div>
+                          <div className="font-mono text-[10px] text-slate-500 mt-0.5">{new Date(s.week_date).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="font-bold text-slate-700">{s.active_disciples_count}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                           <span className={`px-2 py-0.5 rounded text-[11px] font-black tracking-widest ${s.missing_ibadah_count > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                             {s.missing_ibadah_count}
+                           </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="font-bold text-slate-700">
+                            {s.reachout_count} {s.reachouts_list && s.reachouts_list.length > 0 && (
+                              <span className="block text-[9px] font-medium text-slate-400 max-w-[100px] mx-auto truncate" title={s.reachouts_list.map(r => r.person_name).join(', ')}>
+                                {s.reachouts_list.map(r => r.person_name).join(', ')}
+                              </span>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center font-bold text-slate-700">{s.sunday_visitors_count}</td>
+                        <td className="px-4 py-3 text-center font-bold text-emerald-600">{s.baptisms_count}</td>
+                        <td className="px-4 py-3 text-right">
+                          {onDeleteStat && (
+                            <button
+                              onClick={() => onDeleteStat(s.id)}
+                              className="btn-tactile p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-100"
+                              title="Hapus Laporan"
+                            >
+                              <IconTrash className="w-4 h-4" stroke={1.5} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

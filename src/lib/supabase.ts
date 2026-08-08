@@ -504,6 +504,7 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
     missing_reasons: stat.missing_reasons || [],
     study_progress: stat.study_progress || [],
     reachout_count: stat.reachout_count,
+    reachouts_list: stat.reachouts_list || [],
     sunday_visitors_count: stat.sunday_visitors_count,
     event_visitors_count: stat.event_visitors_count,
     baptisms_count: stat.baptisms_count,

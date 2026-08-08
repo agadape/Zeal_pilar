@@ -115,6 +115,7 @@ export interface WeeklyStat {
   missing_reasons: MissingReason[];
   study_progress: StudyProgress[];
   reachout_count: number;
+  reachouts_list?: { person_id: string; person_name: string }[];
   sunday_visitors_count: number;
   event_visitors_count: number;
   baptisms_count: number;
