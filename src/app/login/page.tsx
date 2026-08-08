@@ -6,7 +6,7 @@ import { IconKey, IconMail, IconArrowRight, IconAlertCircle } from '@tabler/icon
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(
-    async (prevState: any, formData: FormData) => {
+    async (prevState: { error: string | null }, formData: FormData) => {
       const result = await login(formData)
       if (result?.error) {
         return { error: result.error }
