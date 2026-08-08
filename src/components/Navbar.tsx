@@ -31,10 +31,10 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* BRAND & ACTION ROW */}
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="flex items-center justify-between py-3 sm:py-0 sm:h-20 gap-2">
           
-          <div className="flex items-center space-x-3.5">
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-white flex items-center justify-center shrink-0">
+          <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0">
+            <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-white flex items-center justify-center shrink-0">
               <Image 
                 src="/logo.jpg" 
                 alt="ZEAL Logo" 
@@ -43,18 +43,18 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
                 className="object-contain p-1" 
               />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900">GKDI TUGU</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-bold tracking-wider uppercase border border-amber-200">
+            <div className="min-w-0 flex flex-col justify-center">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 flex-wrap sm:flex-nowrap">
+                <span className="font-black text-base sm:text-xl tracking-tight text-slate-900 whitespace-nowrap">GKDI TUGU</span>
+                <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-bold tracking-wider uppercase border border-amber-200 whitespace-nowrap">
                   ZEAL JOGJA
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Youth & Campus Ministry Portal</p>
+              <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Youth & Campus Ministry Portal</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center shrink-0 ml-2">
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
@@ -63,17 +63,17 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
                 }
               }}
               title="Reset Cache / Refresh"
-              className="btn-tactile text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1.5 transition-colors"
+              className="btn-tactile px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors"
             >
-              <IconRefresh className="w-3.5 h-3.5 text-slate-500" stroke={2} />
-              <span>Reset Cache</span>
+              <IconRefresh className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-slate-500 shrink-0" stroke={2} />
+              <span className="text-[10px] sm:text-xs hidden min-[360px]:inline-block whitespace-nowrap">Reset Cache</span>
             </button>
           </div>
 
         </div>
 
         {/* NAVIGATION TABS */}
-        <nav className="flex space-x-1.5 overflow-x-auto pb-3 pt-1 no-scrollbar border-t border-slate-100">
+        <nav className="flex space-x-1.5 overflow-x-auto pb-3 pt-2 no-scrollbar border-t border-slate-100">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
