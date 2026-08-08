@@ -471,7 +471,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid gap-4 ${status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK' ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <div>
               <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Lahir Jasmani</label>
               <input
@@ -481,15 +481,17 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Baptis</label>
-              <input
-                type="date"
-                value={baptismDate}
-                onChange={e => setBaptismDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
-              />
-            </div>
+            {(status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK') && (
+              <div>
+                <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Baptis</label>
+                <input
+                  type="date"
+                  value={baptismDate}
+                  onChange={e => setBaptismDate(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
+                />
+              </div>
+            )}
           </div>
 
           <div>
