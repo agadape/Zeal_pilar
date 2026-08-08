@@ -86,13 +86,15 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
               </div>
             </div>
           )}
-          <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
-            <div className="p-2 bg-white rounded-lg shadow-sm text-slate-400"><IconUsersGroup className="w-4 h-4" /></div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400">Grup PDG</p>
-              <p className="text-sm font-semibold text-slate-900">{group ? group.group_name : 'Belum Ada Grup'}</p>
+          {['DISCIPLE', 'LEADER', 'WEAK'].includes(person.status) && (
+            <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+              <div className="p-2 bg-white rounded-lg shadow-sm text-slate-400"><IconUsersGroup className="w-4 h-4" /></div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Grup PDG</p>
+                <p className="text-sm font-semibold text-slate-900">{group ? group.group_name : 'Belum Ada Grup'}</p>
+              </div>
             </div>
-          </div>
+          )}
           {(person.birth_date || person.baptism_date) && (
             <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
               <div className="p-2 bg-white rounded-lg shadow-sm text-slate-400"><IconCalendarEvent className="w-4 h-4" /></div>
@@ -122,13 +124,13 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
           </div>
         )}
 
-        {/* Bible Study Section */}
-        {(person.status === 'BIBLE_STUDY' || (person.study_history && person.study_history.length > 0)) && (
+        {/* Spiritual Tracking Section (BA & Follow-up) */}
+        {(person.status !== 'INACTIVE') && (
           <div className="pt-4 border-t border-slate-100 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
                 <IconBook className="w-4 h-4 text-[#b5852e]" />
-                Progress Belajar Alkitab
+                {['DISCIPLE', 'LEADER', 'WEAK'].includes(person.status) ? 'Progress Follow-up Study' : 'Progress Belajar Alkitab'}
               </h3>
               <button 
                 type="button"

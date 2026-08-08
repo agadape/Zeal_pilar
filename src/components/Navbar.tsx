@@ -22,9 +22,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
     { id: 'people', label: 'Data Disciple', icon: IconUsers },
     { id: 'groups', label: 'Grup PDG', icon: IconUsersGroup },
-    { id: 'statistika', label: 'Laporan Mingguan', icon: IconClipboardCheck },
-    { id: 'events', label: 'Jadwal & Pelayanan', icon: IconCalendarEvent },
-    { id: 'announcements', label: 'Pengumuman', icon: IconSpeakerphone },
+    { id: 'statistika', label: 'Statistik Grup', icon: IconClipboardCheck },
   ];
 
   return (

@@ -5,7 +5,8 @@ import {
   IconUserPlus, 
   IconSearch, 
   IconDownload,
-  IconUsers
+  IconUsers,
+  IconChevronRight
 } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
 import PersonDetailPanel from './PersonDetailPanel';
@@ -193,34 +194,42 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
     };
   }, [people, search]);
 
-  const renderPersonCard = (p: Person) => (
+  const renderPersonRow = (p: Person) => (
     <div 
       key={p.id} 
       onClick={() => openDetail(p)}
-      className="tugu-card tugu-card-interactive p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between cursor-pointer group"
+      className="group flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-amber-50/50 border-b border-slate-100 last:border-0 cursor-pointer transition-colors"
     >
-      <div>
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-slate-900 line-clamp-1">{p.full_name}</h3>
-          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border shrink-0 ${p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'}`}>
-            {p.gender.charAt(0)}
-          </span>
+      <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-pink-50 text-pink-700 border-pink-200'}`}>
+          <span className="font-bold text-sm">{p.full_name.charAt(0).toUpperCase()}</span>
         </div>
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
-            {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
-          </span>
-          {p.campus && (
-            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-slate-50 text-slate-600 border-slate-200">
-              {p.campus}
+        <div className="min-w-0 flex flex-col">
+          <div className="flex items-center space-x-2">
+            <h3 className="font-bold text-sm sm:text-base text-slate-900 truncate">{p.full_name}</h3>
+            {p.campus && (
+              <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono font-bold text-slate-500 bg-slate-100 border border-slate-200 uppercase truncate max-w-[100px]">
+                {p.campus}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center space-x-2 mt-0.5">
+            <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
+              {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
             </span>
-          )}
+            {p.study_stage && (
+              <span className="text-[10px] text-slate-500 font-medium truncate">
+                • {p.study_stage}
+              </span>
+            )}
+          </div>
         </div>
       </div>
       
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span className="truncate">{p.study_stage ? `BA: ${p.study_stage}` : ''}</span>
-        <span className="text-[#b5852e] font-semibold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap ml-2">Detail →</span>
+      <div className="flex items-center shrink-0 pl-3">
+        <span className="text-slate-300 group-hover:text-[#b5852e] transition-colors">
+          <IconChevronRight className="w-5 h-5" stroke={2} />
+        </span>
       </div>
     </div>
   );
@@ -284,8 +293,8 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
         </div>
       </div>
 
-      {/* DIRECTORY GRID (Replacing the dense table) */}
-      <div className="space-y-8">
+      {/* DIRECTORY LIST (Replacing the dense table and cards) */}
+      <div className="space-y-6">
         {(groupedPeople.disciples.length === 0 && groupedPeople.studyans.length === 0 && groupedPeople.visitors.length === 0 && groupedPeople.inactives.length === 0) ? (
           <div className="py-16 text-center bg-white rounded-2xl border border-slate-200">
             <IconUsers className="w-10 h-10 text-slate-300 mx-auto mb-3" stroke={1.5} />
@@ -294,37 +303,49 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
         ) : (
           <>
             {groupedPeople.disciples.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sudah Disciple ({groupedPeople.disciples.length})</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {groupedPeople.disciples.map(renderPersonCard)}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Sudah Disciple</h2>
+                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.disciples.length}</span>
+                </div>
+                <div className="flex flex-col">
+                  {groupedPeople.disciples.map(renderPersonRow)}
                 </div>
               </div>
             )}
             
             {groupedPeople.studyans.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Studyan ({groupedPeople.studyans.length})</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {groupedPeople.studyans.map(renderPersonCard)}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Studyan</h2>
+                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.studyans.length}</span>
+                </div>
+                <div className="flex flex-col">
+                  {groupedPeople.studyans.map(renderPersonRow)}
                 </div>
               </div>
             )}
 
             {groupedPeople.visitors.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Visitor / Tamu ({groupedPeople.visitors.length})</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {groupedPeople.visitors.map(renderPersonCard)}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Visitor / Tamu</h2>
+                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.visitors.length}</span>
+                </div>
+                <div className="flex flex-col">
+                  {groupedPeople.visitors.map(renderPersonRow)}
                 </div>
               </div>
             )}
 
             {groupedPeople.inactives.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lainnya / Inactive ({groupedPeople.inactives.length})</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {groupedPeople.inactives.map(renderPersonCard)}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-75">
+                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lainnya / Inactive</h2>
+                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.inactives.length}</span>
+                </div>
+                <div className="flex flex-col">
+                  {groupedPeople.inactives.map(renderPersonRow)}
                 </div>
               </div>
             )}

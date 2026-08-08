@@ -244,7 +244,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                   >
                     <option value="">-- Pilih Leader Baru dari Disciple --</option>
                     {people
-                      .filter(p => p.gender === handoverGroup.category && p.id !== handoverGroup.leader_id)
+                      .filter(p => p.gender === handoverGroup.category && p.id !== handoverGroup.leader_id && p.status === 'LEADER')
                       .map(p => (
                         <option key={p.id} value={p.id}>
                           {p.full_name} ({p.status} • {p.campus || 'Umum'})
@@ -349,7 +349,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                   >
                     <option value="">-- Pilih Leader --</option>
                     {people
-                      .filter(p => p.gender === category)
+                      .filter(p => p.gender === category && p.status === 'LEADER')
                       .map(p => (
                         <option key={p.id} value={p.id}>
                           {p.full_name} ({p.status})

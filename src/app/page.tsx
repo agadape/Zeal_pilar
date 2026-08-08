@@ -6,8 +6,6 @@ import DashboardView from '@/components/DashboardView';
 import PeopleView from '@/components/PeopleView';
 import GroupsView from '@/components/GroupsView';
 import StatistikaView from '@/components/StatistikaView';
-import EventsView from '@/components/EventsView';
-import AnnouncementsView from '@/components/AnnouncementsView';
 
 import { Person, Group, WeeklyStat, MinistryEvent, Announcement } from '@/lib/types';
 import { 
@@ -194,21 +192,6 @@ export default function Home() {
                 />
               )}
 
-              {activeTab === 'events' && (
-                <EventsView 
-                  events={events} 
-                  people={people} 
-                  onSaveEvent={handleSaveEvent} 
-                  onDeleteEvent={handleDeleteEvent}
-                />
-              )}
-
-              {activeTab === 'announcements' && (
-                <AnnouncementsView 
-                  announcements={announcements} 
-                  onSaveAnnouncement={handleSaveAnnouncement} 
-                  onDeleteAnnouncement={handleDeleteAnnouncement}
-                />
               )}
             </>
           )}
