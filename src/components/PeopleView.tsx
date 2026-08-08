@@ -269,7 +269,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
             onClick={() => setActiveTab('BIBLE_STUDY')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'BIBLE_STUDY' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
           >
-            Belajar Alkitab ({people.filter(p => p.status === 'BIBLE_STUDY').length})
+            Studyan ({people.filter(p => p.status === 'BIBLE_STUDY').length})
           </button>
           <button
             onClick={() => setActiveTab('VISITORS')}
@@ -304,7 +304,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
                   </div>
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
-                      {p.status === 'BIBLE_STUDY' ? 'BA' : p.status}
+                      {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
                     </span>
                     {p.campus && (
                       <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-slate-50 text-slate-600 border-slate-200">
@@ -461,12 +461,18 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
                 onChange={e => setStatus(e.target.value as PersonStatus)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
               >
-                <option value="DISCIPLE">DISCIPLE (Murid)</option>
-                <option value="LEADER">LEADER (Pemimpin)</option>
-                <option value="BIBLE_STUDY">BIBLE STUDY (Belajar Alkitab)</option>
-                <option value="VISITOR">VISITOR (Tamu)</option>
-                <option value="WEAK">WEAK (Butuh Care)</option>
-                <option value="INACTIVE">INACTIVE</option>
+                <optgroup label="Sudah Disciple">
+                  <option value="DISCIPLE">Disciple (Aktif / Biasa)</option>
+                  <option value="LEADER">Leader</option>
+                  <option value="WEAK">Weak (Butuh Care)</option>
+                </optgroup>
+                <optgroup label="Belum Disciple">
+                  <option value="VISITOR">Visitor / Tamu</option>
+                  <option value="BIBLE_STUDY">Studyan (Progress BA)</option>
+                </optgroup>
+                <optgroup label="Lainnya">
+                  <option value="INACTIVE">Inactive / Keluar</option>
+                </optgroup>
               </select>
             </div>
           </div>

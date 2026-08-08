@@ -33,7 +33,7 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
     }
   };
 
-  const statusLabel = person.status === 'BIBLE_STUDY' ? 'Belajar Alkitab' : person.status;
+  const statusLabel = person.status === 'BIBLE_STUDY' ? 'Studyan' : person.status;
 
   return (
     <FormPanel
