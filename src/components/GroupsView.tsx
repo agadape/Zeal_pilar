@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Group, Person, Gender } from '@/lib/types';
 import { fetchGroupMembers, updateGroupMembers } from '@/lib/supabase';
 import GroupDetailPanel from './GroupDetailPanel';
+import FormPanel from './FormPanel';
 import { 
    
   IconPlus, 
@@ -320,95 +321,67 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
       )}
 
       {/* CREATE / EDIT GROUP MODAL */}
-      {mounted && isGroupModalOpen && createPortal(
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="tugu-card w-full max-w-md rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[90vh] overflow-hidden animate-fade-in">
-              <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-slate-900">
-                  {editingGroup ? 'Edit Grup PDG' : 'Buat Grup Baru'}
-                </h3>
-                <button type="button" onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
-                  <IconX className="w-5 h-5" stroke={1.5} />
-                </button>
-              </div>
+      <FormPanel
+        isOpen={isGroupModalOpen}
+        onClose={() => setIsGroupModalOpen(false)}
+        title={editingGroup ? 'Edit Grup PDG' : 'Buat Grup Baru'}
+        onSubmit={handleGroupSubmit}
+        isSubmitDisabled={submittingGroup}
+        submitLabel="Simpan Grup PDG"
+      >
+        <div>
+          <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Grup *</label>
+          <input
+            type="text"
+            required
+            placeholder="Contoh: Eve's Circle / Pelita"
+            value={groupName}
+            onChange={e => setGroupName(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+          />
+        </div>
 
-              <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-4 custom-scrollbar">
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Grup *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Eve's Circle / Pelita"
-                    value={groupName}
-                    onChange={e => setGroupName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                  />
-                </div>
+        <div>
+          <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kategori *</label>
+          <select
+            value={category}
+            onChange={e => setCategory(e.target.value as Gender)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+          >
+            <option value="SISTER">SISTER</option>
+            <option value="BROTHER">BROTHER</option>
+          </select>
+        </div>
 
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kategori *</label>
-                  <select
-                    value={category}
-                    onChange={e => setCategory(e.target.value as Gender)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                  >
-                    <option value="SISTER">SISTER</option>
-                    <option value="BROTHER">BROTHER</option>
-                  </select>
-                </div>
+        <div>
+          <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Pemimpin (Leader)</label>
+          <select
+            value={leaderId}
+            onChange={e => setLeaderId(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+          >
+            <option value="">-- Pilih Leader --</option>
+            {people
+              .filter(p => p.gender === category && p.status === 'LEADER')
+              .map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name} ({p.status})
+                </option>
+              ))}
+          </select>
+        </div>
 
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Pemimpin (Leader)</label>
-                  <select
-                    value={leaderId}
-                    onChange={e => setLeaderId(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                  >
-                    <option value="">-- Pilih Leader --</option>
-                    {people
-                      .filter(p => p.gender === category && p.status === 'LEADER')
-                      .map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.full_name} ({p.status})
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Goal Baptisan</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={baptismGoal}
-                    onChange={e => setBaptismGoal(parseInt(e.target.value) || 0)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex-shrink-0 flex items-center justify-end space-x-3 p-6 border-t border-slate-100 bg-slate-50/50">
-                <button
-                  type="button"
-                  onClick={() => setIsGroupModalOpen(false)}
-                  className="btn-tactile btn-secondary px-4 py-2 text-xs"
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  onClick={handleGroupSubmit}
-                  disabled={submittingGroup}
-                  className="btn-tactile btn-primary px-4 py-2 text-xs"
-                >
-                  <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Grup PDG</span>
-                </button>
-              </div>
-            </div>
-          </div>,
-        document.body
-      )}
+        <div>
+          <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Goal Baptisan</label>
+          <input
+            type="number"
+            min="0"
+            value={baptismGoal}
+            onChange={e => setBaptismGoal(parseInt(e.target.value) || 0)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+          />
+        </div>
+      </FormPanel>
 
       {/* MANAGE MEMBERS MODAL */}
       {mounted && managingMembersGroup && createPortal(
