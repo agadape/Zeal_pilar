@@ -44,7 +44,7 @@ function saveCampusToList(name: string) {
 }
 
 export default function PeopleView({ people, groups, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
-  const [activeTab, setActiveTab] = useState<'ALL' | 'DISCIPLES' | 'BIBLE_STUDY' | 'VISITORS'>('ALL');
+
   const [search, setSearch] = useState('');
   const [campusList, setCampusList] = useState<string[]>(getCampusList);
   
@@ -84,7 +84,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
     setGender('BROTHER');
     setPhone('');
     setCampus('');
-    setStatus(activeTab === 'BIBLE_STUDY' ? 'BIBLE_STUDY' : activeTab === 'VISITORS' ? 'VISITOR' : 'DISCIPLE');
+    setStatus('DISCIPLE');
     setBirthDate('');
     setBaptismDate('');
     setStudyStage('');
@@ -176,23 +176,54 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
   };
 
   // Filter Logic
-  const filteredPeople = useMemo(() => {
-    return people.filter(p => {
-      // Tab filter
-      if (activeTab === 'DISCIPLES' && p.status !== 'DISCIPLE' && p.status !== 'LEADER') return false;
-      if (activeTab === 'BIBLE_STUDY' && p.status !== 'BIBLE_STUDY') return false;
-      if (activeTab === 'VISITORS' && p.status !== 'VISITOR' && p.status !== 'WEAK' && p.status !== 'INACTIVE') return false;
+  const groupedPeople = useMemo(() => {
+    let list = people;
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(p => p.full_name.toLowerCase().includes(q) || 
+             (p.campus && p.campus.toLowerCase().includes(q)) ||
+             (p.notes && p.notes.toLowerCase().includes(q)));
+    }
+    
+    return {
+      disciples: list.filter(p => ['DISCIPLE', 'LEADER', 'WEAK'].includes(p.status)),
+      studyans: list.filter(p => p.status === 'BIBLE_STUDY'),
+      visitors: list.filter(p => p.status === 'VISITOR'),
+      inactives: list.filter(p => p.status === 'INACTIVE')
+    };
+  }, [people, search]);
 
-      // Search filter
-      if (search) {
-        const q = search.toLowerCase();
-        return p.full_name.toLowerCase().includes(q) || 
-               (p.campus && p.campus.toLowerCase().includes(q)) ||
-               (p.notes && p.notes.toLowerCase().includes(q));
-      }
-      return true;
-    });
-  }, [people, activeTab, search]);
+  const renderPersonCard = (p: Person) => (
+    <div 
+      key={p.id} 
+      onClick={() => openDetail(p)}
+      className="tugu-card tugu-card-interactive p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between cursor-pointer group"
+    >
+      <div>
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-bold text-slate-900 line-clamp-1">{p.full_name}</h3>
+          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border shrink-0 ${p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'}`}>
+            {p.gender.charAt(0)}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
+            {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
+          </span>
+          {p.campus && (
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-slate-50 text-slate-600 border-slate-200">
+              {p.campus}
+            </span>
+          )}
+        </div>
+      </div>
+      
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <span className="truncate">{p.study_stage ? `BA: ${p.study_stage}` : ''}</span>
+        <span className="text-[#b5852e] font-semibold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap ml-2">Detail →</span>
+      </div>
+    </div>
+  );
 
   const getStatusBadgeClass = (st: PersonStatus) => {
     switch (st) {
@@ -251,76 +282,53 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
             className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
           />
         </div>
-
-        <div className="flex w-full sm:w-auto overflow-x-auto no-scrollbar gap-1 p-1">
-          <button
-            onClick={() => setActiveTab('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'ALL' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
-          >
-            Semua ({people.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('DISCIPLES')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'DISCIPLES' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
-          >
-            Murid & Leader ({people.filter(p => p.status === 'DISCIPLE' || p.status === 'LEADER').length})
-          </button>
-          <button
-            onClick={() => setActiveTab('BIBLE_STUDY')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'BIBLE_STUDY' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
-          >
-            Studyan ({people.filter(p => p.status === 'BIBLE_STUDY').length})
-          </button>
-          <button
-            onClick={() => setActiveTab('VISITORS')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'VISITORS' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
-          >
-            Reachout & Tamu ({people.filter(p => p.status === 'VISITOR' || p.status === 'WEAK' || p.status === 'INACTIVE').length})
-          </button>
-        </div>
       </div>
 
       {/* DIRECTORY GRID (Replacing the dense table) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredPeople.length === 0 ? (
-          <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200">
+      <div className="space-y-8">
+        {(groupedPeople.disciples.length === 0 && groupedPeople.studyans.length === 0 && groupedPeople.visitors.length === 0 && groupedPeople.inactives.length === 0) ? (
+          <div className="py-16 text-center bg-white rounded-2xl border border-slate-200">
             <IconUsers className="w-10 h-10 text-slate-300 mx-auto mb-3" stroke={1.5} />
             <p className="text-slate-500 font-medium text-sm">Tidak ada data disciple yang ditemukan.</p>
           </div>
         ) : (
-          filteredPeople.map(p => {
-            return (
-              <div 
-                key={p.id} 
-                onClick={() => openDetail(p)}
-                className="tugu-card tugu-card-interactive p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between cursor-pointer group"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-slate-900 line-clamp-1">{p.full_name}</h3>
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border shrink-0 ${p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'}`}>
-                      {p.gender.charAt(0)}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
-                      {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
-                    </span>
-                    {p.campus && (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-slate-50 text-slate-600 border-slate-200">
-                        {p.campus}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <span className="truncate">{p.study_stage ? `BA: ${p.study_stage}` : ''}</span>
-                  <span className="text-[#b5852e] font-semibold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap ml-2">Detail →</span>
+          <>
+            {groupedPeople.disciples.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sudah Disciple ({groupedPeople.disciples.length})</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {groupedPeople.disciples.map(renderPersonCard)}
                 </div>
               </div>
-            );
-          })
+            )}
+            
+            {groupedPeople.studyans.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Studyan ({groupedPeople.studyans.length})</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {groupedPeople.studyans.map(renderPersonCard)}
+                </div>
+              </div>
+            )}
+
+            {groupedPeople.visitors.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Visitor / Tamu ({groupedPeople.visitors.length})</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {groupedPeople.visitors.map(renderPersonCard)}
+                </div>
+              </div>
+            )}
+
+            {groupedPeople.inactives.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lainnya / Inactive ({groupedPeople.inactives.length})</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {groupedPeople.inactives.map(renderPersonCard)}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
