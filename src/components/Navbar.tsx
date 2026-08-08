@@ -3,13 +3,11 @@
 import Image from 'next/image';
 import { 
   IconLayoutDashboard, 
-   
   IconUsers,
   IconUsersGroup, 
   IconClipboardCheck, 
-   
-  
-  IconRefresh
+  IconRefresh,
+  IconLogout
 } from '@tabler/icons-react';
 
 interface NavbarProps {
@@ -53,7 +51,22 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             </div>
           </div>
 
-          <div className="flex items-center shrink-0 ml-2">
+          <div className="flex items-center shrink-0 ml-2 space-x-2">
+            <button
+              onClick={async () => {
+                if (typeof window !== 'undefined') {
+                  const { supabase } = await import('@/lib/supabase');
+                  if (supabase) await supabase.auth.signOut();
+                  window.location.href = '/login';
+                }
+              }}
+              title="Logout"
+              className="btn-tactile px-2.5 sm:px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors"
+            >
+              <IconLogout className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" stroke={2} />
+              <span className="text-[10px] sm:text-xs min-[360px]:inline-block whitespace-nowrap">Logout</span>
+            </button>
+
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
@@ -62,10 +75,10 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
                 }
               }}
               title="Reset Cache / Refresh"
-              className="btn-tactile px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors"
+              className="btn-tactile px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors hidden sm:flex"
             >
               <IconRefresh className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-slate-500 shrink-0" stroke={2} />
-              <span className="text-[10px] sm:text-xs hidden min-[360px]:inline-block whitespace-nowrap">Reset Cache</span>
+              <span className="text-[10px] sm:text-xs hidden min-[360px]:inline-block whitespace-nowrap">Reset</span>
             </button>
           </div>
 
