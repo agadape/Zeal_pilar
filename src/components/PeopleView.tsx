@@ -6,7 +6,6 @@ import {
   IconSearch, 
   IconDownload,
   IconUsers,
-  IconChevronRight
 } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
 import PersonDetailPanel from './PersonDetailPanel';
@@ -197,27 +196,27 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     <div 
       key={p.id} 
       onClick={() => openDetail(p)}
-      className="group flex flex-col p-4 bg-white/70 hover:bg-white backdrop-blur-xl border border-slate-200/60 hover:border-[#b5852e]/40 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-6px_rgba(181,133,46,0.15)] cursor-pointer transition-all duration-300 ease-out transform hover:-translate-y-1 relative"
+      className="group flex flex-col p-4 bg-white border border-slate-200 hover:border-slate-300 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all duration-200 ease-out"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${p.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-gradient-to-br from-rose-400 to-orange-400 text-white'}`}>
-          <span className="font-bold text-sm font-serif drop-shadow-sm">{p.full_name.charAt(0).toUpperCase()}</span>
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${p.gender === 'BROTHER' ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-rose-50/50 border-rose-100 text-rose-700'}`}>
+          <span className="font-bold text-sm">{p.full_name.charAt(0).toUpperCase()}</span>
         </div>
-        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${getStatusBadgeClass(p.status)}`}>
+        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold tracking-wide border ${getStatusBadgeClass(p.status)}`}>
           {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
         </span>
       </div>
       
       <div className="flex flex-col min-w-0">
-        <h3 className="font-extrabold text-sm text-slate-800 truncate tracking-tight">{p.full_name}</h3>
+        <h3 className="font-bold text-sm text-slate-900 truncate">{p.full_name}</h3>
         {p.campus && (
-          <span className="text-[10px] font-bold text-slate-500 truncate tracking-wider mt-0.5">
+          <span className="text-[11px] text-slate-500 truncate mt-0.5">
             {p.campus}
           </span>
         )}
         {p.study_stage && (
-          <span className="text-[10px] text-slate-400 font-semibold truncate tracking-tight mt-1.5">
-            Progress: {p.study_stage}
+          <span className="text-[10px] text-amber-700 font-medium truncate mt-2 bg-amber-50 border border-amber-100/50 px-1.5 py-0.5 rounded w-fit">
+            {p.study_stage}
           </span>
         )}
       </div>
@@ -226,13 +225,13 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
 
   const getStatusBadgeClass = (st: PersonStatus) => {
     switch (st) {
-      case 'LEADER': return 'bg-purple-50 text-purple-700 border-purple-200/50 shadow-sm';
-      case 'DISCIPLE': return 'bg-emerald-50 text-emerald-700 border-emerald-200/50 shadow-sm';
-      case 'BIBLE_STUDY': return 'bg-amber-50 text-amber-700 border-amber-200/50 shadow-sm';
-      case 'VISITOR': return 'bg-cyan-50 text-cyan-700 border-cyan-200/50 shadow-sm';
-      case 'WEAK': return 'bg-rose-50 text-rose-700 border-rose-200/50 shadow-sm';
-      case 'INACTIVE': return 'bg-slate-50 text-slate-600 border-slate-200/50 shadow-sm';
-      default: return 'bg-slate-50 text-slate-700 border-slate-200/50 shadow-sm';
+      case 'LEADER': return 'text-purple-700 bg-purple-50 border-purple-200';
+      case 'DISCIPLE': return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      case 'BIBLE_STUDY': return 'text-amber-700 bg-amber-50 border-amber-200';
+      case 'VISITOR': return 'text-cyan-700 bg-cyan-50 border-cyan-200';
+      case 'WEAK': return 'text-rose-700 bg-rose-50 border-rose-200';
+      case 'INACTIVE': return 'text-slate-500 bg-slate-50 border-slate-200';
+      default: return 'text-slate-700 bg-slate-50 border-slate-200';
     }
   };
 
