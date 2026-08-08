@@ -337,24 +337,25 @@ export async function fetchGroups(): Promise<Group[]> {
   if (isSupabaseConfigured && supabase) {
     const { data: groupsData, error } = await supabase.from('groups').select(`
       *,
-      people:leader_id (full_name)
+      people:leader_id (full_name),
+      group_members (count)
     `).order('group_name');
     if (error) console.error("Supabase error (fetchGroups):", error);
     
     if (!error && groupsData) {
-      const { data: membersData } = await supabase.from('group_members').select('group_id');
-      const counts: Record<string, number> = {};
-      if (membersData) {
-        membersData.forEach(m => {
-          counts[m.group_id] = (counts[m.group_id] || 0) + 1;
-        });
-      }
-
-      return groupsData.map((g: Record<string, unknown> & { id: string, people?: { full_name?: string } }) => ({
-        ...g,
-        leader_name: g.people?.full_name || 'Belum ditugaskan',
-        members_count: counts[g.id] || 0
-      })) as Group[];
+      return groupsData.map((g: any) => {
+        // extract count from [{ count: X }] or { count: X } depending on postgres version
+        const memberCountData = g.group_members;
+        const count = Array.isArray(memberCountData) 
+          ? (memberCountData[0]?.count || 0) 
+          : (memberCountData?.count || 0);
+          
+        return {
+          ...g,
+          leader_name: g.people?.full_name || 'Belum ditugaskan',
+          members_count: count
+        };
+      }) as Group[];
     }
   }
 
