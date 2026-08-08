@@ -77,6 +77,11 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
   const activeDisciplesCount = groupMembers.length;
+  
+  const groupTotalBaptisms = stats
+    .filter(s => s.group_id === selectedGroupId)
+    .reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
+  const baptismGoal = selectedGroup?.baptism_goal || 0;
 
   const handleToggleMissing = (p: Person, isMissing: boolean) => {
     if (isMissing) {
@@ -119,20 +124,14 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
       ? `${missingMembers.length}\n` + missingMembers.map(m => `* ${m.person_name} (${m.reason})`).join('\n')
       : '-';
 
-    const studyStr = studyProgresses.length > 0
-      ? `${studyProgresses.length}\n` + studyProgresses.map(s => `${s.person_name} - ${s.stage}`).join('\n')
-      : '-';
-
     return `*STATISTIK MINGGU, ${formattedDate}*
 
 >Nama Grups : *${groupName}*
 * Jlh Disciple : ${activeDisciplesCount}
 * Missing Ibadah/reason : ${missingStr}
-* Jlh Study /progres: ${studyStr}
 * JLh Reachout : ${reachoutCount}
 * Visitor ibadah : ${sundayVisitorsCount}
-* Visitor acara : ${eventVisitorsCount}
-* Jlh Baptis : ${baptismsCount}${notes ? `\n\nCatatan: ${notes}` : ''}`;
+* Jlh Baptis : ${baptismsCount}${baptismGoal > 0 ? ` (Goal: ${groupTotalBaptisms + baptismsCount}/${baptismGoal})` : ''}${notes ? `\n\nCatatan: ${notes}` : ''}`;
   };
 
   const handleCopyWA = () => {
@@ -154,10 +153,10 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
         active_disciples_count: activeDisciplesCount,
         missing_ibadah_count: missingMembers.length,
         missing_reasons: missingMembers,
-        study_progress: studyProgresses,
+        study_progress: [],
         reachout_count: reachoutCount,
         sunday_visitors_count: sundayVisitorsCount,
-        event_visitors_count: eventVisitorsCount,
+        event_visitors_count: 0,
         baptisms_count: baptismsCount,
         notes
       });
@@ -170,7 +169,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
   // Analytics Metrics Calculation
   const totalDisciplesTracked = stats.reduce((acc, curr) => acc + (curr.active_disciples_count || 0), 0);
   const totalReachoutsRecorded = stats.reduce((acc, curr) => acc + (curr.reachout_count || 0), 0);
-  const totalVisitorsRecorded = stats.reduce((acc, curr) => acc + (curr.sunday_visitors_count || 0) + (curr.event_visitors_count || 0), 0);
+  const totalVisitorsRecorded = stats.reduce((acc, curr) => acc + (curr.sunday_visitors_count || 0), 0);
   const totalBaptismsRecorded = stats.reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
 
   // Prepare Recharts trend data chronologically
@@ -180,7 +179,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
       date: s.week_date.slice(5),
       group: s.group_name || 'Group',
       Reachout: s.reachout_count || 0,
-      Visitor: (s.sunday_visitors_count || 0) + (s.event_visitors_count || 0),
+      Visitor: s.sunday_visitors_count || 0,
       Disciple: s.active_disciples_count || 0
     }));
 
@@ -296,7 +295,6 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                           <tr className="bg-slate-50 border-b border-slate-200">
                             <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">Nama Disciple</th>
                             <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Kehadiran / Alasan Missing</th>
-                            <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Progres BA (Bible Study)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -318,10 +316,16 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                                     onChange={(e) => {
                                       const val = e.target.value;
                                       if (val === 'Hadir') {
-                                        handleToggleMissing(m, false);
+                                        setMissingMembers(prev => prev.filter(m => m.person_id !== m.id));
                                       } else {
-                                        handleToggleMissing(m, true);
-                                        handleUpdateMissingReason(m.id, val === 'Lainnya' ? 'Izin / Luar kota' : val);
+                                        const reason = val === 'Lainnya' ? 'Izin / Luar kota' : val;
+                                        setMissingMembers(prev => {
+                                          const exists = prev.some(mm => mm.person_id === m.id);
+                                          if (exists) {
+                                            return prev.map(mm => mm.person_id === m.id ? { ...mm, reason } : mm);
+                                          }
+                                          return [...prev, { person_id: m.id, person_name: m.full_name, reason }];
+                                        });
                                       }
                                     }}
                                     className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
@@ -346,44 +350,13 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                                       type="text"
                                       placeholder="Ketik alasan spesifik..."
                                       value={missingReason}
-                                      onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setMissingMembers(prev => prev.map(mm => mm.person_id === m.id ? { ...mm, reason: val } : mm));
+                                      }}
                                       className="mt-2 w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-900 focus:outline-none focus:border-amber-400 shadow-sm"
                                     />
                                   )}
-                                </td>
-                                
-                                <td className="px-4 py-3">
-                                  <select
-                                    value={isStudying ? (studyStage || 'Murid') : 'Non-BA'}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      if (val === 'Non-BA') {
-                                        handleToggleStudy(m, false);
-                                      } else {
-                                        handleToggleStudy(m, true);
-                                        handleUpdateStudyStage(m.id, val);
-                                      }
-                                    }}
-                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
-                                      isStudying
-                                        ? 'bg-indigo-50 text-indigo-900 border-indigo-200 focus:border-indigo-400'
-                                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
-                                    }`}
-                                  >
-                                    <option value="Non-BA">-- Tidak Sedang BA --</option>
-                                    <optgroup label="Topik Pelajaran BA">
-                                      <option value="Mencari Tuhan">1. Mencari Tuhan</option>
-                                      <option value="Firman Tuhan">2. Firman Tuhan</option>
-                                      <option value="Murid Yesus">3. Murid Yesus</option>
-                                      <option value="Dosa">4. Dosa</option>
-                                      <option value="Salib">5. Salib</option>
-                                      <option value="Pertobatan">6. Pertobatan</option>
-                                      <option value="Baptisan">7. Baptisan</option>
-                                      <option value="Gereja">8. Gereja</option>
-                                      <option value="Roh Kudus">9. Roh Kudus</option>
-                                      <option value="Murid">Lainnya...</option>
-                                    </optgroup>
-                                  </select>
                                 </td>
                               </tr>
                             );
@@ -397,8 +370,6 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                       {groupMembers.map(m => {
                         const isMissing = missingMembers.some(mm => mm.person_id === m.id);
                         const missingReason = missingMembers.find(mm => mm.person_id === m.id)?.reason || '';
-                        const isStudying = studyProgresses.some(sp => sp.person_id === m.id);
-                        const studyStage = studyProgresses.find(sp => sp.person_id === m.id)?.stage || '';
 
                         return (
                           <div key={m.id} className="p-4 space-y-3 bg-white hover:bg-slate-50/50 transition-colors">
@@ -408,14 +379,20 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                               <div>
                                 <span className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Kehadiran & Alasan</span>
                                 <select
-                                  value={isMissing ? (missingReason || 'Lainnya') : 'Hadir'}
+                                  value={isMissing ? (missingReason === 'Izin / Luar kota' || !['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].includes(missingReason) ? 'Lainnya' : missingReason) : 'Hadir'}
                                   onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === 'Hadir') {
-                                      handleToggleMissing(m, false);
+                                      setMissingMembers(prev => prev.filter(mm => mm.person_id !== m.id));
                                     } else {
-                                      handleToggleMissing(m, true);
-                                      handleUpdateMissingReason(m.id, val === 'Lainnya' ? 'Izin / Luar kota' : val);
+                                      const reason = val === 'Lainnya' ? 'Izin / Luar kota' : val;
+                                      setMissingMembers(prev => {
+                                        const exists = prev.some(mm => mm.person_id === m.id);
+                                        if (exists) {
+                                          return prev.map(mm => mm.person_id === m.id ? { ...mm, reason } : mm);
+                                        }
+                                        return [...prev, { person_id: m.id, person_name: m.full_name, reason }];
+                                      });
                                     }
                                   }}
                                   className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
@@ -440,45 +417,13 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                                     type="text"
                                     placeholder="Ketik alasan spesifik..."
                                     value={missingReason}
-                                    onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      setMissingMembers(prev => prev.map(mm => mm.person_id === m.id ? { ...mm, reason: val } : mm));
+                                    }}
                                     className="mt-2 w-full bg-white border border-amber-200 rounded-lg px-3 py-2.5 text-xs text-amber-900 focus:outline-none focus:border-amber-400 shadow-sm"
                                   />
                                 )}
-                              </div>
-
-                              <div>
-                                <span className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Progres BA</span>
-                                <select
-                                  value={isStudying ? (studyStage || 'Murid') : 'Non-BA'}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === 'Non-BA') {
-                                      handleToggleStudy(m, false);
-                                    } else {
-                                      handleToggleStudy(m, true);
-                                      handleUpdateStudyStage(m.id, val);
-                                    }
-                                  }}
-                                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
-                                    isStudying
-                                      ? 'bg-indigo-50 text-indigo-900 border-indigo-200 focus:border-indigo-400'
-                                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
-                                  }`}
-                                >
-                                  <option value="Non-BA">-- Tidak Sedang BA --</option>
-                                  <optgroup label="Topik Pelajaran BA">
-                                    <option value="Mencari Tuhan">1. Mencari Tuhan</option>
-                                    <option value="Firman Tuhan">2. Firman Tuhan</option>
-                                    <option value="Murid Yesus">3. Murid Yesus</option>
-                                    <option value="Dosa">4. Dosa</option>
-                                    <option value="Salib">5. Salib</option>
-                                    <option value="Pertobatan">6. Pertobatan</option>
-                                    <option value="Baptisan">7. Baptisan</option>
-                                    <option value="Gereja">8. Gereja</option>
-                                    <option value="Roh Kudus">9. Roh Kudus</option>
-                                    <option value="Murid">Lainnya...</option>
-                                  </optgroup>
-                                </select>
                               </div>
                             </div>
                           </div>
@@ -490,7 +435,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
               </div>
 
               {/* METRICS COUNTERS */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                 <div>
                   <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Reachout</label>
                   <input
@@ -514,18 +459,14 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Visitor Acara</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={eventVisitorsCount}
-                    onChange={e => setEventVisitorsCount(parseInt(e.target.value) || 0)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-black text-center tabular-nums"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">Baptis</label>
+                  <label className="flex items-center justify-between text-[11px] font-mono font-semibold text-slate-500 uppercase mb-1">
+                    <span>Baptis</span>
+                    {baptismGoal > 0 && (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-1.5 rounded">
+                        {groupTotalBaptisms}/{baptismGoal}
+                      </span>
+                    )}
+                  </label>
                   <input
                     type="number"
                     min="0"

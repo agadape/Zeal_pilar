@@ -51,6 +51,7 @@ export interface Group {
   leader_id?: string;
   leader_name?: string; // Joined from People
   members_count?: number;
+  baptism_goal?: number;
   archived_at?: string | null;
   updated_at?: string;
   created_at?: string;

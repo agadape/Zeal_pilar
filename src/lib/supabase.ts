@@ -380,7 +380,8 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
       const { data, error } = await supabase.from('groups').update({
         group_name: group.group_name,
         category: group.category,
-        leader_id: group.leader_id
+        leader_id: group.leader_id,
+        baptism_goal: group.baptism_goal
       }).eq('id', group.id).select().single();
       if (error) console.error("Supabase error (saveGroup update):", error);
       if (!error && data) return data as Group;
@@ -388,7 +389,8 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
       const { data, error } = await supabase.from('groups').insert([{
         group_name: group.group_name,
         category: group.category,
-        leader_id: group.leader_id
+        leader_id: group.leader_id,
+        baptism_goal: group.baptism_goal
       }]).select().single();
       if (error) console.error("Supabase error (saveGroup insert):", error);
       if (!error && data) return data as Group;

@@ -33,6 +33,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
   const [groupName, setGroupName] = useState('');
   const [category, setCategory] = useState<Gender>('SISTER');
   const [leaderId, setLeaderId] = useState<string>('');
+  const [baptismGoal, setBaptismGoal] = useState<number>(5);
 
   // Member Assignment Modal
   const [managingMembersGroup, setManagingMembersGroup] = useState<Group | null>(null);
@@ -51,6 +52,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
     setGroupName('');
     setCategory('SISTER');
     setLeaderId('');
+    setBaptismGoal(5);
     setIsGroupModalOpen(true);
   };
 
@@ -59,6 +61,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
     setGroupName(g.group_name);
     setCategory(g.category);
     setLeaderId(g.leader_id || '');
+    setBaptismGoal(g.baptism_goal || 5);
     setIsGroupModalOpen(true);
   };
 
@@ -89,7 +92,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
         id: editingGroup?.id,
         group_name: groupName.trim(),
         category,
-        leader_id: leaderId || undefined
+        leader_id: leaderId || undefined,
+        baptism_goal: baptismGoal
       });
       setIsGroupModalOpen(false);
     } finally {
@@ -177,9 +181,16 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
               </div>
               
               <h3 className="text-lg font-extrabold text-slate-900 tracking-tight line-clamp-1">{g.group_name}</h3>
-              <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium mt-2">
-                <IconShield className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
-                <span className="truncate">Leader: <strong className="text-slate-900">{g.leader_name || '-'}</strong></span>
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
+                  <IconShield className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
+                  <span className="truncate">Leader: <strong className="text-slate-900">{g.leader_name || '-'}</strong></span>
+                </div>
+                {g.baptism_goal && g.baptism_goal > 0 && (
+                  <span className="text-[10px] font-bold text-[#b5852e] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Goal Baptis: {g.baptism_goal}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -356,6 +367,17 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                         </option>
                       ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Goal Baptisan</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={baptismGoal}
+                    onChange={e => setBaptismGoal(parseInt(e.target.value) || 0)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                  />
                 </div>
               </div>
 
