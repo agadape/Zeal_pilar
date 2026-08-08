@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.49.1",
     "@tabler/icons-react": "^3.46.0",
     "canvas-confetti": "^1.9.4",
