@@ -20,8 +20,8 @@ interface NavbarProps {
 export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
-    { id: 'people', label: 'Data Jemaat', icon: IconUsers },
-    { id: 'groups', label: 'Kelompok (PDG)', icon: IconUsersGroup },
+    { id: 'people', label: 'Data Disciple', icon: IconUsers },
+    { id: 'groups', label: 'Grup PDG', icon: IconUsersGroup },
     { id: 'statistika', label: 'Laporan Mingguan', icon: IconClipboardCheck },
     { id: 'events', label: 'Jadwal & Pelayanan', icon: IconCalendarEvent },
     { id: 'announcements', label: 'Pengumuman', icon: IconSpeakerphone },

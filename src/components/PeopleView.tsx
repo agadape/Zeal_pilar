@@ -213,10 +213,10 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Data Jemaat
+            Data Disciple
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Direktori jemaat, pengunjung, dan partisipan kelas Alkitab.
+            Direktori disciple, pengunjung, dan partisipan kelas Alkitab.
           </p>
         </div>
 
@@ -285,7 +285,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
         {filteredPeople.length === 0 ? (
           <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200">
             <IconUsers className="w-10 h-10 text-slate-300 mx-auto mb-3" stroke={1.5} />
-            <p className="text-slate-500 font-medium text-sm">Tidak ada data jemaat yang ditemukan.</p>
+            <p className="text-slate-500 font-medium text-sm">Tidak ada data disciple yang ditemukan.</p>
           </div>
         ) : (
           filteredPeople.map(p => {
@@ -340,7 +340,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
       <FormPanel
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        title={editingPerson ? 'Edit Data Jemaat' : 'Tambah Jemaat Baru'}
+        title={editingPerson ? 'Edit Data Disciple' : 'Tambah Disciple Baru'}
         onSubmit={handleSavePersonSubmit}
         submitLabel="Simpan Data"
         isSubmitDisabled={submittingPerson}
@@ -515,7 +515,7 @@ export default function PeopleView({ people, groups, onSavePerson, onDeletePerso
                  }}
                  className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-lg w-full transition-colors border border-rose-100"
                >
-                 Hapus Data Jemaat
+                 Hapus Data Disciple
                </button>
              </div>
           )}

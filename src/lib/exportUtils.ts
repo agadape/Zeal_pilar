@@ -2,7 +2,7 @@ import { Person, WeeklyStat } from './types';
 
 export function exportPeopleToCSV(people: Person[]): void {
   if (!people || people.length === 0) {
-    alert('Belum ada data jemaat untuk di-export.');
+    alert('Belum ada data disciple untuk di-export.');
     return;
   }
 
@@ -18,7 +18,7 @@ export function exportPeopleToCSV(people: Person[]): void {
   ]);
 
   const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  downloadFile(csvContent, `Data_Jemaat_GKDI_Tugu_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+  downloadFile(csvContent, `Data_Disciple_GKDI_Tugu_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
 }
 
 export function exportStatsToCSV(stats: WeeklyStat[]): void {

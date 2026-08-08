@@ -144,15 +144,15 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Kelompok PDG</h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">Manajemen kelompok kecil (PDG Brother/Sister) dan anggotanya.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Grup PDG</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Manajemen grup kecil (PDG Brother/Sister) dan anggotanya.</p>
         </div>
         <button
           onClick={openAddGroupModal}
           className="btn-tactile btn-primary shrink-0"
         >
           <IconPlus className="w-4 h-4" stroke={2} />
-          <span>Buat Kelompok Baru</span>
+          <span>Buat Grup Baru</span>
         </button>
       </div>
 
@@ -242,7 +242,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                     onChange={e => setNewLeaderId(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-[#b5852e]"
                   >
-                    <option value="">-- Pilih Leader Baru dari Jemaat --</option>
+                    <option value="">-- Pilih Leader Baru dari Disciple --</option>
                     {people
                       .filter(p => p.gender === handoverGroup.category && p.id !== handoverGroup.leader_id)
                       .map(p => (
@@ -308,7 +308,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
             <div className="tugu-card w-full max-w-md rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[90vh] overflow-hidden animate-fade-in">
               <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-slate-900">
-                  {editingGroup ? 'Edit Kelompok' : 'Buat Kelompok Baru'}
+                  {editingGroup ? 'Edit Grup PDG' : 'Buat Grup Baru'}
                 </h3>
                 <button type="button" onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                   <IconX className="w-5 h-5" stroke={1.5} />
@@ -317,7 +317,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
 
               <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-4 custom-scrollbar">
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Kelompok *</label>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Grup *</label>
                   <input
                     type="text"
                     required
@@ -374,7 +374,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                   className="btn-tactile btn-primary px-4 py-2 text-xs"
                 >
                   <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Kelompok</span>
+                  <span>Simpan Grup PDG</span>
                 </button>
               </div>
             </div>

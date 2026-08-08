@@ -69,7 +69,7 @@ export default function DashboardView({ people, groups, stats, events = [], onNa
           <div className="tugu-card p-5 rounded-2xl border border-rose-200/60 bg-rose-50/30 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-rose-900">Follow-up Jemaat</h3>
+                <h3 className="font-bold text-rose-900">Follow-up Disciple</h3>
                 <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2 py-0.5 rounded-full">{weakPeople.length} Orang</span>
               </div>
               {weakPeople.length > 0 ? (
@@ -85,14 +85,14 @@ export default function DashboardView({ people, groups, stats, events = [], onNa
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-rose-600/80 mb-4">Semua jemaat dalam kondisi aktif dan baik.</p>
+                <p className="text-sm text-rose-600/80 mb-4">Semua disciple dalam kondisi aktif dan baik.</p>
               )}
             </div>
             <button 
               onClick={() => onNavigate('people')}
               className="text-xs font-bold text-rose-700 hover:text-rose-900 flex items-center gap-1 transition-colors mt-2"
             >
-              Lihat Data Jemaat <IconArrowRight className="w-3.5 h-3.5" />
+              Lihat Data Disciple <IconArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -123,7 +123,7 @@ export default function DashboardView({ people, groups, stats, events = [], onNa
               onClick={() => onNavigate('people')}
               className="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 transition-colors mt-2"
             >
-              Lihat Data Jemaat <IconArrowRight className="w-3.5 h-3.5" />
+              Lihat Data Disciple <IconArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -157,7 +157,7 @@ export default function DashboardView({ people, groups, stats, events = [], onNa
               <p className="text-sm text-slate-600 mb-4">
                 {isReportCompleted 
                   ? "Laporan minggu ini sudah diisi. Anda dapat menyalin laporannya ke WhatsApp dari menu Laporan Mingguan." 
-                  : "Jangan lupa untuk mengisi kehadiran, progress BA, dan statistik kelompok untuk minggu ini."}
+                  : "Jangan lupa untuk mengisi kehadiran, progress BA, dan statistik grup PDG untuk minggu ini."}
               </p>
             </div>
             <button 
@@ -222,13 +222,13 @@ export default function DashboardView({ people, groups, stats, events = [], onNa
           <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
             <div className="text-slate-500 mb-2"><IconUsers className="w-5 h-5" /></div>
             <p className="text-2xl font-black text-slate-900 tabular-nums">{totalPeople}</p>
-            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Total Jemaat</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Total Disciple</p>
           </div>
 
           <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
             <div className="text-emerald-500 mb-2"><IconUsersGroup className="w-5 h-5" /></div>
             <p className="text-2xl font-black text-slate-900 tabular-nums">{groups.length}</p>
-            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Kelompok PDG</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Grup PDG</p>
           </div>
 
           <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">

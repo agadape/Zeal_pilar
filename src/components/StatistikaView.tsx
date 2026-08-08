@@ -194,7 +194,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
             <IconClipboardCheck className="w-7 h-7 text-[#b5852e] shrink-0" stroke={1.5} />
             <span>Statistika Minggu & Analisis Data</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">Input data jemaat mingguan, simpan ke database, dan visualisasikan grafik perkembangan ministry.</p>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Input data disciple mingguan, simpan ke database, dan visualisasikan grafik perkembangan ministry.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
@@ -294,7 +294,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">Nama Jemaat</th>
+                            <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">Nama Disciple</th>
                             <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Kehadiran / Alasan Missing</th>
                             <th className="px-4 py-3 text-xs font-mono font-bold text-slate-600 uppercase tracking-wider min-w-[200px]">Progres BA (Bible Study)</th>
                           </tr>

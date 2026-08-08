@@ -50,7 +50,7 @@ export default function GroupDetailPanel({
     <FormPanel
       isOpen={isOpen}
       onClose={onClose}
-      title="Profil Kelompok"
+      title="Profil Grup PDG"
       cancelLabel="Tutup"
     >
       <div className="space-y-6">
@@ -74,20 +74,20 @@ export default function GroupDetailPanel({
               type="button"
               onClick={() => { onClose(); onEdit(group); }}
               className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 transition-colors"
-              title="Edit Kelompok"
+              title="Edit Grup PDG"
             >
               <IconEdit className="w-4 h-4" />
             </button>
             <button 
               type="button"
               onClick={() => { 
-                if (confirm('Yakin ingin menghapus kelompok ini? Semua data statistik yang terhubung akan hilang.')) {
+                if (confirm('Yakin ingin menghapus grup ini? Semua data statistik yang terhubung akan hilang.')) {
                   onDelete(group.id);
                   onClose();
                 }
               }}
               className="p-2 bg-rose-50 hover:bg-rose-100 rounded-xl text-rose-700 transition-colors"
-              title="Hapus Kelompok"
+              title="Hapus Grup PDG"
             >
               <IconTrash className="w-4 h-4" />
             </button>
@@ -97,7 +97,7 @@ export default function GroupDetailPanel({
         {/* Leader Info */}
         <div className="p-4 bg-amber-50/50 border border-amber-200/60 rounded-xl flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-amber-800 uppercase mb-0.5">Pemimpin Kelompok</p>
+            <p className="text-[10px] font-bold text-amber-800 uppercase mb-0.5">Pemimpin Grup PDG</p>
             <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
               <IconShield className="w-4 h-4 text-[#b5852e]" />
               {group.leader_name || 'Belum Ada Leader'}
@@ -133,7 +133,7 @@ export default function GroupDetailPanel({
           ) : members.length === 0 ? (
             <div className="text-center py-6 bg-slate-50 border border-slate-100 rounded-xl">
               <IconUser className="w-6 h-6 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs text-slate-500">Belum ada anggota di kelompok ini.</p>
+              <p className="text-xs text-slate-500">Belum ada anggota di grup ini.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">

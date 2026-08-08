@@ -39,7 +39,7 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
     <FormPanel
       isOpen={isOpen}
       onClose={onClose}
-      title="Profil Jemaat"
+      title="Profil Disciple"
       cancelLabel="Tutup"
     >
       <div className="space-y-6">
@@ -89,8 +89,8 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
           <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
             <div className="p-2 bg-white rounded-lg shadow-sm text-slate-400"><IconUsersGroup className="w-4 h-4" /></div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400">Kelompok PDG</p>
-              <p className="text-sm font-semibold text-slate-900">{group ? group.group_name : 'Belum Ada Kelompok'}</p>
+              <p className="text-[10px] uppercase font-bold text-slate-400">Grup PDG</p>
+              <p className="text-sm font-semibold text-slate-900">{group ? group.group_name : 'Belum Ada Grup'}</p>
             </div>
           </div>
           {(person.birth_date || person.baptism_date) && (
