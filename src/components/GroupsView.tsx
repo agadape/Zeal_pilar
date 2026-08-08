@@ -212,24 +212,24 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
 
       {/* LEADER HANDOVER WIZARD MODAL */}
       {handoverGroup && (
-        <div className="fixed inset-0 z-[100] flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
-          <div className="relative w-full max-w-md sm:max-w-lg h-full bg-white shadow-2xl border-l border-slate-200 animate-slide-in-right overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
+        <div className="fixed inset-0 z-[100] flex justify-end sm:justify-center sm:items-center sm:p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setHandoverGroup(null)}></div>
+          <div className="relative w-full max-w-md sm:rounded-3xl h-full sm:h-auto max-h-[100dvh] sm:max-h-[90vh] bg-white shadow-2xl animate-slide-in-right sm:animate-fade-in flex flex-col">
               
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
                     <IconArrowsExchange className="w-5 h-5 text-[#b5852e]" stroke={2} />
-                    <span>Handover Leadership: {handoverGroup.group_name}</span>
+                    <span>Handover: {handoverGroup.group_name}</span>
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">Proses pergantian Leader dengan pencatatan histori resmi.</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Proses pergantian Leader resmi.</p>
                 </div>
-                <button onClick={() => setHandoverGroup(null)} className="text-slate-400 hover:text-slate-700 p-1">
+                <button type="button" onClick={() => setHandoverGroup(null)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                   <IconX className="w-5 h-5" stroke={1.5} />
                 </button>
               </div>
 
-              <form onSubmit={handleHandoverSubmit} className="space-y-4">
+              <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-4 custom-scrollbar">
                 
                 <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 space-y-1 font-medium">
                   <div className="flex items-center space-x-1.5 font-bold text-slate-900">
@@ -284,45 +284,45 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 resize-none"
                   />
                 </div>
+              </div>
 
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setHandoverGroup(null)}
-                    className="btn-tactile btn-secondary"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingHandover || !newLeaderId}
-                    className="btn-tactile btn-primary"
-                  >
-                    <IconCheck className="w-4 h-4" stroke={2} />
-                    <span>Konfirmasi Handover Leader</span>
-                  </button>
-                </div>
+              <div className="flex-shrink-0 p-6 border-t border-slate-100 flex items-center justify-end space-x-3 bg-slate-50/50">
+                <button
+                  type="button"
+                  onClick={() => setHandoverGroup(null)}
+                  className="btn-tactile btn-secondary"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleHandoverSubmit}
+                  disabled={submittingHandover || !newLeaderId}
+                  className="btn-tactile btn-primary"
+                >
+                  <IconCheck className="w-4 h-4" stroke={2} />
+                  <span>Konfirmasi Handover Leader</span>
+                </button>
+              </div>
 
-              </form>
-
-            </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* CREATE / EDIT GROUP MODAL */}
       {isGroupModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-            <div className="tugu-card w-full max-w-md rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl overflow-y-auto max-h-[90vh] w-full custom-scrollbar">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="tugu-card w-full max-w-md rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[90vh] overflow-hidden animate-fade-in">
+              <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-slate-900">
                   {editingGroup ? 'Edit Small Group' : 'Buat Small Group Baru'}
                 </h3>
-                <button onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+                <button type="button" onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                   <IconX className="w-5 h-5" stroke={1.5} />
                 </button>
               </div>
 
-              <form onSubmit={handleGroupSubmit} className="space-y-4">
+              <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-4 custom-scrollbar">
                 <div>
                   <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Small Group *</label>
                   <input
@@ -364,79 +364,83 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                       ))}
                   </select>
                 </div>
+              </div>
 
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setIsGroupModalOpen(false)}
-                    className="btn-tactile btn-secondary"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-tactile btn-primary"
-                  >
-                    <IconCheck className="w-4 h-4" stroke={2} />
-                    <span>Simpan Group</span>
-                  </button>
-                </div>
-              </form>
+              <div className="flex-shrink-0 flex items-center justify-end space-x-3 p-6 border-t border-slate-100 bg-slate-50/50">
+                <button
+                  type="button"
+                  onClick={() => setIsGroupModalOpen(false)}
+                  className="btn-tactile btn-secondary"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGroupSubmit}
+                  disabled={submittingGroup}
+                  className="btn-tactile btn-primary"
+                >
+                  <IconCheck className="w-4 h-4" stroke={2} />
+                  <span>Simpan Group</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
       {/* MANAGE MEMBERS MODAL */}
       {managingMembersGroup && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-            <div className="tugu-card w-full max-w-lg rounded-3xl p-6 border border-slate-200 space-y-6 animate-fade-in bg-white shadow-xl max-h-[85vh] flex flex-col overflow-y-auto max-h-[90vh] w-full custom-scrollbar">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="tugu-card w-full max-w-lg rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[85vh] overflow-hidden animate-fade-in">
             
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Anggota: {managingMembersGroup.group_name}</h3>
                 <p className="text-xs text-slate-500 font-medium">Pilih jemaat yang masuk ke dalam small group ini.</p>
               </div>
-              <button onClick={() => setManagingMembersGroup(null)} className="text-slate-400 hover:text-slate-700 p-1">
+              <button type="button" onClick={() => setManagingMembersGroup(null)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                 <IconX className="w-5 h-5" stroke={1.5} />
               </button>
             </div>
 
-            {loadingMembers ? (
-              <div className="py-12 text-center text-slate-500 text-xs font-mono">Memuat anggota group...</div>
-            ) : (
-              <div className="overflow-y-auto space-y-2 pr-1 flex-1">
-                {people
-                  .filter(p => p.gender === managingMembersGroup.category)
-                  .map(p => {
-                    const isSelected = selectedMemberIds.includes(p.id);
-                    return (
-                      <div
-                        key={p.id}
-                        onClick={() => handleToggleMember(p.id)}
-                        className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                          isSelected
-                            ? 'bg-amber-50/80 border-[#b5852e] text-slate-900 font-bold'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                            isSelected ? 'bg-[#b5852e] text-white border-[#b5852e]' : 'border-slate-300 bg-white'
-                          }`}>
-                            {isSelected && <IconCheck className="w-3 h-3 stroke-[3]" />}
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold">{p.full_name}</span>
-                            <span className="block text-[11px] font-mono text-slate-500">{p.status} {p.campus ? `• ${p.campus}` : ''}</span>
+            <div className="flex-1 overflow-y-auto min-h-0 p-6 custom-scrollbar">
+              {loadingMembers ? (
+                <div className="py-12 text-center text-slate-500 text-xs font-mono">Memuat anggota group...</div>
+              ) : (
+                <div className="space-y-2">
+                  {people
+                    .filter(p => p.gender === managingMembersGroup.category)
+                    .map(p => {
+                      const isSelected = selectedMemberIds.includes(p.id);
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => handleToggleMember(p.id)}
+                          className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-amber-50/80 border-[#b5852e] text-slate-900 font-bold'
+                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                              isSelected ? 'bg-[#b5852e] text-white border-[#b5852e]' : 'border-slate-300 bg-white'
+                            }`}>
+                              {isSelected && <IconCheck className="w-3 h-3 stroke-[3]" />}
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold">{p.full_name}</span>
+                              <span className="block text-[11px] font-mono text-slate-500">{p.status} {p.campus ? `• ${p.campus}` : ''}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
+                      );
+                    })}
+                </div>
+              )}
+            </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div className="flex-shrink-0 flex items-center justify-between p-6 border-t border-slate-100 bg-slate-50/50">
               <span className="text-xs font-mono text-slate-500 font-semibold">{selectedMemberIds.length} Anggota terpilih</span>
               <div className="space-x-3">
                 <button

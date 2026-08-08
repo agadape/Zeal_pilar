@@ -408,75 +408,134 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
       ) : (
         /* DISCIPLES & REACHOUT TABLE VIEW */
         <div className="tugu-card rounded-2xl overflow-hidden bg-white border border-slate-200">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm text-slate-700">
-              <thead className="bg-slate-50 border-b border-slate-200 text-xs font-mono font-semibold text-slate-500 uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4">Nama Lengkap</th>
-                  <th className="px-6 py-4">Gender</th>
-                  <th className="px-6 py-4">Campus / Asal</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Catatan / Info</th>
-                  <th className="px-6 py-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredPeople.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-xs">
-                      Tidak ada data jemaat yang cocok dengan kategori ini.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredPeople.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-900">
-                        {p.full_name}
-                        {p.phone_number && (
-                          <span className="flex items-center space-x-1 text-xs font-mono font-normal text-slate-500 mt-0.5">
-                            <IconPhone className="w-3 h-3 text-slate-400 shrink-0" stroke={1.5} />
-                            <span>{p.phone_number}</span>
+          {filteredPeople.length === 0 ? (
+            <div className="px-6 py-12 text-center text-slate-400 text-xs">
+              Tidak ada data jemaat yang cocok dengan kategori ini.
+            </div>
+          ) : (
+            <>
+              {/* DESKTOP TABLE */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm text-slate-700">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-xs font-mono font-semibold text-slate-500 uppercase tracking-wider">
+                    <tr>
+                      <th className="px-6 py-4">Nama Lengkap</th>
+                      <th className="px-6 py-4">Gender</th>
+                      <th className="px-6 py-4">Campus / Asal</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Catatan / Info</th>
+                      <th className="px-6 py-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredPeople.map(p => (
+                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-900">
+                          {p.full_name}
+                          {p.phone_number && (
+                            <span className="flex items-center space-x-1 text-xs font-mono font-normal text-slate-500 mt-0.5">
+                              <IconPhone className="w-3 h-3 text-slate-400 shrink-0" stroke={1.5} />
+                              <span>{p.phone_number}</span>
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-xs font-mono font-medium">
+                          <span className={`px-2 py-0.5 rounded ${
+                            p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border border-blue-200' : 'bg-pink-50 text-pink-800 border border-pink-200'
+                          }`}>
+                            {p.gender}
                           </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-xs font-mono font-medium">
-                        <span className={`px-2 py-0.5 rounded ${
-                          p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border border-blue-200' : 'bg-pink-50 text-pink-800 border border-pink-200'
-                        }`}>
-                          {p.gender}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-xs text-slate-600 font-medium">
-                        {p.campus || '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold border inline-block uppercase ${getStatusBadgeClass(p.status)}`}>
-                          {p.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">
-                        {p.notes || '-'}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-600 font-medium">
+                          {p.campus || '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold border inline-block uppercase ${getStatusBadgeClass(p.status)}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">
+                          {p.notes || '-'}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                          <button
+                            onClick={() => openEditModal(p)}
+                            className="btn-tactile p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200 inline-flex items-center justify-center w-8 h-8"
+                          >
+                            <IconEdit className="w-4 h-4" stroke={1.5} />
+                          </button>
+                          <button
+                            onClick={() => onDeletePerson(p.id)}
+                            className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200 inline-flex items-center justify-center w-8 h-8"
+                          >
+                            <IconTrash className="w-4 h-4" stroke={1.5} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARDS */}
+              <div className="md:hidden flex flex-col divide-y divide-slate-100">
+                {filteredPeople.map(p => (
+                  <div key={p.id} className="p-4 space-y-3 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex justify-between items-start gap-3">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{p.full_name}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${
+                            p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'
+                          }`}>
+                            {p.gender}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
+                            {p.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex space-x-1 shrink-0">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="btn-tactile p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200"
+                          className="btn-tactile p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200 flex items-center justify-center w-9 h-9"
                         >
                           <IconEdit className="w-4 h-4" stroke={1.5} />
                         </button>
                         <button
                           onClick={() => onDeletePerson(p.id)}
-                          className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
+                          className="btn-tactile p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200 flex items-center justify-center w-9 h-9"
                         >
                           <IconTrash className="w-4 h-4" stroke={1.5} />
                         </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {p.campus && (
+                        <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                          <span className="block text-[9px] font-mono text-slate-400 uppercase mb-0.5">Kampus</span>
+                          <span className="font-medium text-slate-700 truncate">{p.campus}</span>
+                        </div>
+                      )}
+                      {p.phone_number && (
+                        <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                          <span className="block text-[9px] font-mono text-slate-400 uppercase mb-0.5">Phone</span>
+                          <span className="font-mono text-slate-700 flex items-center gap-1"><IconPhone className="w-3 h-3 text-slate-400" /> {p.phone_number}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {p.notes && (
+                      <div className="text-[11px] text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                        {p.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 

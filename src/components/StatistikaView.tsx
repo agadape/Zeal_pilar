@@ -289,7 +289,8 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                   </div>
                 ) : (
                   <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-                    <div className="overflow-x-auto">
+                    {/* DESKTOP TABLE VIEW */}
+                    <div className="hidden md:block overflow-x-auto">
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 border-b border-slate-200">
@@ -323,7 +324,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                                         handleUpdateMissingReason(m.id, val === 'Lainnya' ? 'Izin / Luar kota' : val);
                                       }
                                     }}
-                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none transition-colors border ${
+                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
                                       isMissing 
                                         ? 'bg-amber-50 text-amber-900 border-amber-200 focus:border-amber-400' 
                                         : 'bg-emerald-50/50 text-emerald-800 border-emerald-100 hover:bg-emerald-50'
@@ -346,7 +347,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                                       placeholder="Ketik alasan spesifik..."
                                       value={missingReason}
                                       onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
-                                      className="mt-2 w-full bg-white border border-amber-200 rounded-lg px-3 py-1.5 text-[11px] text-amber-900 focus:outline-none focus:border-amber-400 shadow-sm"
+                                      className="mt-2 w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-900 focus:outline-none focus:border-amber-400 shadow-sm"
                                     />
                                   )}
                                 </td>
@@ -363,7 +364,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                                         handleUpdateStudyStage(m.id, val);
                                       }
                                     }}
-                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none transition-colors border ${
+                                    className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
                                       isStudying
                                         ? 'bg-indigo-50 text-indigo-900 border-indigo-200 focus:border-indigo-400'
                                         : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
@@ -389,6 +390,100 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                           })}
                         </tbody>
                       </table>
+                    </div>
+
+                    {/* MOBILE CARDS VIEW */}
+                    <div className="md:hidden flex flex-col divide-y divide-slate-100">
+                      {groupMembers.map(m => {
+                        const isMissing = missingMembers.some(mm => mm.person_id === m.id);
+                        const missingReason = missingMembers.find(mm => mm.person_id === m.id)?.reason || '';
+                        const isStudying = studyProgresses.some(sp => sp.person_id === m.id);
+                        const studyStage = studyProgresses.find(sp => sp.person_id === m.id)?.stage || '';
+
+                        return (
+                          <div key={m.id} className="p-4 space-y-3 bg-white hover:bg-slate-50/50 transition-colors">
+                            <h4 className="font-bold text-slate-900 text-sm">{m.full_name}</h4>
+                            
+                            <div className="grid grid-cols-1 gap-3">
+                              <div>
+                                <span className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Kehadiran & Alasan</span>
+                                <select
+                                  value={isMissing ? (missingReason || 'Lainnya') : 'Hadir'}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === 'Hadir') {
+                                      handleToggleMissing(m, false);
+                                    } else {
+                                      handleToggleMissing(m, true);
+                                      handleUpdateMissingReason(m.id, val === 'Lainnya' ? 'Izin / Luar kota' : val);
+                                    }
+                                  }}
+                                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
+                                    isMissing 
+                                      ? 'bg-amber-50 text-amber-900 border-amber-200 focus:border-amber-400' 
+                                      : 'bg-emerald-50/50 text-emerald-800 border-emerald-100 hover:bg-emerald-50'
+                                  }`}
+                                >
+                                  <option value="Hadir">✅ Hadir Ibadah</option>
+                                  <optgroup label="Alasan Missing">
+                                    <option value="Sakit">Sakit</option>
+                                    <option value="Pulang Kampung">Pulang Kampung</option>
+                                    <option value="Kerja/OJT">Kerja / OJT</option>
+                                    <option value="Tugas Kampus">Tugas Kampus</option>
+                                    <option value="MIA">MIA (Missing In Action)</option>
+                                    <option value="Lainnya">Lainnya...</option>
+                                  </optgroup>
+                                </select>
+                                
+                                {isMissing && missingReason && !['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].includes(missingReason) && (
+                                  <input
+                                    type="text"
+                                    placeholder="Ketik alasan spesifik..."
+                                    value={missingReason}
+                                    onChange={e => handleUpdateMissingReason(m.id, e.target.value)}
+                                    className="mt-2 w-full bg-white border border-amber-200 rounded-lg px-3 py-2.5 text-xs text-amber-900 focus:outline-none focus:border-amber-400 shadow-sm"
+                                  />
+                                )}
+                              </div>
+
+                              <div>
+                                <span className="block text-[10px] font-mono text-slate-400 uppercase mb-1">Progres BA</span>
+                                <select
+                                  value={isStudying ? (studyStage || 'Murid') : 'Non-BA'}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === 'Non-BA') {
+                                      handleToggleStudy(m, false);
+                                    } else {
+                                      handleToggleStudy(m, true);
+                                      handleUpdateStudyStage(m.id, val);
+                                    }
+                                  }}
+                                  className={`w-full text-xs font-semibold rounded-xl px-3 py-2.5 focus:outline-none transition-colors border ${
+                                    isStudying
+                                      ? 'bg-indigo-50 text-indigo-900 border-indigo-200 focus:border-indigo-400'
+                                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  <option value="Non-BA">-- Tidak Sedang BA --</option>
+                                  <optgroup label="Topik Pelajaran BA">
+                                    <option value="Mencari Tuhan">1. Mencari Tuhan</option>
+                                    <option value="Firman Tuhan">2. Firman Tuhan</option>
+                                    <option value="Murid Yesus">3. Murid Yesus</option>
+                                    <option value="Dosa">4. Dosa</option>
+                                    <option value="Salib">5. Salib</option>
+                                    <option value="Pertobatan">6. Pertobatan</option>
+                                    <option value="Baptisan">7. Baptisan</option>
+                                    <option value="Gereja">8. Gereja</option>
+                                    <option value="Roh Kudus">9. Roh Kudus</option>
+                                    <option value="Murid">Lainnya...</option>
+                                  </optgroup>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
