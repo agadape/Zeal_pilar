@@ -8,7 +8,7 @@ import {
   IconTrash, 
   IconShield,
   IconArrowsExchange,
-  IconInfoCircle,
+  
   IconUser
 } from '@tabler/icons-react';
 

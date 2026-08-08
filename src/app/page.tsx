@@ -7,7 +7,7 @@ import PeopleView from '@/components/PeopleView';
 import GroupsView from '@/components/GroupsView';
 import StatistikaView from '@/components/StatistikaView';
 
-import { Person, Group, WeeklyStat, MinistryEvent, Announcement } from '@/lib/types';
+import { Person, Group, WeeklyStat,  } from '@/lib/types';
 import { 
   fetchPeople, 
   savePerson, 
@@ -20,13 +20,12 @@ import {
   fetchWeeklyStats, 
   saveWeeklyStat,
   deleteWeeklyStat,
-  fetchEvents, 
-  saveEvent,
-  deleteEvent,
-  fetchAnnouncements, 
-  saveAnnouncement,
-  deleteAnnouncement 
-} from '@/lib/supabase';
+   
+  
+  
+   
+  
+  } from '@/lib/supabase';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -36,26 +35,20 @@ export default function Home() {
   const [people, setPeople] = useState<Person[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [stats, setStats] = useState<WeeklyStat[]>([]);
-  const [events, setEvents] = useState<MinistryEvent[]>([]);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   // Load all initial data
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [peopleData, groupsData, statsData, eventsData, annData] = await Promise.all([
+      const [peopleData, groupsData, statsData] = await Promise.all([
         fetchPeople(),
         fetchGroups(),
-        fetchWeeklyStats(),
-        fetchEvents(),
-        fetchAnnouncements()
+        fetchWeeklyStats()
       ]);
 
       setPeople(peopleData);
       setGroups(groupsData);
       setStats(statsData);
-      setEvents(eventsData);
-      setAnnouncements(annData);
     } catch (err) {
       console.error('Data loading error:', err);
     } finally {
@@ -114,30 +107,6 @@ export default function Home() {
     }
   };
 
-  const handleSaveEvent = async (event: Omit<MinistryEvent, 'id'> & { id?: string }) => {
-    await saveEvent(event);
-    await loadAllData();
-  };
-
-  const handleDeleteEvent = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus event ini?')) {
-      await deleteEvent(id);
-      await loadAllData();
-    }
-  };
-
-  const handleSaveAnnouncement = async (ann: Omit<Announcement, 'id'> & { id?: string }) => {
-    await saveAnnouncement(ann);
-    await loadAllData();
-  };
-
-  const handleDeleteAnnouncement = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
-      await deleteAnnouncement(id);
-      await loadAllData();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between selection:bg-[#b5852e] selection:text-white">
       
@@ -154,18 +123,14 @@ export default function Home() {
             <>
               {activeTab === 'dashboard' && (
                 <DashboardView 
-                  people={people} 
-                  groups={groups} 
-                  stats={stats} 
-                  events={events}
-                  onNavigate={setActiveTab} 
+                  people={people}
+groups={groups} stats={stats} onNavigate={setActiveTab} 
                 />
               )}
 
               {activeTab === 'people' && (
                 <PeopleView 
                   people={people} 
-                  groups={groups}
                   onSavePerson={handleSavePerson} 
                   onDeletePerson={handleDeletePerson} 
                   onSaveBALog={handleSaveBALog}
@@ -192,7 +157,6 @@ export default function Home() {
                 />
               )}
 
-              )}
             </>
           )}
         </main>

@@ -3,15 +3,14 @@ import { Group, Person, Gender } from '@/lib/types';
 import { fetchGroupMembers, updateGroupMembers } from '@/lib/supabase';
 import GroupDetailPanel from './GroupDetailPanel';
 import { 
-  IconUsersGroup, 
+   
   IconPlus, 
   IconX, 
   IconCheck, 
   IconShield,
   IconArrowsExchange,
   IconInfoCircle,
-  IconUser
-} from '@tabler/icons-react';
+  } from '@tabler/icons-react';
 
 interface GroupsViewProps {
   groups: Group[];

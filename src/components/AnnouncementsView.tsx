@@ -10,9 +10,8 @@ import {
   IconUserCheck, 
   IconBook, 
   IconSparkles, 
-  IconX, 
-  IconCheck 
-} from '@tabler/icons-react';
+   
+  } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
 
 interface AnnouncementsViewProps {

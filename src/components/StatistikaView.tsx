@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Group, Person, WeeklyStat, MissingReason, StudyProgress } from '@/lib/types';
+import { Group, Person, WeeklyStat, MissingReason, } from '@/lib/types';
 import { fetchGroupMembers } from '@/lib/supabase';
 import { exportStatsToCSV } from '@/lib/exportUtils';
 import confetti from 'canvas-confetti';
@@ -48,11 +48,9 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
 
   // Form State
   const [missingMembers, setMissingMembers] = useState<MissingReason[]>([]);
-  const [studyProgresses, setStudyProgresses] = useState<StudyProgress[]>([]);
-  const [reachoutCount, setReachoutCount] = useState<number>(0);
+    const [reachoutCount, setReachoutCount] = useState<number>(0);
   const [sundayVisitorsCount, setSundayVisitorsCount] = useState<number>(0);
-  const [eventVisitorsCount, setEventVisitorsCount] = useState<number>(0);
-  const [baptismsCount, setBaptismsCount] = useState<number>(0);
+    const [baptismsCount, setBaptismsCount] = useState<number>(0);
   const [notes, setNotes] = useState<string>('');
 
   const [copied, setCopied] = useState(false);
@@ -68,8 +66,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
         setGroupMembers(members);
         // Reset checkins
         setMissingMembers([]);
-        setStudyProgresses([]);
-        setLoadingMembers(false);
+                setLoadingMembers(false);
       }
     });
     return () => { isMounted = false; };
@@ -83,34 +80,10 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
     .reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
   const baptismGoal = selectedGroup?.baptism_goal || 0;
 
-  const handleToggleMissing = (p: Person, isMissing: boolean) => {
-    if (isMissing) {
-      if (!missingMembers.some(m => m.person_id === p.id)) {
-        setMissingMembers([...missingMembers, { person_id: p.id, person_name: p.full_name, reason: 'Izin / Luar kota' }]);
-      }
-    } else {
-      setMissingMembers(missingMembers.filter(m => m.person_id !== p.id));
-    }
-  };
-
-  const handleUpdateMissingReason = (personId: string, reason: string) => {
-    setMissingMembers(missingMembers.map(m => m.person_id === personId ? { ...m, reason } : m));
-  };
-
-  const handleToggleStudy = (p: Person, isStudying: boolean) => {
-    if (isStudying) {
-      if (!studyProgresses.some(s => s.person_id === p.id)) {
-        setStudyProgresses([...studyProgresses, { person_id: p.id, person_name: p.full_name, stage: 'Murid' }]);
-      }
-    } else {
-      setStudyProgresses(studyProgresses.filter(s => s.person_id !== p.id));
-    }
-  };
-
-  const handleUpdateStudyStage = (personId: string, stage: string) => {
-    setStudyProgresses(studyProgresses.map(s => s.person_id === personId ? { ...s, stage } : s));
-  };
-
+  
+  
+  
+  
   // GENERATE WHATSAPP TEXT
   const generateWAText = () => {
     const formattedDate = new Date(weekDate).toLocaleDateString('id-ID', {
@@ -301,9 +274,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                           {groupMembers.map(m => {
                             const isMissing = missingMembers.some(mm => mm.person_id === m.id);
                             const missingReason = missingMembers.find(mm => mm.person_id === m.id)?.reason || '';
-                            const isStudying = studyProgresses.some(sp => sp.person_id === m.id);
-                            const studyStage = studyProgresses.find(sp => sp.person_id === m.id)?.stage || '';
-
+                                                        
                             return (
                               <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
                                 <td className="px-4 py-3">

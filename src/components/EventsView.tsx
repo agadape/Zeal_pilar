@@ -10,9 +10,8 @@ import {
   IconClock, 
   IconEdit, 
   IconTrash, 
-  IconX, 
-  IconCheck 
-} from '@tabler/icons-react';
+   
+  } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
 
 interface EventsViewProps {

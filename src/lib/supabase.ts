@@ -343,7 +343,7 @@ export async function fetchGroups(): Promise<Group[]> {
     if (error) console.error("Supabase error (fetchGroups):", error);
     
     if (!error && groupsData) {
-      return groupsData.map((g: any) => {
+      return groupsData.map((g: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
         // extract count from [{ count: X }] or { count: X } depending on postgres version
         const memberCountData = g.group_members;
         const count = Array.isArray(memberCountData) 

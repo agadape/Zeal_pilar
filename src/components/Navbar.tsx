@@ -3,12 +3,12 @@
 import Image from 'next/image';
 import { 
   IconLayoutDashboard, 
-  IconUserPlus, 
+   
   IconUsers,
   IconUsersGroup, 
   IconClipboardCheck, 
-  IconCalendarEvent, 
-  IconSpeakerphone,
+   
+  
   IconRefresh
 } from '@tabler/icons-react';
 

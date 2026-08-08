@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Person, PersonStatus, Gender, WeeklyStudyProgressLog, Group } from '@/lib/types';
+import { Person, PersonStatus, Gender, WeeklyStudyProgressLog, } from '@/lib/types';
 import { exportPeopleToCSV } from '@/lib/exportUtils';
 import {
   IconUserPlus, 
@@ -13,8 +13,7 @@ import PersonDetailPanel from './PersonDetailPanel';
 
 interface PeopleViewProps {
   people: Person[];
-  groups: Group[];
-  onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
+    onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
   onDeletePerson: (id: string) => Promise<void>;
   onSaveBALog?: (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
 }
@@ -44,7 +43,7 @@ function saveCampusToList(name: string) {
   } catch { /* ignore */ }
 }
 
-export default function PeopleView({ people, groups, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
+export default function PeopleView({ people, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
 
   const [search, setSearch] = useState('');
   const [campusList, setCampusList] = useState<string[]>(getCampusList);
