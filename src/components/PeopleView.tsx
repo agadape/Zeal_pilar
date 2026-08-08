@@ -197,27 +197,27 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     <div 
       key={p.id} 
       onClick={() => openDetail(p)}
-      className="group flex items-center justify-between p-3 sm:p-4 bg-white hover:bg-amber-50/50 border-b border-slate-100 last:border-0 cursor-pointer transition-colors"
+      className="group flex items-center justify-between p-3.5 sm:p-4 bg-white/70 hover:bg-white backdrop-blur-xl border border-slate-200/60 hover:border-[#b5852e]/40 rounded-2xl mb-2.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-6px_rgba(181,133,46,0.15)] cursor-pointer transition-all duration-300 ease-out transform hover:-translate-y-0.5"
     >
-      <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-pink-50 text-pink-700 border-pink-200'}`}>
-          <span className="font-bold text-sm">{p.full_name.charAt(0).toUpperCase()}</span>
+      <div className="flex items-center space-x-4 min-w-0">
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${p.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-gradient-to-br from-rose-400 to-orange-400 text-white'}`}>
+          <span className="font-bold text-base font-serif drop-shadow-sm">{p.full_name.charAt(0).toUpperCase()}</span>
         </div>
-        <div className="min-w-0 flex flex-col">
+        <div className="min-w-0 flex flex-col justify-center space-y-1">
           <div className="flex items-center space-x-2">
-            <h3 className="font-bold text-sm sm:text-base text-slate-900 truncate">{p.full_name}</h3>
+            <h3 className="font-extrabold text-sm sm:text-base text-slate-800 truncate tracking-tight">{p.full_name}</h3>
             {p.campus && (
-              <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9px] font-mono font-bold text-slate-500 bg-slate-100 border border-slate-200 uppercase truncate max-w-[100px]">
+              <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 uppercase truncate max-w-[120px] tracking-wider">
                 {p.campus}
               </span>
             )}
           </div>
-          <div className="flex items-center space-x-2 mt-0.5">
-            <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
+          <div className="flex items-center space-x-2">
+            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${getStatusBadgeClass(p.status)}`}>
               {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
             </span>
             {p.study_stage && (
-              <span className="text-[10px] text-slate-500 font-medium truncate">
+              <span className="text-[10px] text-slate-500 font-semibold truncate tracking-tight">
                 • {p.study_stage}
               </span>
             )}
@@ -226,22 +226,22 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
       </div>
       
       <div className="flex items-center shrink-0 pl-3">
-        <span className="text-slate-300 group-hover:text-[#b5852e] transition-colors">
-          <IconChevronRight className="w-5 h-5" stroke={2} />
-        </span>
+        <div className="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-[#b5852e]/10 border border-transparent group-hover:border-[#b5852e]/20 flex items-center justify-center transition-colors">
+          <IconChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#b5852e] group-hover:translate-x-0.5 transition-all" stroke={2.5} />
+        </div>
       </div>
     </div>
   );
 
   const getStatusBadgeClass = (st: PersonStatus) => {
     switch (st) {
-      case 'LEADER': return 'bg-purple-100 text-purple-900 border-purple-200';
-      case 'DISCIPLE': return 'bg-emerald-100 text-emerald-900 border-emerald-200';
-      case 'BIBLE_STUDY': return 'bg-amber-100 text-amber-900 border-amber-200';
-      case 'VISITOR': return 'bg-cyan-100 text-cyan-900 border-cyan-200';
-      case 'WEAK': return 'bg-rose-100 text-rose-900 border-rose-200';
-      case 'INACTIVE': return 'bg-slate-100 text-slate-700 border-slate-200';
-      default: return 'bg-slate-100 text-slate-800';
+      case 'LEADER': return 'bg-purple-50 text-purple-700 border-purple-200/50 shadow-sm';
+      case 'DISCIPLE': return 'bg-emerald-50 text-emerald-700 border-emerald-200/50 shadow-sm';
+      case 'BIBLE_STUDY': return 'bg-amber-50 text-amber-700 border-amber-200/50 shadow-sm';
+      case 'VISITOR': return 'bg-cyan-50 text-cyan-700 border-cyan-200/50 shadow-sm';
+      case 'WEAK': return 'bg-rose-50 text-rose-700 border-rose-200/50 shadow-sm';
+      case 'INACTIVE': return 'bg-slate-50 text-slate-600 border-slate-200/50 shadow-sm';
+      default: return 'bg-slate-50 text-slate-700 border-slate-200/50 shadow-sm';
     }
   };
 
@@ -278,34 +278,39 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
         </div>
       </div>
 
-      {/* SEARCH & FILTERS */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col sm:flex-row items-center gap-2">
-        <div className="relative w-full sm:w-64 shrink-0">
-          <IconSearch className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari nama atau kampus..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-          />
+      {/* SEARCH & FILTERS - Redesigned as a prominent bar */}
+      <div className="relative w-full shadow-sm rounded-2xl">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <IconSearch className="w-5 h-5 text-slate-400" stroke={2.5} />
         </div>
+        <input
+          type="text"
+          placeholder="Cari nama, status, kampus, atau catatan..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 text-base text-slate-900 focus:outline-none focus:border-[#b5852e] focus:ring-4 focus:ring-[#b5852e]/10 transition-all font-medium placeholder-slate-400"
+        />
       </div>
 
-      {/* DIRECTORY LIST (Replacing the dense table and cards) */}
-      <div className="space-y-6">
+      {/* DIRECTORY LIST */}
+      <div className="space-y-10 pt-4">
         {(groupedPeople.disciples.length === 0 && groupedPeople.studyans.length === 0 && groupedPeople.visitors.length === 0 && groupedPeople.inactives.length === 0) ? (
-          <div className="py-16 text-center bg-white rounded-2xl border border-slate-200">
-            <IconUsers className="w-10 h-10 text-slate-300 mx-auto mb-3" stroke={1.5} />
-            <p className="text-slate-500 font-medium text-sm">Tidak ada data disciple yang ditemukan.</p>
+          <div className="py-20 text-center bg-white rounded-3xl border border-slate-200 border-dashed">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+              <IconUsers className="w-8 h-8 text-slate-300" stroke={1.5} />
+            </div>
+            <p className="text-slate-500 font-bold text-sm">Tidak ada data yang ditemukan.</p>
+            <p className="text-slate-400 text-xs mt-1">Coba gunakan kata kunci lain.</p>
           </div>
         ) : (
           <>
             {groupedPeople.disciples.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Sudah Disciple</h2>
-                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.disciples.length}</span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                    <span>Sudah Disciple</span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">{groupedPeople.disciples.length}</span>
+                  </h2>
                 </div>
                 <div className="flex flex-col">
                   {groupedPeople.disciples.map(renderPersonRow)}
@@ -314,10 +319,12 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
             )}
             
             {groupedPeople.studyans.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Studyan</h2>
-                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.studyans.length}</span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                    <span>Studyan / Progress BA</span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-black">{groupedPeople.studyans.length}</span>
+                  </h2>
                 </div>
                 <div className="flex flex-col">
                   {groupedPeople.studyans.map(renderPersonRow)}
@@ -326,10 +333,12 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
             )}
 
             {groupedPeople.visitors.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Visitor / Tamu</h2>
-                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.visitors.length}</span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                    <span>Visitor / Tamu</span>
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 text-[11px] font-black">{groupedPeople.visitors.length}</span>
+                  </h2>
                 </div>
                 <div className="flex flex-col">
                   {groupedPeople.visitors.map(renderPersonRow)}
@@ -338,10 +347,12 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
             )}
 
             {groupedPeople.inactives.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-75">
-                <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lainnya / Inactive</h2>
-                  <span className="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">{groupedPeople.inactives.length}</span>
+              <div className="space-y-4 opacity-70 hover:opacity-100 transition-opacity">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-lg font-black text-slate-500 tracking-tight flex items-center space-x-2">
+                    <span>Lainnya / Inactive</span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-black">{groupedPeople.inactives.length}</span>
+                  </h2>
                 </div>
                 <div className="flex flex-col">
                   {groupedPeople.inactives.map(renderPersonRow)}
