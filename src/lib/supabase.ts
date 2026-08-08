@@ -335,28 +335,40 @@ export async function deletePerson(id: string): Promise<boolean> {
 
 export async function fetchGroups(): Promise<Group[]> {
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.from('groups').select(`
+    const { data: groupsData, error } = await supabase.from('groups').select(`
       *,
       people:leader_id (full_name)
     `).order('group_name');
     if (error) console.error("Supabase error (fetchGroups):", error);
     
-    if (!error && data) {
-      return data.map((g: Record<string, unknown> & { people?: { full_name?: string } }) => ({
+    if (!error && groupsData) {
+      const { data: membersData } = await supabase.from('group_members').select('group_id');
+      const counts: Record<string, number> = {};
+      if (membersData) {
+        membersData.forEach(m => {
+          counts[m.group_id] = (counts[m.group_id] || 0) + 1;
+        });
+      }
+
+      return groupsData.map((g: Record<string, unknown> & { id: string, people?: { full_name?: string } }) => ({
         ...g,
-        leader_name: g.people?.full_name || 'Belum ditugaskan'
+        leader_name: g.people?.full_name || 'Belum ditugaskan',
+        members_count: counts[g.id] || 0
       })) as Group[];
     }
   }
 
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
   
   return groups.map(g => {
     const leader = people.find(p => p.id === g.leader_id);
+    const count = members.filter(m => m.group_id === g.id).length;
     return {
       ...g,
-      leader_name: leader ? leader.full_name : 'Belum ditugaskan'
+      leader_name: leader ? leader.full_name : 'Belum ditugaskan',
+      members_count: count
     };
   });
 }
