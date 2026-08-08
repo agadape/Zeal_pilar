@@ -1,26 +1,18 @@
-'use client';
-
-import { useState } from 'react';
-import { Person, PersonStatus, Gender, WeeklyStudyProgressLog } from '@/lib/types';
+import { useState, useMemo } from 'react';
+import { Person, PersonStatus, Gender, WeeklyStudyProgressLog, Group } from '@/lib/types';
 import { exportPeopleToCSV } from '@/lib/exportUtils';
 import {
   IconUserPlus, 
   IconSearch, 
-  IconEdit, 
-  IconTrash, 
-  IconPhone,
-  IconUsers,
-  IconBook,
-  IconHeartHandshake,
-  IconPlus,
-  IconHistory,
   IconDownload,
-  IconCheck
+  IconUsers
 } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
+import PersonDetailPanel from './PersonDetailPanel';
 
 interface PeopleViewProps {
   people: Person[];
+  groups: Group[];
   onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
   onDeletePerson: (id: string) => Promise<void>;
   onSaveBALog?: (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
@@ -34,7 +26,6 @@ function getCampusList(): string[] {
     const stored = localStorage.getItem('tugu_campus_list');
     if (stored) {
       const parsed = JSON.parse(stored) as string[];
-      // Merge defaults + custom, deduplicate
       return Array.from(new Set([...DEFAULT_CAMPUSES, ...parsed]));
     }
   } catch { /* ignore */ }
@@ -52,21 +43,21 @@ function saveCampusToList(name: string) {
   } catch { /* ignore */ }
 }
 
-export default function PeopleView({ people, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
-  const [activeCategoryTab, setActiveCategoryTab] = useState<'disciples' | 'bible_study' | 'reachout'>('disciples');
+export default function PeopleView({ people, groups, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
+  const [activeTab, setActiveTab] = useState<'ALL' | 'DISCIPLES' | 'BIBLE_STUDY' | 'VISITORS'>('ALL');
   const [search, setSearch] = useState('');
-  const [filterGender, setFilterGender] = useState<string>('ALL');
-  const [filterCampus, setFilterCampus] = useState<string>('ALL');
   const [campusList, setCampusList] = useState<string[]>(getCampusList);
-  const [addingCampus, setAddingCampus] = useState(false);
-  const [newCampusInput, setNewCampusInput] = useState('');
   
-  // Person Modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modals
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [trackingBAPerson, setTrackingBAPerson] = useState<Person | null>(null);
   const [submittingPerson, setSubmittingPerson] = useState(false);
-  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+  const [submittingBA, setSubmittingBA] = useState(false);
 
-  // Form State
+  // Form State for Adding/Editing
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [fullName, setFullName] = useState('');
   const [gender, setGender] = useState<Gender>('BROTHER');
   const [phone, setPhone] = useState('');
@@ -76,39 +67,33 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   const [baptismDate, setBaptismDate] = useState('');
   const [studyStage, setStudyStage] = useState('');
   const [notes, setNotes] = useState('');
-  const [submittingBA, setSubmittingBA] = useState(false);
 
-  // BA Weekly Progress Tracker State
-  const [trackingBAPerson, setTrackingBAPerson] = useState<Person | null>(null);
+  const [addingCampus, setAddingCampus] = useState(false);
+  const [newCampusInput, setNewCampusInput] = useState('');
+
+  // BA Form State
   const [newLogWeekNum, setNewLogWeekNum] = useState<number>(1);
   const [newLogTopic, setNewLogTopic] = useState<string>('Pelajaran 1: Cinta Alkitab');
   const [newLogDate, setNewLogDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [newLogNotes, setNewLogNotes] = useState<string>('');
 
-  const LESSON_PRESETS = [
-    'Pelajaran 1: Cinta Alkitab',
-    'Pelajaran 2: Perilaku & Dosa',
-    'Pelajaran 3: Salib & Kasih Kristus',
-    'Pelajaran 4: Pertobatan',
-    'Pelajaran 5: Baptis & Gereja',
-    'Pelajaran 6: Pemuridan & Hidup Baru'
-  ];
-
+  // Helpers
   const openAddModal = () => {
     setEditingPerson(null);
     setFullName('');
     setGender('BROTHER');
     setPhone('');
     setCampus('');
-    setStatus(activeCategoryTab === 'bible_study' ? 'BIBLE_STUDY' : activeCategoryTab === 'reachout' ? 'VISITOR' : 'DISCIPLE');
+    setStatus(activeTab === 'BIBLE_STUDY' ? 'BIBLE_STUDY' : activeTab === 'VISITORS' ? 'VISITOR' : 'DISCIPLE');
     setBirthDate('');
     setBaptismDate('');
     setStudyStage('');
     setNotes('');
-    setIsModalOpen(true);
+    setIsFormOpen(true);
   };
 
   const openEditModal = (p: Person) => {
+    setIsDetailOpen(false); // Close detail if open
     setEditingPerson(p);
     setFullName(p.full_name);
     setGender(p.gender);
@@ -119,14 +104,36 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     setBaptismDate(p.baptism_date || '');
     setStudyStage(p.study_stage || '');
     setNotes(p.notes || '');
-    setIsModalOpen(true);
+    setIsFormOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const openDetail = (p: Person) => {
+    setSelectedPerson(p);
+    setIsDetailOpen(true);
+  };
+
+  const openBATracker = (p: Person) => {
+    setIsDetailOpen(false);
+    setTrackingBAPerson(p);
+    const existingLogs = p.study_history || [];
+    setNewLogWeekNum(existingLogs.length + 1);
+    const LESSON_PRESETS = [
+      'Pelajaran 1: Cinta Alkitab',
+      'Pelajaran 2: Perilaku & Dosa',
+      'Pelajaran 3: Salib & Kasih Kristus',
+      'Pelajaran 4: Pertobatan',
+      'Pelajaran 5: Baptis & Gereja',
+      'Pelajaran 6: Pemuridan & Hidup Baru'
+    ];
+    setNewLogTopic(LESSON_PRESETS[Math.min(existingLogs.length, LESSON_PRESETS.length - 1)]);
+    setNewLogDate(new Date().toISOString().split('T')[0]);
+    setNewLogNotes('');
+  };
+
+  const handleSavePersonSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) return;
     setSubmittingPerson(true);
-    setSubmittingBA(true);
     try {
       await onSavePerson({
         id: editingPerson?.id,
@@ -141,40 +148,16 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
         study_history: editingPerson?.study_history || [],
         notes: notes.trim() || undefined
       });
-      setIsModalOpen(false);
-    setSubmittingPerson(false);
+      setIsFormOpen(false);
     } finally {
-      setSubmittingBA(false);
+      setSubmittingPerson(false);
     }
   };
 
-  // Open BA Progress Tracker
-  const openBATracker = (p: Person) => {
-    setTrackingBAPerson(p);
-    const existingLogs = p.study_history || [];
-    setNewLogWeekNum(existingLogs.length + 1);
-    setNewLogTopic(LESSON_PRESETS[Math.min(existingLogs.length, LESSON_PRESETS.length - 1)]);
-    setNewLogDate(new Date().toISOString().split('T')[0]);
-    setNewLogNotes('');
-  };
-
-  // Add Weekly BA Log
   const handleAddBALog = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trackingBAPerson || !newLogTopic.trim()) return;
     
-    const existingLogs = trackingBAPerson.study_history || [];
-    const newLog: WeeklyStudyProgressLog = {
-      id: 'log_' + Date.now(),
-      week_number: newLogWeekNum,
-      study_date: newLogDate,
-      lesson_topic: newLogTopic.trim(),
-      notes: newLogNotes.trim() || undefined
-    };
-
-    const updatedHistory = [...existingLogs, newLog].sort((a, b) => a.week_number - b.week_number);
-    const updatedStage = `Minggu ${newLogWeekNum}: ${newLogTopic.trim()}`;
-
     setSubmittingBA(true);
     try {
       if (onSaveBALog) {
@@ -185,18 +168,6 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
           lesson_topic: newLogTopic.trim(),
           notes: newLogNotes.trim() || undefined
         });
-      } else {
-        await onSavePerson({
-          id: trackingBAPerson.id,
-          full_name: trackingBAPerson.full_name,
-          gender: trackingBAPerson.gender,
-          phone_number: trackingBAPerson.phone_number,
-          campus: trackingBAPerson.campus,
-          status: 'BIBLE_STUDY',
-          study_stage: updatedStage,
-          study_history: updatedHistory,
-          notes: trackingBAPerson.notes
-        });
       }
       setTrackingBAPerson(null);
     } finally {
@@ -204,23 +175,24 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     }
   };
 
-  // Category Filtering
-  const disciplesPeople = people.filter(p => p.status === 'LEADER' || p.status === 'DISCIPLE');
-  const bibleStudyPeople = people.filter(p => p.status === 'BIBLE_STUDY');
-  const reachoutPeople = people.filter(p => p.status === 'VISITOR' || p.status === 'WEAK' || p.status === 'INACTIVE');
+  // Filter Logic
+  const filteredPeople = useMemo(() => {
+    return people.filter(p => {
+      // Tab filter
+      if (activeTab === 'DISCIPLES' && p.status !== 'DISCIPLE' && p.status !== 'LEADER') return false;
+      if (activeTab === 'BIBLE_STUDY' && p.status !== 'BIBLE_STUDY') return false;
+      if (activeTab === 'VISITORS' && p.status !== 'VISITOR' && p.status !== 'WEAK' && p.status !== 'INACTIVE') return false;
 
-  let currentCategoryList = disciplesPeople;
-  if (activeCategoryTab === 'bible_study') currentCategoryList = bibleStudyPeople;
-  if (activeCategoryTab === 'reachout') currentCategoryList = reachoutPeople;
-
-  const filteredPeople = currentCategoryList.filter(p => {
-    const matchesSearch = p.full_name.toLowerCase().includes(search.toLowerCase()) || 
-                          (p.campus && p.campus.toLowerCase().includes(search.toLowerCase())) ||
-                          (p.notes && p.notes.toLowerCase().includes(search.toLowerCase()));
-    const matchesGender = filterGender === 'ALL' || p.gender === filterGender;
-    const matchesCampus = filterCampus === 'ALL' || (p.campus && p.campus.toLowerCase().includes(filterCampus.toLowerCase()));
-    return matchesSearch && matchesGender && matchesCampus;
-  });
+      // Search filter
+      if (search) {
+        const q = search.toLowerCase();
+        return p.full_name.toLowerCase().includes(q) || 
+               (p.campus && p.campus.toLowerCase().includes(q)) ||
+               (p.notes && p.notes.toLowerCase().includes(q));
+      }
+      return true;
+    });
+  }, [people, activeTab, search]);
 
   const getStatusBadgeClass = (st: PersonStatus) => {
     switch (st) {
@@ -235,606 +207,385 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-12">
       
-      {/* HEADER & ADD BUTTON */}
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Direktori & Progress Jemaat</h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">Pemisahan data Disciple, Belajar Alkitab (BA), serta Reachout & Tamu Ibadah.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Data Jemaat
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+            Direktori jemaat, pengunjung, dan partisipan kelas Alkitab.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             onClick={() => exportPeopleToCSV(people)}
-            className="btn-tactile px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition-all shadow-2xs"
-            title="Download CSV Excel Data Jemaat"
+            className="btn-tactile px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm"
           >
             <IconDownload className="w-4 h-4 text-slate-500" stroke={2} />
-            <span>Export CSV</span>
+            <span className="hidden sm:inline">Export CSV</span>
           </button>
 
           <button
             onClick={openAddModal}
-            className="btn-tactile btn-primary"
+            className="btn-tactile btn-primary py-2.5 px-4 text-sm font-bold shadow-sm"
           >
             <IconUserPlus className="w-4 h-4" stroke={2} />
-            <span>Tambah Orang Baru</span>
+            <span>Tambah Data</span>
           </button>
         </div>
       </div>
 
-      {/* CATEGORY TABS (DISCIPLES vs BIBLE STUDY vs REACHOUT) */}
-      <div className="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar">
-        <button
-          onClick={() => setActiveCategoryTab('disciples')}
-          className={`btn-tactile px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 whitespace-nowrap transition-all ${
-            activeCategoryTab === 'disciples'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <IconUsers className="w-4 h-4 text-emerald-700" stroke={1.5} />
-          <span>Murid & Leader ({disciplesPeople.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveCategoryTab('bible_study')}
-          className={`btn-tactile px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 whitespace-nowrap transition-all ${
-            activeCategoryTab === 'bible_study'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <IconBook className="w-4 h-4 text-[#b5852e]" stroke={2} />
-          <span>Belajar Alkitab ({bibleStudyPeople.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveCategoryTab('reachout')}
-          className={`btn-tactile px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 whitespace-nowrap transition-all ${
-            activeCategoryTab === 'reachout'
-              ? 'bg-white text-slate-900 shadow-xs'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <IconHeartHandshake className="w-4 h-4 text-cyan-700" stroke={1.5} />
-          <span>Reachout & Tamu ({reachoutPeople.length})</span>
-        </button>
-      </div>
-
       {/* SEARCH & FILTERS */}
-      <div className="tugu-card p-4 rounded-2xl bg-white flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:w-80">
-          <IconSearch className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" stroke={1.5} />
+      <div className="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col sm:flex-row items-center gap-2">
+        <div className="relative w-full sm:w-64 shrink-0">
+          <IconSearch className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
             type="text"
-            placeholder="Cari nama, kampus, atau catatan..."
+            placeholder="Cari nama atau kampus..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#b5852e]"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <select
-            value={filterCampus}
-            onChange={e => setFilterCampus(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2 focus:outline-none font-medium"
+        <div className="flex w-full sm:w-auto overflow-x-auto no-scrollbar gap-1 p-1">
+          <button
+            onClick={() => setActiveTab('ALL')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'ALL' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
           >
-            <option value="ALL">Semua Kampus</option>
-            <option value="UGM">UGM</option>
-            <option value="UNY">UNY</option>
-            <option value="Atma Jaya">Atma Jaya</option>
-            <option value="STIPRAM">STIPRAM</option>
-            <option value="BPC Staff">BPC Staff</option>
-            <option value="General">General / Umumm</option>
-          </select>
-
-          <select
-            value={filterGender}
-            onChange={e => setFilterGender(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2 focus:outline-none font-medium"
+            Semua ({people.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('DISCIPLES')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'DISCIPLES' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
           >
-            <option value="ALL">Semua Gender</option>
-            <option value="BROTHER">BROTHER</option>
-            <option value="SISTER">SISTER</option>
-          </select>
+            Murid & Leader ({people.filter(p => p.status === 'DISCIPLE' || p.status === 'LEADER').length})
+          </button>
+          <button
+            onClick={() => setActiveTab('BIBLE_STUDY')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'BIBLE_STUDY' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
+          >
+            Belajar Alkitab ({people.filter(p => p.status === 'BIBLE_STUDY').length})
+          </button>
+          <button
+            onClick={() => setActiveTab('VISITORS')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${activeTab === 'VISITORS' ? 'bg-[#b5852e] text-white' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
+          >
+            Reachout & Tamu ({people.filter(p => p.status === 'VISITOR' || p.status === 'WEAK' || p.status === 'INACTIVE').length})
+          </button>
         </div>
       </div>
 
-      {/* TAB 2: BIBLE STUDY WEEKLY TRACKER VIEW */}
-      {activeCategoryTab === 'bible_study' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPeople.length === 0 ? (
-            <div className="md:col-span-3 tugu-card p-12 text-center text-slate-400 text-xs bg-white rounded-3xl">
-              Belum ada data teman yang sedang Belajar Alkitab (BA). Klik <strong>Tambah Orang Baru</strong> untuk mendaftarkan kandidat BA.
-            </div>
-          ) : (
-            filteredPeople.map(p => {
-              const logs = p.study_history || [];
-              return (
-                <div key={p.id} className="tugu-card tugu-card-interactive p-6 rounded-3xl bg-white border border-slate-200 space-y-4 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-200 uppercase">
-                        BIBLE STUDY
+      {/* DIRECTORY GRID (Replacing the dense table) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {filteredPeople.length === 0 ? (
+          <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200">
+            <IconUsers className="w-10 h-10 text-slate-300 mx-auto mb-3" stroke={1.5} />
+            <p className="text-slate-500 font-medium text-sm">Tidak ada data jemaat yang ditemukan.</p>
+          </div>
+        ) : (
+          filteredPeople.map(p => {
+            return (
+              <div 
+                key={p.id} 
+                onClick={() => openDetail(p)}
+                className="tugu-card tugu-card-interactive p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between cursor-pointer group"
+              >
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-slate-900 line-clamp-1">{p.full_name}</h3>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border shrink-0 ${p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'}`}>
+                      {p.gender.charAt(0)}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
+                      {p.status === 'BIBLE_STUDY' ? 'BA' : p.status}
+                    </span>
+                    {p.campus && (
+                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border bg-slate-50 text-slate-600 border-slate-200">
+                        {p.campus}
                       </span>
-                      <span className="text-xs font-mono text-slate-500 font-semibold">{p.gender} • {p.campus || 'Umum'}</span>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">{p.full_name}</h3>
-                      {p.phone_number && (
-                        <span className="flex items-center space-x-1 text-xs font-mono text-slate-500 mt-0.5">
-                          <IconPhone className="w-3 h-3 text-slate-400 shrink-0" stroke={1.5} />
-                          <span>{p.phone_number}</span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-1">
-                      <span className="text-[10px] font-mono font-bold text-amber-900 uppercase">Progres Terakhir:</span>
-                      <p className="text-xs font-bold text-slate-900">
-                        {p.study_stage || 'Pelajaran 1: Cinta Alkitab'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-100 space-y-3">
-                    <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-                      <span>Total Sesi BA: <strong className="text-slate-900">{logs.length} Sesi</strong></span>
-                      <button
-                        onClick={() => openEditModal(p)}
-                        className="text-slate-400 hover:text-slate-700"
-                      >
-                        <IconEdit className="w-4 h-4" stroke={1.5} />
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={() => openBATracker(p)}
-                      className="btn-tactile w-full py-2.5 px-3 rounded-xl bg-[#b5852e] hover:bg-[#9a6f23] text-white text-xs font-bold flex items-center justify-center space-x-2 transition-colors shadow-xs"
-                    >
-                      <IconPlus className="w-4 h-4" stroke={2} />
-                      <span>Input Progress Minggu Ini</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      ) : (
-        /* DISCIPLES & REACHOUT TABLE VIEW */
-        <div className="tugu-card rounded-2xl overflow-hidden bg-white border border-slate-200">
-          {filteredPeople.length === 0 ? (
-            <div className="px-6 py-12 text-center text-slate-400 text-xs">
-              Tidak ada data jemaat yang cocok dengan kategori ini.
-            </div>
-          ) : (
-            <>
-              {/* DESKTOP TABLE */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-700">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-xs font-mono font-semibold text-slate-500 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-6 py-4">Nama Lengkap</th>
-                      <th className="px-6 py-4">Gender</th>
-                      <th className="px-6 py-4">Campus / Asal</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Catatan / Info</th>
-                      <th className="px-6 py-4 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredPeople.map(p => (
-                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-900">
-                          {p.full_name}
-                          {p.phone_number && (
-                            <span className="flex items-center space-x-1 text-xs font-mono font-normal text-slate-500 mt-0.5">
-                              <IconPhone className="w-3 h-3 text-slate-400 shrink-0" stroke={1.5} />
-                              <span>{p.phone_number}</span>
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-xs font-mono font-medium">
-                          <span className={`px-2 py-0.5 rounded ${
-                            p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border border-blue-200' : 'bg-pink-50 text-pink-800 border border-pink-200'
-                          }`}>
-                            {p.gender}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-slate-600 font-medium">
-                          {p.campus || '-'}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold border inline-block uppercase ${getStatusBadgeClass(p.status)}`}>
-                            {p.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">
-                          {p.notes || '-'}
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                          <button
-                            onClick={() => openEditModal(p)}
-                            className="btn-tactile p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200 inline-flex items-center justify-center w-8 h-8"
-                          >
-                            <IconEdit className="w-4 h-4" stroke={1.5} />
-                          </button>
-                          <button
-                            onClick={() => onDeletePerson(p.id)}
-                            className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200 inline-flex items-center justify-center w-8 h-8"
-                          >
-                            <IconTrash className="w-4 h-4" stroke={1.5} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* MOBILE CARDS */}
-              <div className="md:hidden flex flex-col divide-y divide-slate-100">
-                {filteredPeople.map(p => (
-                  <div key={p.id} className="p-4 space-y-3 hover:bg-slate-50/50 transition-colors">
-                    <div className="flex justify-between items-start gap-3">
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-sm">{p.full_name}</h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${
-                            p.gender === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'
-                          }`}>
-                            {p.gender}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase border ${getStatusBadgeClass(p.status)}`}>
-                            {p.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex space-x-1 shrink-0">
-                        <button
-                          onClick={() => openEditModal(p)}
-                          className="btn-tactile p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200 flex items-center justify-center w-9 h-9"
-                        >
-                          <IconEdit className="w-4 h-4" stroke={1.5} />
-                        </button>
-                        <button
-                          onClick={() => onDeletePerson(p.id)}
-                          className="btn-tactile p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200 flex items-center justify-center w-9 h-9"
-                        >
-                          <IconTrash className="w-4 h-4" stroke={1.5} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      {p.campus && (
-                        <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                          <span className="block text-[9px] font-mono text-slate-400 uppercase mb-0.5">Kampus</span>
-                          <span className="font-medium text-slate-700 truncate">{p.campus}</span>
-                        </div>
-                      )}
-                      {p.phone_number && (
-                        <div className="bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                          <span className="block text-[9px] font-mono text-slate-400 uppercase mb-0.5">Phone</span>
-                          <span className="font-mono text-slate-700 flex items-center gap-1"><IconPhone className="w-3 h-3 text-slate-400" /> {p.phone_number}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {p.notes && (
-                      <div className="text-[11px] text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                        {p.notes}
-                      </div>
                     )}
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* WEEKLY BA TRACKER MODAL */}
-      <FormPanel
-        isOpen={!!trackingBAPerson}
-        onClose={() => setTrackingBAPerson(null)}
-        title={`Track Progress BA: ${trackingBAPerson?.full_name}`}
-        subtitle="Catat materi Belajar Alkitab mingguan secara terstruktur."
-        onSubmit={handleAddBALog}
-        submitLabel="Tambah Log Sesi"
-        isSubmitDisabled={submittingBA}
-      >
-        {trackingBAPerson && (
-          <>
-            {/* TIMELINE OF PAST WEEKS */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
-                <IconHistory className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
-                <span>Riwayat Belajar Alkitab</span>
-              </h4>
-
-              {(!trackingBAPerson.study_history || trackingBAPerson.study_history.length === 0) ? (
-                <p className="text-xs text-slate-400 italic py-2">Belum ada riwayat sesi mingguan. Tambahkan sesi pertama di bawah ini!</p>
-              ) : (
-                <div className="space-y-2">
-                  {trackingBAPerson.study_history.map(log => (
-                    <div key={log.id} className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200/80 text-xs space-y-1">
-                      <div className="flex items-center justify-between font-bold text-slate-900">
-                        <span>Minggu {log.week_number}: {log.lesson_topic}</span>
-                        <span className="font-mono text-[11px] text-amber-900">{log.study_date}</span>
-                      </div>
-                      {log.notes && <p className="text-slate-600 text-[11px]">{log.notes}</p>}
-                    </div>
-                  ))}
                 </div>
-              )}
-            </div>
-
-            {/* FORM FOR NEW WEEKLY LOG */}
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-              <h4 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
-                + Tambah Log Sesi Minggu Ini
-              </h4>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Pertemuan Ke-</label>
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    value={newLogWeekNum}
-                    onChange={e => setNewLogWeekNum(parseInt(e.target.value) || 1)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-bold focus:outline-none focus:border-[#b5852e]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Tanggal Sesi</label>
-                  <input
-                    type="date"
-                    required
-                    value={newLogDate}
-                    onChange={e => setNewLogDate(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none"
-                  />
+                
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <span className="truncate">{p.study_stage ? `BA: ${p.study_stage}` : ''}</span>
+                  <span className="text-[#b5852e] font-semibold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap ml-2">Detail →</span>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Materi / Topik Pelajaran *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Pelajaran 2: Perilaku & Dosa"
-                  value={newLogTopic}
-                  onChange={e => setNewLogTopic(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan & Komitmen</label>
-                <textarea
-                  rows={2}
-                  placeholder="Kesan, keterbukaan, atau PR perenungan minggu ini..."
-                  value={newLogNotes}
-                  onChange={e => setNewLogNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 resize-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setTrackingBAPerson(null)}
-                  className="btn-tactile btn-secondary"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingBA}
-                  className="btn-tactile btn-primary"
-                >
-                  <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Progress Minggu Ini</span>
-                </button>
-            </div>
-          </div>
-          </>
+            );
+          })
         )}
-      </FormPanel>
+      </div>
 
-      {/* CREATE / EDIT PERSON MODAL */}
+      {/* MODALS */}
+
+      {/* Person Detail Panel */}
+      <PersonDetailPanel 
+        person={selectedPerson} 
+        group={undefined}
+        isOpen={isDetailOpen} 
+        onClose={() => setIsDetailOpen(false)}
+        onEdit={openEditModal}
+        onTrackBA={openBATracker}
+      />
+
+      {/* Form Panel (Create / Edit) */}
       <FormPanel
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingPerson ? 'Edit Data Orang' : 'Tambah Orang Baru'}
-        onSubmit={handleSubmit}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingPerson ? 'Edit Data Jemaat' : 'Tambah Jemaat Baru'}
+        onSubmit={handleSavePersonSubmit}
         submitLabel="Simpan Data"
         isSubmitDisabled={submittingPerson}
       >
-                
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Lengkap *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Axel / Sherly"
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                  />
-                </div>
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Informasi Pribadi</h3>
+          
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Lengkap *</label>
+            <input
+              type="text"
+              required
+              placeholder="Contoh: Axel / Sherly"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+            />
+          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Gender *</label>
-                    <select
-                      value={gender}
-                      onChange={e => setGender(e.target.value as Gender)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                    >
-                      <option value="BROTHER">BROTHER</option>
-                      <option value="SISTER">SISTER</option>
-                    </select>
-                  </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Gender *</label>
+              <select
+                value={gender}
+                onChange={e => setGender(e.target.value as Gender)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+              >
+                <option value="BROTHER">BROTHER</option>
+                <option value="SISTER">SISTER</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nomor HP</label>
+              <input
+                type="text"
+                placeholder="0812..."
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+              />
+            </div>
+          </div>
 
-                  <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kampus / Univ</label>
-                    {!addingCampus ? (
-                      <div className="flex gap-2">
-                        <select
-                          value={campus}
-                          onChange={e => setCampus(e.target.value)}
-                          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                        >
-                          <option value="">-- Pilih Kampus --</option>
-                          {campusList.map(c => (
-                            <option key={c} value={c}>{c}</option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          onClick={() => { setAddingCampus(true); setNewCampusInput(''); }}
-                          title="Tambah kampus baru"
-                          className="shrink-0 px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[#b5852e] text-xs font-bold transition-colors"
-                        >
-                          + Univ
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <input
-                          autoFocus
-                          type="text"
-                          placeholder="Nama kampus baru..."
-                          value={newCampusInput}
-                          onChange={e => setNewCampusInput(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              const trimmed = newCampusInput.trim();
-                              if (trimmed) {
-                                saveCampusToList(trimmed);
-                                setCampusList(getCampusList());
-                                setCampus(trimmed);
-                              }
-                              setAddingCampus(false);
-                            }
-                            if (e.key === 'Escape') setAddingCampus(false);
-                          }}
-                          className="flex-1 bg-white border border-[#b5852e] rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const trimmed = newCampusInput.trim();
-                            if (trimmed) {
-                              saveCampusToList(trimmed);
-                              setCampusList(getCampusList());
-                              setCampus(trimmed);
-                            }
-                            setAddingCampus(false);
-                          }}
-                          className="shrink-0 px-2.5 py-2 rounded-xl bg-[#b5852e] hover:bg-amber-700 text-white text-xs font-bold transition-colors"
-                        >
-                          Simpan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setAddingCampus(false)}
-                          className="shrink-0 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors border border-slate-200"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kampus / Univ</label>
+            {!addingCampus ? (
+              <div className="flex gap-2">
+                <select
+                  value={campus}
+                  onChange={e => setCampus(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                >
+                  <option value="">-- Kosong / Bukan Mhs --</option>
+                  {campusList.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => { setAddingCampus(true); setNewCampusInput(''); }}
+                  title="Tambah kampus baru"
+                  className="shrink-0 px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors"
+                >
+                  + Baru
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Nama institusi..."
+                  value={newCampusInput}
+                  onChange={e => setNewCampusInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const trimmed = newCampusInput.trim();
+                      if (trimmed) {
+                        saveCampusToList(trimmed);
+                        setCampusList(getCampusList());
+                        setCampus(trimmed);
+                      }
+                      setAddingCampus(false);
+                    }
+                    if (e.key === 'Escape') setAddingCampus(false);
+                  }}
+                  className="flex-1 bg-white border border-[#b5852e] rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const trimmed = newCampusInput.trim();
+                    if (trimmed) {
+                      saveCampusToList(trimmed);
+                      setCampusList(getCampusList());
+                      setCampus(trimmed);
+                    }
+                    setAddingCampus(false);
+                  }}
+                  className="shrink-0 px-3 py-2.5 rounded-xl bg-[#b5852e] text-white text-xs font-bold transition-colors"
+                >
+                  Set
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Status Pelayanan *</label>
-                    <select
-                      value={status}
-                      onChange={e => setStatus(e.target.value as PersonStatus)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                    >
-                      <option value="DISCIPLE">DISCIPLE (Murid)</option>
-                      <option value="LEADER">LEADER (Pemimpin)</option>
-                      <option value="BIBLE_STUDY">BIBLE STUDY (Belajar Alkitab)</option>
-                      <option value="VISITOR">VISITOR (Tamu)</option>
-                      <option value="WEAK">WEAK (Butuh Care)</option>
-                      <option value="INACTIVE">INACTIVE</option>
-                    </select>
-                  </div>
+        <div className="space-y-4 pt-4 border-t border-slate-100">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Informasi Keanggotaan</h3>
+          
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Status Pelayanan *</label>
+              <select
+                value={status}
+                onChange={e => setStatus(e.target.value as PersonStatus)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+              >
+                <option value="DISCIPLE">DISCIPLE (Murid)</option>
+                <option value="LEADER">LEADER (Pemimpin)</option>
+                <option value="BIBLE_STUDY">BIBLE STUDY (Belajar Alkitab)</option>
+                <option value="VISITOR">VISITOR (Tamu)</option>
+                <option value="WEAK">WEAK (Butuh Care)</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+            </div>
+          </div>
 
-                  {status === 'BIBLE_STUDY' && (
-                    <div>
-                      <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Stage BA Awal</label>
-                      <input
-                        type="text"
-                        placeholder="Pelajaran 1: Cinta Alkitab"
-                        value={studyStage}
-                        onChange={e => setStudyStage(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                      />
-                    </div>
-                  )}
-                </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Lahir Jasmani</label>
+              <input
+                type="date"
+                value={birthDate}
+                onChange={e => setBirthDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Baptis</label>
+              <input
+                type="date"
+                value={baptismDate}
+                onChange={e => setBaptismDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
+              />
+            </div>
+          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">🎂 Tgl Lahir Jasmani</label>
-                    <input
-                      type="date"
-                      value={birthDate}
-                      onChange={e => setBirthDate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                    />
-                  </div>
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Tambahan</label>
+            <textarea
+              rows={2}
+              placeholder="Info penting, progres khusus, dll..."
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 resize-none focus:outline-none"
+            />
+          </div>
+          
+          {editingPerson && (
+             <div className="pt-2">
+               <button
+                 type="button"
+                 onClick={() => {
+                   if (confirm("Data akan dihapus permanen. Apakah Anda yakin?")) {
+                     onDeletePerson(editingPerson.id);
+                     setIsFormOpen(false);
+                   }
+                 }}
+                 className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-lg w-full transition-colors border border-rose-100"
+               >
+                 Hapus Data Jemaat
+               </button>
+             </div>
+          )}
+        </div>
+      </FormPanel>
 
-                  <div>
-                    <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">✝️ Tgl Baptis (Spiritual Bday)</label>
-                    <input
-                      type="date"
-                      value={baptismDate}
-                      onChange={e => setBaptismDate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                    />
-                  </div>
-                </div>
+      {/* Tracker BA Modal */}
+      <FormPanel
+        isOpen={!!trackingBAPerson}
+        onClose={() => setTrackingBAPerson(null)}
+        title="Catat Progress Belajar Alkitab"
+        onSubmit={handleAddBALog}
+        submitLabel="Simpan Log"
+        isSubmitDisabled={submittingBA}
+      >
+        <div className="space-y-4">
+          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl mb-4">
+            <p className="text-xs text-amber-800">
+              Mencatat progress untuk: <strong className="font-bold">{trackingBAPerson?.full_name}</strong>
+            </p>
+          </div>
 
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nomor Phone / WA</label>
-                  <input
-                    type="text"
-                    placeholder="0812xxxxxxxx"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-                  />
-                </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Sesi Ke-</label>
+              <input
+                type="number"
+                min="1"
+                required
+                value={newLogWeekNum}
+                onChange={e => setNewLogWeekNum(parseInt(e.target.value) || 1)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-bold focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Tanggal</label>
+              <input
+                type="date"
+                required
+                value={newLogDate}
+                onChange={e => setNewLogDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
+              />
+            </div>
+          </div>
 
-                <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Follow-up</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Info OJT, jadwal wisuda, atau request doa..."
-                    value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e] resize-none"
-                  />
-                </div>
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Topik Pelajaran *</label>
+            <input
+              type="text"
+              required
+              placeholder="Contoh: Pelajaran 1: Cinta Alkitab"
+              value={newLogTopic}
+              onChange={e => setNewLogTopic(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none"
+            />
+          </div>
 
-              </FormPanel>
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan & Kesan</label>
+            <textarea
+              rows={3}
+              placeholder="Bagaimana responsnya? Apa kendalanya?"
+              value={newLogNotes}
+              onChange={e => setNewLogNotes(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 resize-none focus:outline-none"
+            />
+          </div>
+        </div>
+      </FormPanel>
 
     </div>
   );

@@ -159,6 +159,7 @@ export default function Home() {
                   people={people} 
                   groups={groups} 
                   stats={stats} 
+                  events={events}
                   onNavigate={setActiveTab} 
                 />
               )}
@@ -166,6 +167,7 @@ export default function Home() {
               {activeTab === 'people' && (
                 <PeopleView 
                   people={people} 
+                  groups={groups}
                   onSavePerson={handleSavePerson} 
                   onDeletePerson={handleDeletePerson} 
                   onSaveBALog={handleSaveBALog}

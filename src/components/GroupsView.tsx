@@ -1,18 +1,16 @@
-'use client';
-
 import { useState } from 'react';
 import { Group, Person, Gender } from '@/lib/types';
 import { fetchGroupMembers, updateGroupMembers } from '@/lib/supabase';
+import GroupDetailPanel from './GroupDetailPanel';
 import { 
   IconUsersGroup, 
   IconPlus, 
-  IconEdit, 
-  IconTrash, 
   IconX, 
   IconCheck, 
   IconShield,
   IconArrowsExchange,
-  IconInfoCircle
+  IconInfoCircle,
+  IconUser
 } from '@tabler/icons-react';
 
 interface GroupsViewProps {
@@ -24,6 +22,9 @@ interface GroupsViewProps {
 }
 
 export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  
+  // Modals
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [submittingGroup, setSubmittingGroup] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
@@ -37,8 +38,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
   const [managingMembersGroup, setManagingMembersGroup] = useState<Group | null>(null);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
-
-  // Leader Handover Wizard Modal
+  
+  // Handover Modal
   const [handoverGroup, setHandoverGroup] = useState<Group | null>(null);
   const [newLeaderId, setNewLeaderId] = useState<string>('');
   const [handoverReason, setHandoverReason] = useState<string>('GRADUATED');
@@ -61,6 +62,17 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
     setIsGroupModalOpen(true);
   };
 
+  const openManageMembersModal = async (g: Group) => {
+    setManagingMembersGroup(g);
+    setLoadingMembers(true);
+    try {
+      const currentMembers = await fetchGroupMembers(g.id);
+      setSelectedMemberIds(currentMembers.map(m => m.id));
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
   const openHandoverModal = (g: Group) => {
     setHandoverGroup(g);
     setNewLeaderId('');
@@ -71,14 +83,18 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
   const handleGroupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!groupName.trim()) return;
-    await onSaveGroup({
-      id: editingGroup?.id,
-      group_name: groupName.trim(),
-      category,
-      leader_id: leaderId || undefined
-    });
-    setIsGroupModalOpen(false);
-    setSubmittingGroup(false);
+    setSubmittingGroup(true);
+    try {
+      await onSaveGroup({
+        id: editingGroup?.id,
+        group_name: groupName.trim(),
+        category,
+        leader_id: leaderId || undefined
+      });
+      setIsGroupModalOpen(false);
+    } finally {
+      setSubmittingGroup(false);
+    }
   };
 
   const handleHandoverSubmit = async (e: React.FormEvent) => {
@@ -107,17 +123,6 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
     }
   };
 
-  const openManageMembersModal = async (g: Group) => {
-    setManagingMembersGroup(g);
-    setLoadingMembers(true);
-    try {
-      const currentMembers = await fetchGroupMembers(g.id);
-      setSelectedMemberIds(currentMembers.map(m => m.id));
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
-
   const handleToggleMember = (personId: string) => {
     if (selectedMemberIds.includes(personId)) {
       setSelectedMemberIds(selectedMemberIds.filter(id => id !== personId));
@@ -130,16 +135,17 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
     if (!managingMembersGroup) return;
     await updateGroupMembers(managingMembersGroup.id, selectedMemberIds);
     setManagingMembersGroup(null);
+    if (typeof window !== 'undefined') window.location.reload();
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-12">
       
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Small Groups & Leaders</h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">Atur kelompok kecil (PDG Brother/Sister), tetapkan Pemimpin, dan mapping anggota kelompok.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Kelompok PDG</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Manajemen kelompok kecil (PDG Brother/Sister) dan anggotanya.</p>
         </div>
         <button
           onClick={openAddGroupModal}
@@ -151,64 +157,51 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
       </div>
 
       {/* GROUPS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {groups.map(g => (
-          <div key={g.id} className="tugu-card tugu-card-interactive p-6 rounded-3xl space-y-4 relative flex flex-col justify-between bg-white border border-slate-200">
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold border uppercase tracking-wider ${
+          <div 
+            key={g.id} 
+            onClick={() => setSelectedGroup(g)}
+            className="tugu-card tugu-card-interactive p-5 rounded-2xl space-y-4 relative flex flex-col justify-between bg-white border border-slate-200 cursor-pointer group"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border uppercase tracking-wider ${
                   g.category === 'BROTHER' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-pink-50 text-pink-800 border-pink-200'
                 }`}>
-                  {g.category} GROUP
+                  {g.category}
                 </span>
-
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => openHandoverModal(g)}
-                    title="Handover / Transfer Kepemimpinan Leader"
-                    className="btn-tactile p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors border border-amber-200/80 flex items-center space-x-1 font-mono text-xs font-bold"
-                  >
-                    <IconArrowsExchange className="w-4 h-4 text-[#b5852e]" stroke={2} />
-                    <span>Handover</span>
-                  </button>
-                  <button
-                    onClick={() => openEditGroupModal(g)}
-                    className="btn-tactile p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors border border-slate-200"
-                  >
-                    <IconEdit className="w-4 h-4" stroke={1.5} />
-                  </button>
-                  <button
-                    onClick={() => onDeleteGroup(g.id)}
-                    className="btn-tactile p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200"
-                  >
-                    <IconTrash className="w-4 h-4" stroke={1.5} />
-                  </button>
-                </div>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                  {g.members_count || 0} Anggota
+                </span>
               </div>
-
-              <div>
-                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">{g.group_name}</h3>
-                <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium mt-1">
-                  <IconShield className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
-                  <span>Pemimpin: <strong className="text-slate-900">{g.leader_name}</strong></span>
-                </div>
+              
+              <h3 className="text-lg font-extrabold text-slate-900 tracking-tight line-clamp-1">{g.group_name}</h3>
+              <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium mt-2">
+                <IconShield className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
+                <span className="truncate">Leader: <strong className="text-slate-900">{g.leader_name || '-'}</strong></span>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-              <button
-                onClick={() => openManageMembersModal(g)}
-                className="btn-tactile w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center space-x-2 transition-colors border border-slate-200"
-              >
-                <IconUsersGroup className="w-4 h-4 text-slate-600" stroke={1.5} />
-                <span>Kelola Anggota Group</span>
-              </button>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-end">
+              <span className="text-[#b5852e] text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka Profil →
+              </span>
             </div>
-
           </div>
         ))}
       </div>
+
+      {/* DETAIL PANEL MODAL */}
+      <GroupDetailPanel 
+        group={selectedGroup} 
+        isOpen={!!selectedGroup} 
+        onClose={() => setSelectedGroup(null)}
+        onEdit={openEditGroupModal}
+        onManageMembers={openManageMembersModal}
+        onHandover={openHandoverModal}
+        onDelete={onDeleteGroup}
+      />
 
       {/* LEADER HANDOVER WIZARD MODAL */}
       {handoverGroup && (
@@ -220,9 +213,9 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
                     <IconArrowsExchange className="w-5 h-5 text-[#b5852e]" stroke={2} />
-                    <span>Handover: {handoverGroup.group_name}</span>
+                    <span>Handover Leader</span>
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Proses pergantian Leader resmi.</p>
+                  <p className="text-[11px] text-slate-500 font-medium">{handoverGroup.group_name}</p>
                 </div>
                 <button type="button" onClick={() => setHandoverGroup(null)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                   <IconX className="w-5 h-5" stroke={1.5} />
@@ -237,7 +230,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                     <span>Leader Saat Ini: {handoverGroup.leader_name || 'Belum Ada'}</span>
                   </div>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Seluruh riwayat statistik, log Belajar Alkitab, dan anggota kelompok ini akan tetap 100% utuh — hanya kepemimpinan yang dialihkan ke Leader baru.
+                    Statistik, log Belajar Alkitab, dan anggota akan tetap 100% utuh — hanya kepemimpinan yang dialihkan ke Leader baru.
                   </p>
                 </div>
 
@@ -261,24 +254,24 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Alasan Handover / Pergantian *</label>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Alasan Handover *</label>
                   <select
                     value={handoverReason}
                     onChange={e => setHandoverReason(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none font-medium"
                   >
-                    <option value="GRADUATED">Lulus Kuliah / Wisuda (Graduated)</option>
-                    <option value="RELOCATED">Pindah Kota / Pekerjaan (Relocated)</option>
-                    <option value="ROTATION">Rotasi Terjadwal Ministry (Rotation)</option>
-                    <option value="OTHER">Lainnya (Other)</option>
+                    <option value="GRADUATED">Lulus Kuliah / Wisuda</option>
+                    <option value="RELOCATED">Pindah Kota / Pekerjaan</option>
+                    <option value="ROTATION">Rotasi Terjadwal Ministry</option>
+                    <option value="OTHER">Lainnya</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Serah Terima (Handover Notes)</label>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Tambahan</label>
                   <textarea
                     rows={2}
-                    placeholder="Pesan penggembalaan atau instruksi khusus untuk leader baru..."
+                    placeholder="Pesan penggembalaan untuk leader baru..."
                     value={handoverNotes}
                     onChange={e => setHandoverNotes(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 resize-none"
@@ -290,7 +283,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                 <button
                   type="button"
                   onClick={() => setHandoverGroup(null)}
-                  className="btn-tactile btn-secondary"
+                  className="btn-tactile btn-secondary px-4 py-2 text-xs"
                 >
                   Batal
                 </button>
@@ -298,10 +291,10 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                   type="button"
                   onClick={handleHandoverSubmit}
                   disabled={submittingHandover || !newLeaderId}
-                  className="btn-tactile btn-primary"
+                  className="btn-tactile btn-primary px-4 py-2 text-xs"
                 >
                   <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Konfirmasi Handover Leader</span>
+                  <span>Konfirmasi Handover</span>
                 </button>
               </div>
 
@@ -315,7 +308,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
             <div className="tugu-card w-full max-w-md rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[90vh] overflow-hidden animate-fade-in">
               <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-slate-900">
-                  {editingGroup ? 'Edit Small Group' : 'Buat Small Group Baru'}
+                  {editingGroup ? 'Edit Kelompok' : 'Buat Kelompok Baru'}
                 </h3>
                 <button type="button" onClick={() => setIsGroupModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                   <IconX className="w-5 h-5" stroke={1.5} />
@@ -324,7 +317,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
 
               <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-4 custom-scrollbar">
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Small Group *</label>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Kelompok *</label>
                   <input
                     type="text"
                     required
@@ -348,13 +341,13 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Tugaskan Pemimpin Group (Leader)</label>
+                  <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Pemimpin (Leader)</label>
                   <select
                     value={leaderId}
                     onChange={e => setLeaderId(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
                   >
-                    <option value="">-- Pilih Leader dari User Table --</option>
+                    <option value="">-- Pilih Leader --</option>
                     {people
                       .filter(p => p.gender === category)
                       .map(p => (
@@ -370,7 +363,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                 <button
                   type="button"
                   onClick={() => setIsGroupModalOpen(false)}
-                  className="btn-tactile btn-secondary"
+                  className="btn-tactile btn-secondary px-4 py-2 text-xs"
                 >
                   Batal
                 </button>
@@ -378,10 +371,10 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                   type="button"
                   onClick={handleGroupSubmit}
                   disabled={submittingGroup}
-                  className="btn-tactile btn-primary"
+                  className="btn-tactile btn-primary px-4 py-2 text-xs"
                 >
                   <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Group</span>
+                  <span>Simpan Kelompok</span>
                 </button>
               </div>
             </div>
@@ -395,8 +388,8 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
             
             <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Anggota: {managingMembersGroup.group_name}</h3>
-                <p className="text-xs text-slate-500 font-medium">Pilih jemaat yang masuk ke dalam small group ini.</p>
+                <h3 className="text-lg font-bold text-slate-900">Kelola Anggota</h3>
+                <p className="text-xs text-slate-500 font-medium">{managingMembersGroup.group_name}</p>
               </div>
               <button type="button" onClick={() => setManagingMembersGroup(null)} className="text-slate-400 hover:text-slate-700 p-1 bg-slate-100 rounded-full">
                 <IconX className="w-5 h-5" stroke={1.5} />
@@ -441,22 +434,22 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
             </div>
 
             <div className="flex-shrink-0 flex items-center justify-between p-6 border-t border-slate-100 bg-slate-50/50">
-              <span className="text-xs font-mono text-slate-500 font-semibold">{selectedMemberIds.length} Anggota terpilih</span>
+              <span className="text-xs font-mono text-slate-500 font-semibold">{selectedMemberIds.length} Anggota</span>
               <div className="space-x-3">
                 <button
                   type="button"
                   onClick={() => setManagingMembersGroup(null)}
-                  className="btn-tactile btn-secondary"
+                  className="btn-tactile btn-secondary px-4 py-2 text-xs"
                 >
                   Batal
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveMembers}
-                  className="btn-tactile btn-primary"
+                  className="btn-tactile btn-primary px-4 py-2 text-xs"
                 >
                   <IconCheck className="w-4 h-4" stroke={2} />
-                  <span>Simpan Perubahan</span>
+                  <span>Simpan</span>
                 </button>
               </div>
             </div>

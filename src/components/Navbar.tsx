@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { 
   IconLayoutDashboard, 
   IconUserPlus, 
+  IconUsers,
   IconUsersGroup, 
   IconClipboardCheck, 
   IconCalendarEvent, 
@@ -19,11 +20,11 @@ interface NavbarProps {
 export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
-    { id: 'people', label: 'Tambah Orang', icon: IconUserPlus },
-    { id: 'groups', label: 'Groups & Leaders', icon: IconUsersGroup },
-    { id: 'statistika', label: 'Statistika Minggu', icon: IconClipboardCheck },
-    { id: 'events', label: 'Events & Duty Roster', icon: IconCalendarEvent },
-    { id: 'announcements', label: 'Visi & Pengumuman', icon: IconSpeakerphone },
+    { id: 'people', label: 'Data Jemaat', icon: IconUsers },
+    { id: 'groups', label: 'Kelompok (PDG)', icon: IconUsersGroup },
+    { id: 'statistika', label: 'Laporan Mingguan', icon: IconClipboardCheck },
+    { id: 'events', label: 'Jadwal & Pelayanan', icon: IconCalendarEvent },
+    { id: 'announcements', label: 'Pengumuman', icon: IconSpeakerphone },
   ];
 
   return (

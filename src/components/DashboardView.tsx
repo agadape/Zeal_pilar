@@ -1,303 +1,250 @@
 import { useState, useEffect } from 'react';
-import { Person, Group, WeeklyStat, UpcomingMilestone } from '@/lib/types';
+import { Person, Group, WeeklyStat, UpcomingMilestone, MinistryEvent } from '@/lib/types';
 import { fetchUpcomingMilestones } from '@/lib/supabase';
 import { 
   IconUsers, 
   IconUsersGroup, 
   IconBook, 
   IconHeartHandshake, 
-  IconPlus, 
-  IconArrowRight, 
-  IconAlertTriangle,
-  IconHomeHeart,
+  IconAlertCircle,
+  IconCalendarEvent,
+  IconClipboardCheck,
   IconCake,
-  IconCross
+  IconArrowRight,
+  IconCheck
 } from '@tabler/icons-react';
 
 interface DashboardViewProps {
   people: Person[];
   groups: Group[];
   stats: WeeklyStat[];
+  events?: MinistryEvent[];
   onNavigate: (tab: string) => void;
 }
 
-export default function DashboardView({ people, groups, stats, onNavigate }: DashboardViewProps) {
+export default function DashboardView({ people, groups, stats, events = [], onNavigate }: DashboardViewProps) {
   const [milestones, setMilestones] = useState<UpcomingMilestone[]>([]);
 
   useEffect(() => {
     fetchUpcomingMilestones().then(data => setMilestones(data));
   }, [people]);
 
+  // Derived metrics
+  const weakPeople = people.filter(p => p.status === 'WEAK' || p.status === 'INACTIVE');
+  const upcomingEvents = events
+    .filter(e => new Date(e.event_date) >= new Date(new Date().setHours(0,0,0,0)))
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .slice(0, 2);
+
+  // Community Stats
   const totalPeople = people.length;
-  const totalLeaders = people.filter(p => p.status === 'LEADER').length;
   const totalBibleStudies = people.filter(p => p.status === 'BIBLE_STUDY').length;
   
-  const latestStats = stats.slice(0, 5);
-  const totalReachouts = stats.reduce((acc, curr) => acc + (curr.reachout_count || 0), 0);
-  const totalSundayVisitors = stats.reduce((acc, curr) => acc + (curr.sunday_visitors_count || 0), 0);
-  const weakPeople = people.filter(p => p.status === 'WEAK' || p.status === 'INACTIVE');
+  // Weekly Report check (assuming this week starts on Monday, or just check if any report was submitted in the last 6 days)
+  const isReportCompleted = stats.length > 0 && (new Date().getTime() - new Date(stats[0].week_date).getTime() < 7 * 24 * 60 * 60 * 1000);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pb-12">
       
-      {/* HERO BANNER - GKDI MOTTO */}
-      <div className="tugu-card rounded-3xl p-6 sm:p-10 border border-amber-200/80 bg-gradient-to-br from-amber-50/70 via-white to-slate-50 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-3">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-100 border border-amber-300/60 text-xs font-semibold text-amber-900">
-              <IconHomeHeart className="w-4 h-4 text-[#b5852e]" stroke={1.5} />
-              <span>GKDI Jogja • ZEAL Youth & Campus Ministry</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Rumah Tuhan <br />
-              <span className="text-[#b5852e]">Rumah Kita</span>
-            </h1>
-            <p className="text-slate-600 text-sm max-w-xl leading-relaxed font-normal">
-              Pusat kelola data jemaat, mapping kelompok kecil (PDG), pelaporan Statistika Minggu 1-klik, dan koordinasi pelayanan ZEAL Tugu Jogja.
-            </p>
-            <p className="text-xs font-bold text-[#b5852e] tracking-widest uppercase">
-              Love God &nbsp;•&nbsp; Love People &nbsp;•&nbsp; Love Life
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3 shrink-0">
-            <button
-              onClick={() => onNavigate('statistika')}
-              className="btn-tactile btn-primary"
-            >
-              <IconPlus className="w-4 h-4" stroke={2} />
-              <span>Input Statistika</span>
-            </button>
-            <button
-              onClick={() => onNavigate('people')}
-              className="btn-tactile btn-secondary"
-            >
-              <span>Tambah Orang</span>
-            </button>
-          </div>
-        </div>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          Selamat Datang
+        </h1>
+        <p className="text-sm text-slate-500 font-medium mt-1">
+          Berikut adalah ringkasan aktivitas dan prioritas pelayanan Anda hari ini.
+        </p>
       </div>
 
-      {/* METRICS GRID */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <div className="tugu-card tugu-card-interactive p-5 rounded-2xl space-y-2 bg-white">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Total People</span>
-            <div className="p-2 rounded-xl bg-slate-100 text-slate-700">
-              <IconUsers className="w-4 h-4" stroke={1.5} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-slate-900 tabular-nums">{totalPeople}</p>
-          <p className="text-xs text-slate-500 font-medium">{totalLeaders} Leaders terdaftar</p>
-        </div>
+      {/* NEEDS ATTENTION */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <IconAlertCircle className="w-4 h-4" />
+          Perlu Perhatian
+        </h2>
 
-        <div className="tugu-card tugu-card-interactive p-5 rounded-2xl space-y-2 bg-white">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Small Groups</span>
-            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
-              <IconUsersGroup className="w-4 h-4" stroke={1.5} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-slate-900 tabular-nums">{groups.length}</p>
-          <p className="text-xs text-slate-500 font-medium">Brother & Sister PDG</p>
-        </div>
-
-        <div className="tugu-card tugu-card-interactive p-5 rounded-2xl space-y-2 bg-white">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Belajar Alkitab</span>
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-700">
-              <IconBook className="w-4 h-4" stroke={1.5} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-slate-900 tabular-nums">{totalBibleStudies}</p>
-          <p className="text-xs text-slate-500 font-medium">Progres Murid & Stage</p>
-        </div>
-
-        <div className="tugu-card tugu-card-interactive p-5 rounded-2xl space-y-2 bg-white">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Total Reachout</span>
-            <div className="p-2 rounded-xl bg-cyan-50 text-cyan-700">
-              <IconHeartHandshake className="w-4 h-4" stroke={1.5} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-slate-900 tabular-nums">{totalReachouts}</p>
-          <p className="text-xs text-slate-500 font-medium">{totalSundayVisitors} Visitor Ibadah</p>
-        </div>
-
-      </div>
-
-      {/* DISCIPLESHIP GROWTH FUNNEL VISUALIZER */}
-      <div className="tugu-card p-6 rounded-3xl bg-white border border-slate-200 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-sm font-bold text-slate-900">
-            Discipleship Growth Funnel (Alur Pertumbuhan Murid)
-          </h3>
-          <span className="text-xs font-mono text-slate-500 font-semibold">{totalPeople} Total Jemaat</span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200/80 text-center space-y-1">
-            <span className="text-[10px] font-mono font-bold uppercase text-cyan-900">1. Visitor / Reachout</span>
-            <p className="text-2xl font-black text-cyan-950 tabular-nums">{people.filter(p => p.status === 'VISITOR').length}</p>
-            <p className="text-[11px] text-cyan-700 font-medium">Kontak Awal</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-center space-y-1">
-            <span className="text-[10px] font-mono font-bold uppercase text-amber-900">2. Belajar Alkitab</span>
-            <p className="text-2xl font-black text-amber-950 tabular-nums">{totalBibleStudies}</p>
-            <p className="text-[11px] text-amber-700 font-medium">1-on-1 Discipleship</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-center space-y-1">
-            <span className="text-[10px] font-mono font-bold uppercase text-emerald-900">3. Disciple Aktif</span>
-            <p className="text-2xl font-black text-emerald-950 tabular-nums">{people.filter(p => p.status === 'DISCIPLE').length}</p>
-            <p className="text-[11px] text-emerald-700 font-medium">Sudah Baptis</p>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200/80 text-center space-y-1">
-            <span className="text-[10px] font-mono font-bold uppercase text-purple-900">4. Leaders</span>
-            <p className="text-2xl font-black text-purple-950 tabular-nums">{totalLeaders}</p>
-            <p className="text-[11px] text-purple-700 font-medium">Pemimpin Group</p>
-          </div>
-        </div>
-      </div>
-
-      {/* DASHBOARD CONTENT GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* RECENT STATS SUMMARY */}
-        <div className="lg:col-span-2 tugu-card rounded-3xl p-6 space-y-4 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-base font-bold text-slate-900 tracking-tight">
-              Laporan Statistika Minggu Terbaru
-            </h2>
-            <button 
-              onClick={() => onNavigate('statistika')} 
-              className="btn-tactile text-xs text-[#b5852e] hover:text-amber-800 flex items-center space-x-1 font-bold"
-            >
-              <span>Lihat Semua</span>
-              <IconArrowRight className="w-3.5 h-3.5" stroke={2} />
-            </button>
-          </div>
-
-          {latestStats.length === 0 ? (
-            <p className="text-xs text-slate-400 py-8 text-center">Belum ada statistik mingguan yang tersimpan.</p>
-          ) : (
-            <div className="space-y-2.5">
-              {latestStats.map((st) => (
-                <div key={st.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-slate-900 text-sm">{st.group_name}</span>
-                      <span className="text-xs font-mono text-slate-500">({st.week_date})</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* WEAK/FOLLOW UP */}
+          <div className="tugu-card p-5 rounded-2xl border border-rose-200/60 bg-rose-50/30 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-bold text-rose-900">Follow-up Jemaat</h3>
+                <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2 py-0.5 rounded-full">{weakPeople.length} Orang</span>
+              </div>
+              {weakPeople.length > 0 ? (
+                <div className="space-y-2 mb-4">
+                  {weakPeople.slice(0, 3).map(p => (
+                    <div key={p.id} className="text-sm text-rose-800 bg-white/60 p-2 rounded-lg border border-rose-100 flex justify-between items-center">
+                      <span className="font-semibold">{p.full_name}</span>
+                      <span className="text-xs">{p.campus || p.status}</span>
                     </div>
-                    <p className="text-xs text-slate-600 mt-1 tabular-nums">
-                      Disciple: <strong className="text-slate-900">{st.active_disciples_count}</strong> | 
-                      Missing: <strong className="text-amber-700">{st.missing_ibadah_count}</strong> | 
-                      Reachout: <strong className="text-emerald-700">{st.reachout_count}</strong> | 
-                      Visitor: <strong className="text-cyan-700">{st.sunday_visitors_count}</strong>
-                    </p>
-                  </div>
-                  {st.study_progress && st.study_progress.length > 0 && (
-                    <div className="text-xs">
-                      <span className="px-2.5 py-1 rounded-lg bg-amber-100/70 text-amber-900 font-mono text-[11px] font-semibold border border-amber-200/60">
-                        BA: {st.study_progress.map(s => `${s.person_name} (${s.stage})`).join(', ')}
-                      </span>
-                    </div>
+                  ))}
+                  {weakPeople.length > 3 && (
+                    <p className="text-xs text-rose-600 font-medium">+ {weakPeople.length - 3} lainnya...</p>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* FOLLOW UP & MILESTONES SIDEBAR */}
-        <div className="space-y-6">
-          
-          {/* UPCOMING MILESTONES (BIRTHDAY & SPIRITUAL BIRTHDAY) */}
-          <div className="tugu-card rounded-3xl p-6 space-y-4 bg-white border border-amber-200/80">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-                <IconCake className="w-4.5 h-4.5 text-[#b5852e]" stroke={1.5} />
-                <span>Milestone Minggu Ini</span>
-              </h2>
-              <span className="text-[11px] font-mono text-slate-500 font-semibold">{milestones.length} Acara</span>
-            </div>
-
-            <div className="space-y-2.5">
-              {milestones.length === 0 ? (
-                <p className="text-xs text-slate-400 py-4 text-center">Belum ada ulang tahun jasmani / rohani dalam 30 hari ke depan.</p>
               ) : (
-                milestones.map((m, idx) => (
-                  <div key={idx} className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/70 text-xs space-y-1">
-                    <div className="flex items-center justify-between font-bold text-slate-900">
-                      <span className="flex items-center space-x-1.5">
-                        {m.milestone_type === 'BIRTHDAY' ? (
-                          <IconCake className="w-3.5 h-3.5 text-pink-600 shrink-0" stroke={1.5} />
-                        ) : (
-                          <IconCross className="w-3.5 h-3.5 text-amber-700 shrink-0" stroke={1.5} />
-                        )}
-                        <span>{m.full_name}</span>
-                      </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white border border-amber-300 text-amber-900 font-bold">
-                        {m.days_until === 0 ? 'HARI INI!' : `${m.days_until} Hari Lagi`}
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-600 font-medium">
-                      {m.milestone_type === 'BIRTHDAY' ? (
-                        <>🎂 Ulang tahun jasmani {m.years_count ? `ke-${m.years_count}` : ''}</>
-                      ) : (
-                        <>✝️ Spiritual Birthday {m.years_count ? `ke-${m.years_count} (${m.years_count} Thn Baptis)` : 'Baptis'}</>
-                      )}
-                    </p>
-                  </div>
-                ))
+                <p className="text-sm text-rose-600/80 mb-4">Semua jemaat dalam kondisi aktif dan baik.</p>
               )}
             </div>
+            <button 
+              onClick={() => onNavigate('people')}
+              className="text-xs font-bold text-rose-700 hover:text-rose-900 flex items-center gap-1 transition-colors mt-2"
+            >
+              Lihat Data Jemaat <IconArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          {/* FOLLOW UP / DISCIPLE CARE */}
-          <div className="tugu-card rounded-3xl p-6 space-y-4 flex flex-col justify-between bg-white">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-                  <IconAlertTriangle className="w-4 h-4 text-amber-600" stroke={1.5} />
-                  <span>Follow-up & Care</span>
-                </h2>
+          {/* UPCOMING MILESTONES */}
+          <div className="tugu-card p-5 rounded-2xl border border-amber-200/60 bg-amber-50/30 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-bold text-amber-900">Milestone Terdekat</h3>
+                <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">{milestones.length} Acara</span>
               </div>
-              
-              <div className="space-y-2.5">
-                {weakPeople.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">Semua murid dalam kondisi baik!</p>
-                ) : (
-                  weakPeople.map(p => (
-                    <div key={p.id} className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-900">{p.full_name}</span>
-                        <span className="px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 font-mono text-[10px] uppercase font-bold">
-                          {p.status}
-                        </span>
+              {milestones.length > 0 ? (
+                <div className="space-y-2 mb-4">
+                  {milestones.slice(0, 3).map((m, idx) => (
+                    <div key={idx} className="text-sm text-amber-900 bg-white/60 p-2 rounded-lg border border-amber-100 flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        {m.milestone_type === 'BIRTHDAY' ? <IconCake className="w-4 h-4 text-pink-500" /> : <IconCake className="w-4 h-4 text-amber-600" />}
+                        <span className="font-semibold">{m.full_name}</span>
                       </div>
-                      <p className="text-slate-600">{p.notes || 'Perlu di-contact personal.'}</p>
+                      <span className="text-xs font-bold">{m.days_until === 0 ? 'HARI INI' : `${m.days_until} Hari`}</span>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-amber-700/80 mb-4">Belum ada ulang tahun dalam waktu dekat.</p>
+              )}
             </div>
-
-            <button
+            <button 
               onClick={() => onNavigate('people')}
-              className="btn-tactile w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold text-center transition-colors block border border-slate-200"
+              className="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 transition-colors mt-2"
             >
-              Buka Direktori Orang
+              Lihat Data Jemaat <IconArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
         </div>
+      </section>
 
-      </div>
+      {/* THIS WEEK */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <IconCalendarEvent className="w-4 h-4" />
+          Minggu Ini
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* WEEKLY REPORT STATUS */}
+          <div className="tugu-card p-5 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-bold text-slate-900">Status Laporan Mingguan</h3>
+                {isReportCompleted ? (
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1 border border-emerald-200">
+                    <IconCheck className="w-3 h-3" /> Selesai
+                  </span>
+                ) : (
+                  <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase border border-slate-200">
+                    Belum Dibuat
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-slate-600 mb-4">
+                {isReportCompleted 
+                  ? "Laporan minggu ini sudah diisi. Anda dapat menyalin laporannya ke WhatsApp dari menu Laporan Mingguan." 
+                  : "Jangan lupa untuk mengisi kehadiran, progress BA, dan statistik kelompok untuk minggu ini."}
+              </p>
+            </div>
+            <button 
+              onClick={() => onNavigate('statistika')}
+              className={`text-sm font-bold flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
+                isReportCompleted 
+                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' 
+                  : 'bg-[#b5852e] text-white hover:bg-amber-700 shadow-sm'
+              }`}
+            >
+              <IconClipboardCheck className="w-4 h-4" />
+              {isReportCompleted ? 'Lihat Laporan' : 'Isi Laporan Sekarang'}
+            </button>
+          </div>
+
+          {/* UPCOMING EVENTS */}
+          <div className="tugu-card p-5 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 mb-3">Jadwal Terdekat</h3>
+              {upcomingEvents.length > 0 ? (
+                <div className="space-y-3 mb-4">
+                  {upcomingEvents.map(e => (
+                    <div key={e.id} className="bg-slate-50 border border-slate-100 p-3 rounded-xl">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-sm text-slate-900">{e.title}</span>
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded uppercase">
+                          {e.type.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium">
+                        {new Date(e.event_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500 mb-4 bg-slate-50 p-4 rounded-xl text-center border border-slate-100">
+                  Tidak ada jadwal pelayanan atau acara terdekat minggu ini.
+                </p>
+              )}
+            </div>
+            <button 
+              onClick={() => onNavigate('events')}
+              className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors mt-2"
+            >
+              Lihat Jadwal Lengkap <IconArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* COMMUNITY STATS */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <IconUsers className="w-4 h-4" />
+          Komunitas
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          
+          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="text-slate-500 mb-2"><IconUsers className="w-5 h-5" /></div>
+            <p className="text-2xl font-black text-slate-900 tabular-nums">{totalPeople}</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Total Jemaat</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="text-emerald-500 mb-2"><IconUsersGroup className="w-5 h-5" /></div>
+            <p className="text-2xl font-black text-slate-900 tabular-nums">{groups.length}</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Kelompok PDG</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="text-amber-500 mb-2"><IconBook className="w-5 h-5" /></div>
+            <p className="text-2xl font-black text-slate-900 tabular-nums">{totalBibleStudies}</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Belajar Alkitab</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
+            <div className="text-cyan-500 mb-2"><IconHeartHandshake className="w-5 h-5" /></div>
+            <p className="text-2xl font-black text-slate-900 tabular-nums">{people.filter(p => p.status === 'VISITOR' || p.status === 'WEAK' || p.status === 'INACTIVE').length}</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Reachout / Tamu</p>
+          </div>
+
+        </div>
+      </section>
 
     </div>
   );

@@ -1,249 +1,59 @@
-# Project Documentation & Architecture Blueprint: Tugu Leadership Portal
-**GKDI Jogja — Youth & Campus Ministry (ZEAL Tugu)**
+# 📊 TUGU LEADERS PORTAL — System Architecture & UX Mission
+
+**"Rumah Tuhan Rumah Kita"**
+A mobile-first, intentionally designed leadership portal for ZEAL GKDI Tugu Jogja.
 
 ---
 
-## 📌 Executive Summary
-**Tugu Leadership Portal** adalah sistem manajemen jemaat, pengolahan statistik mingguan, pelacakan pemuridan (Belajar Alkitab), dan koordinasi pelayanan bagi kementerian kepemudaan & mahasiswa **ZEAL GKDI Tugu Jogja** (Gereja Kristus Di Indonesia).
+## 🎯 The Mission: Task-Oriented UX Redesign
 
-Aplikasi ini dibangun menggunakan **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS v4**, dan **Supabase PostgreSQL** sebagai backend database relasional secara penuh. Desain antarmuka (UI/UX) difokuskan pada mobilitas (mobile-first), clean data-entry, dan kecepatan pelaporan.
+The application was recently overhauled from a raw "Database Administration Interface" to a **Task-Oriented Leadership Product**. 
+The goal was to stop making Ministry Leaders think like Database Administrators, and instead build an interface that answers their real-world needs immediately.
 
----
-
-## 🏬 Business Processes & Ministry Workflows
-
-### 1. Struktur Komunitas & Kelompok Kecil (PDG / Small Group)
-* **Gender-Based Discipleship**: Jemaat dibagi menjadi *Brother Group* dan *Sister Group*.
-* **Leadership Assignment**: Setiap Small Group dipimpin oleh seorang **Leader** (Senior Disciple/Leader) yang bertanggung jawab atas pengembalaan anggota.
-* **Member Mapping**: Setiap anggota jemaat di-assign ke satu Small Group melalui relasi tabel `group_members`.
-
-### 2. Manajemen Direktori Jemaat & Pemuridan (People Management)
-* **Kategori Jemaat**:
-  1. `LEADER`: Pemimpin kelompok/kementerian.
-  2. `DISCIPLE`: Murid yang sudah dibaptis dan aktif bertumbuh.
-  3. `BIBLE_STUDY`: Teman yang sedang menjalani sesi studi Alkitab personal (1-on-1).
-  4. `VISITOR`: Tamu ibadah/acara baru.
-  5. `WEAK`: Jemaat yang butuh *follow-up* dan *care* khusus (lemah/perlu dijangkau).
-  6. `INACTIVE`: Jemaat yang sedang tidak aktif.
-* **Standarisasi Input Kampus (Tambah Univ)**:
-  * Terdapat fitur input dinamis untuk "Asal Kampus / Universitas". Pengguna dapat menyimpan nama universitas baru ke dalam daftar standarisasi global langsung dari formulir penambahan orang, memastikan konsistensi data kampus (mis. UGM, UNY, ATMA, dll).
-* **Weekly BA Session Log (`bible_study_logs`)**:
-  * Leader mencatat progres mingguan kandidat BA secara bertahap.
-  * Status `study_stage` pada profil otomatis ter-update mengikuti topik pelajaran terbaru.
-
-### 3. Pelaporan Statistika Minggu & Ekspor WhatsApp (Statistika Minggu)
-* **UX/UI Overhaul (Data Grid Layout)**: Menggunakan tata letak Tabel Data yang luas dan terstruktur. Semua anggota grup dijajarkan secara vertikal, memungkinkan input masal secara instan (Dropdown kehadiran & Progres BA) di satu layar tanpa perlu memutar banyak menu pop-up.
-* **Data Flow**:
-  * Jumlah Disciple aktif.
-  * Murid yang tidak hadir ibadah beserta alasan spesifik (terintegrasi inline).
-  * Progres murid Belajar Alkitab.
-  * Jumlah Reachout, Visitor Ibadah & Acara, serta Baptis baru.
-* **Output 1-Klik**:
-  1. Data tersimpan permanen ke tabel `weekly_stats` di Supabase.
-  2. Sistem men-generate teks laporan terformat rapi yang otomatis tersalin ke Clipboard untuk dikirim ke grup WhatsApp.
-* **Data Visualization**: Dilengkapi dengan grafik Area Chart (via *Recharts*) untuk memantau tren Reachout dan Visitor dari minggu ke minggu.
-
-### 4. Pelayanan Ibadah & Duty Roster (Events & Roster)
-* Koordinasi acara mingguan (PDA Gabungan, PDA Brother/Sister, dll).
-* Penugasan petugas pelayanan (*Duty Roster*): Speaker, MC, Worship, Operator, Prayer.
-
-### 5. Komunikasi Visi & Pengumuman (Vision Directives)
-* Papan pengumuman visi kerohanian jemaat, pilar komitmen saat teduh harian, dan instruksi kegiatan kepemimpinan yang dapat di-pin di bagian atas.
+### Core UX Principles Implemented:
+1. **Action-Oriented Dashboard**: The dashboard no longer just dumps raw charts. It is split into **"Needs Attention"** (Follow-up reminders, Milestones) and **"This Week"** (Weekly Report statuses, Upcoming events), directly answering the question: *"What do I need to do today?"*
+2. **Directory, Not Database**: `PeopleView` and `GroupsView` were transformed from dense data tables into beautiful, tappable **Directory Cards**. 
+3. **Dedicated Detail Views**: Instead of cramming editing, reading, and history into a single screen or inline accordion, we introduced **Person Detail View** and **Group Detail View** modals. This cleanly separates *scanning* from *deep diving*.
+4. **"Holy Grail" Modal Layout**: All modals use a strict `flex-col h-full`, fixed-height container, `flex-shrink-0` for headers/footers, and `flex-1 overflow-y-auto min-h-0` for content. This guarantees native app-like scrolling on iOS/Android without pushing headers off-screen.
 
 ---
 
-## 🎨 UI/UX & Frontend Architecture
+## 🏛️ Information Architecture (IA)
 
-### 1. Holy Grail Flexbox Modal (`FormPanel.tsx`)
-Seluruh form pop-up di aplikasi (Tambah Orang, Edit Grup, Buat Pengumuman, dll) dienkapsulasi dalam satu komponen terpusat `FormPanel`.
-* **Arsitektur Layout**: Menggunakan teknik *Holy Grail Flexbox* (`flex flex-col h-full`, `flex-shrink-0` pada Header/Footer, dan `flex-1 overflow-y-auto min-h-0` pada Body).
-* **Solusi Bug Safari/Mobile**: Mencegah *header* terdorong ke atas dan menghilang saat layar kecil di-scroll. Body konten bisa discroll secara independen sementara aksi Simpan & Batal tetap menempel (sticky).
+The navigation has been carefully renamed to reflect human actions and concepts, not SQL tables:
 
-### 2. Mobile-Responsive Navigation (`Navbar.tsx`)
-Header aplikasi dirancang agar tidak *wrapping* berantakan pada layar smartphone (seperti iPhone SE). Teks otomatis ter-*truncate*, flexbox dipaksa untuk tidak melebihi lebar layar (`min-w-0`), dan tombol-tombol sekunder disembunyikan labelnya (hanya icon) pada viewport sempit.
-
----
-
-## 🗄️ Database Architecture (Supabase PostgreSQL)
-
-Database menggunakan PostgreSQL di Supabase dengan **Row Level Security (RLS)** yang aktif.
-
-```
-┌──────────────────┐       ┌──────────────────────┐       ┌──────────────────┐
-│      people      │───────│    group_members     │───────│      groups      │
-└──────────────────┘ 1   * └──────────────────────┘ *   1 └──────────────────┘
-         │                                                         │
-         │ 1                                                       │ 1
-         │                                                         │
-         │ *                                                       │ *
-┌──────────────────┐                                      ┌──────────────────┐
-│bible_study_logs  │                                      │   weekly_stats   │
-└──────────────────┘                                      └──────────────────┘
-```
-
-### URL Parsers Edge Case
-Implementasi koneksi Supabase (`supabase.ts`) menyertakan sistem `.trim()` dan regex dinamis untuk membersihkan `process.env.NEXT_PUBLIC_SUPABASE_URL` dari spasi kosong tersembunyi (trailing space). Hal ini memperbaiki bug krusial di mana Supabase JS Client secara keliru menempelkan *path* ganda (`/rest/v1/rest/v1`) yang berujung pada error `404 Not Found` saat operasi delete group member.
+1. **Dashboard** (`DashboardView.tsx`) - Prioritized daily tasks and community health overview.
+2. **Data Jemaat** (`PeopleView.tsx`) - Directory of all people (Disciples, Visitors, Bible Study).
+3. **Kelompok (PDG)** (`GroupsView.tsx`) - Directory of Small Groups and their members.
+4. **Laporan Mingguan** (`StatistikaView.tsx`) - Step-by-step wizard to report weekly stats and generate WhatsApp summaries.
+5. **Jadwal & Pelayanan** (`EventsView.tsx`) - Duty roster and event schedule.
+6. **Pengumuman** (`AnnouncementsView.tsx`) - Pinned visions and team directives.
 
 ---
 
-### DDL Schema SQL Complete
-
-```sql
--- 1. TABEL JEMAAT / ORANG (people)
-CREATE TABLE IF NOT EXISTS people (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name TEXT NOT NULL,
-    gender TEXT NOT NULL CHECK (gender IN ('BROTHER', 'SISTER')),
-    phone_number TEXT,
-    campus TEXT,
-    status TEXT NOT NULL DEFAULT 'DISCIPLE' CHECK (status IN ('LEADER', 'DISCIPLE', 'BIBLE_STUDY', 'VISITOR', 'WEAK', 'INACTIVE')),
-    study_stage TEXT,
-    notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 2. TABEL SMALL GROUPS (groups)
-CREATE TABLE IF NOT EXISTS groups (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    group_name TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('BROTHER', 'SISTER')),
-    leader_id UUID REFERENCES people(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 3. TABEL ANGGOTA GROUP (group_members)
-CREATE TABLE IF NOT EXISTS group_members (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
-    person_id UUID REFERENCES people(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(group_id, person_id)
-);
-
--- 4. TABEL STATISTIK MINGGUAN (weekly_stats)
-CREATE TABLE IF NOT EXISTS weekly_stats (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
-    week_date DATE NOT NULL,
-    active_disciples_count INT DEFAULT 0,
-    missing_ibadah_count INT DEFAULT 0,
-    missing_reasons JSONB DEFAULT '[]'::jsonb,
-    study_progress JSONB DEFAULT '[]'::jsonb,
-    reachout_count INT DEFAULT 0,
-    sunday_visitors_count INT DEFAULT 0,
-    event_visitors_count INT DEFAULT 0,
-    baptisms_count INT DEFAULT 0,
-    notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 5. TABEL PROGRES BELAJAR ALKITAB MINGGUAN (bible_study_logs)
-CREATE TABLE IF NOT EXISTS bible_study_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    person_id UUID REFERENCES people(id) ON DELETE CASCADE,
-    week_number INT NOT NULL,
-    study_date DATE NOT NULL,
-    lesson_topic TEXT NOT NULL,
-    notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 6. TABEL EVENTS & ACARA (events)
-CREATE TABLE IF NOT EXISTS events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('PDA_BRO', 'PDA_SIS', 'PDA_COMBINED', 'DOA_YOUTH', 'PW_NIGHT', 'RETREAT', 'PMK_OUTREACH')),
-    event_date TIMESTAMPTZ NOT NULL,
-    location TEXT,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 7. TABEL PETUGAS PELAYANAN (event_rosters)
-CREATE TABLE IF NOT EXISTS event_rosters (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
-    person_id UUID REFERENCES people(id) ON DELETE CASCADE,
-    role TEXT NOT NULL CHECK (role IN ('SPEAKER', 'MC', 'OPERATOR', 'WORSHIP', 'PRAYER')),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 8. TABEL VISI & PENGUMUMAN (announcements)
-CREATE TABLE IF NOT EXISTS announcements (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    author_name TEXT NOT NULL,
-    content TEXT NOT NULL,
-    is_pinned BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ROW LEVEL SECURITY POLICIES
-ALTER TABLE people ENABLE ROW LEVEL SECURITY;
-ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
-ALTER TABLE group_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE weekly_stats ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bible_study_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE event_rosters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public Read/Write people" ON people FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write groups" ON groups FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write group_members" ON group_members FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write weekly_stats" ON weekly_stats FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write bible_study_logs" ON bible_study_logs FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write events" ON events FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write event_rosters" ON event_rosters FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public Read/Write announcements" ON announcements FOR ALL USING (true) WITH CHECK (true);
-```
-
----
-
-## 💻 Tech Stack & Application Architecture
+## 🛠️ Tech Stack & Constraints
 
 * **Framework**: Next.js 15.5 App Router (React 19)
-* **Styling**: Tailwind CSS v4, Geist Sans font family, GKDI Warm Light Theme (`#f8fafc` bg, `#b5852e` gold accent, `#0f172a` primary text)
+* **Styling**: Tailwind CSS v4, Geist Sans font family, GKDI Warm Light Theme (`#f8fafc` bg, `#b5852e` gold accent)
 * **Data Visualization**: `recharts` (Area charts for statistical trends)
-* **Iconography**: `@tabler/icons-react`
-* **Micro-interactions**: `canvas-confetti` (efek penyelesaian pelaporan)
-* **State & Data Layer**: Client-side state sync ke Supabase API (`src/lib/supabase.ts`) dengan fallback aman ke LocalStorage browser jika offline.
-* **Build Target**: Fully Static/SSR Vercel ready (`npx next build` verified clean with 0 errors).
+* **Database / Backend**: Supabase PostgreSQL (via `src/lib/supabase.ts`)
+* **Deployment**: Vercel
+
+### Critical Engineering Notes:
+* **Supabase Vercel Edge Case**: Environment variables from Vercel often contain hidden trailing whitespaces. The `supabase.ts` client implements `.trim()` to prevent `404 Not Found` API route duplication bugs.
+* **Flexbox iOS Safari Bug**: Always apply `min-h-0` to scrolling `flex-1` elements inside flex columns, otherwise content expansion will break the layout height on Safari mobile.
+* **Motto Integrity**: The ZEAL motto is strictly "•Love God •Love People •Love Life". Do not use the heart symbol (♥).
 
 ---
 
-## 🛠️ File Structure
+## 🗄️ Database Schema Summary (Supabase)
 
-```
-D:\Zeal\Tugu\
-├── src/
-│   ├── app/
-│   │   ├── globals.css      # CSS Variables & GKDI Design System Tokens
-│   │   ├── layout.tsx       # Root Layout
-│   │   └── page.tsx         # Main Portal Orchestrator & State Container
-│   ├── components/
-│   │   ├── FormPanel.tsx         # Holy Grail Flexbox Layout untuk semua Modal Pop-Up
-│   │   ├── Navbar.tsx            # Header dengan navigasi Mobile-Responsive
-│   │   ├── DashboardView.tsx     # Overview Metrics, Motto, & Disciple Care
-│   │   ├── PeopleView.tsx        # Directory (Disciples, BA Progress, Reachout)
-│   │   ├── GroupsView.tsx        # Small Groups (PDG) & Member Assignment
-│   │   ├── StatistikaView.tsx    # Data Table UX, WA Formatter, & Recharts Analytics
-│   │   ├── EventsView.tsx        # Event Schedules & Duty Roster
-│   │   └── AnnouncementsView.tsx # Spiritual Vision & Announcement Directives
-│   └── lib/
-│       ├── types.ts         # TypeScript Interfaces
-│       ├── supabase.ts      # Supabase Client, Trim Edge-Cases, & CRUD API Handlers
-│       └── mockData.ts      # Zero-state empty initial arrays
-└── PROJECT_DOCUMENTATION.md # Architecture Blueprint (This file)
-```
+1. **`people`**: Core directory (id, full_name, status, gender, campus, birth_date, baptism_date).
+2. **`groups`**: Small groups (id, group_name, category, leader_id).
+3. **`group_members`**: Junction mapping people to groups.
+4. **`weekly_stats`**: Statistical snapshots generated by leaders weekly.
+5. **`bible_study_logs`**: Tracking history of bible studies for individuals.
+6. **`events` & `event_rosters`**: Event schedules and duty assignments (MC, Speaker, etc).
+7. **`announcements`**: Ministry directives.
 
----
-
-## 🚀 Future Roadmap & Optimization Potential
-1. **Authentication & Multi-Role Permissions**: Integrasi Supabase Auth (misal: Role `Admin` bisa edit semua, Role `Leader` hanya bisa input kelompok sendiri).
-2. **Export Excel / PDF Report**: Fitur unduh laporan bulanan jemaat dan statistik pertumbuhan per kuartal (saat ini CSV Export telah tersedia).
-3. **Push Notification / Reminder WA**: Integrasi API WhatsApp Gateway (WAPI/Fonnte) untuk otomatis mengingatkan Leader mengabdi di hari Minggu.
-
----
-
-*(Dokumen ini dibuat otomatis sebagai acuan arsitektur sistem dan audit independen oleh tim AI / Developer).*
+Row Level Security (RLS) is enabled and defaults to Public Read/Write for rapid internal deployment.
