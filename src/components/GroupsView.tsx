@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Group, Person, Gender } from '@/lib/types';
 import { fetchGroupMembers, updateGroupMembers } from '@/lib/supabase';
 import GroupDetailPanel from './GroupDetailPanel';
@@ -22,6 +23,11 @@ interface GroupsViewProps {
 
 export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Modals
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
@@ -214,7 +220,7 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
       />
 
       {/* LEADER HANDOVER WIZARD MODAL */}
-      {handoverGroup && (
+      {mounted && handoverGroup && createPortal(
         <div className="fixed inset-0 z-[100] flex justify-end sm:justify-center sm:items-center sm:p-6">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setHandoverGroup(null)}></div>
           <div className="relative w-full max-w-md sm:rounded-3xl h-full sm:h-auto max-h-[100dvh] sm:max-h-[90vh] bg-white shadow-2xl animate-slide-in-right sm:animate-fade-in flex flex-col">
@@ -309,11 +315,12 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
               </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* CREATE / EDIT GROUP MODAL */}
-      {isGroupModalOpen && (
+      {mounted && isGroupModalOpen && createPortal(
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="tugu-card w-full max-w-md rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[90vh] overflow-hidden animate-fade-in">
               <div className="flex-shrink-0 p-6 border-b border-slate-100 flex items-center justify-between">
@@ -399,11 +406,12 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          </div>,
+        document.body
+      )}
 
       {/* MANAGE MEMBERS MODAL */}
-      {managingMembersGroup && (
+      {mounted && managingMembersGroup && createPortal(
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="tugu-card w-full max-w-lg rounded-3xl bg-white shadow-xl flex flex-col max-h-[100dvh] sm:max-h-[85vh] overflow-hidden animate-fade-in">
             
@@ -476,8 +484,9 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
             </div>
 
           </div>
-          </div>
-        )}
+        </div>,
+        document.body
+      )}
 
     </div>
   );
