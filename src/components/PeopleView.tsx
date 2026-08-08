@@ -193,42 +193,33 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
     };
   }, [people, search]);
 
-  const renderPersonRow = (p: Person) => (
+  const renderPersonCard = (p: Person) => (
     <div 
       key={p.id} 
       onClick={() => openDetail(p)}
-      className="group flex items-center justify-between p-3.5 sm:p-4 bg-white/70 hover:bg-white backdrop-blur-xl border border-slate-200/60 hover:border-[#b5852e]/40 rounded-2xl mb-2.5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-6px_rgba(181,133,46,0.15)] cursor-pointer transition-all duration-300 ease-out transform hover:-translate-y-0.5"
+      className="group flex flex-col p-4 bg-white/70 hover:bg-white backdrop-blur-xl border border-slate-200/60 hover:border-[#b5852e]/40 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-6px_rgba(181,133,46,0.15)] cursor-pointer transition-all duration-300 ease-out transform hover:-translate-y-1 relative"
     >
-      <div className="flex items-center space-x-4 min-w-0">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${p.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-gradient-to-br from-rose-400 to-orange-400 text-white'}`}>
-          <span className="font-bold text-base font-serif drop-shadow-sm">{p.full_name.charAt(0).toUpperCase()}</span>
+      <div className="flex items-start justify-between mb-3">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${p.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-gradient-to-br from-rose-400 to-orange-400 text-white'}`}>
+          <span className="font-bold text-sm font-serif drop-shadow-sm">{p.full_name.charAt(0).toUpperCase()}</span>
         </div>
-        <div className="min-w-0 flex flex-col justify-center space-y-1">
-          <div className="flex items-center space-x-2">
-            <h3 className="font-extrabold text-sm sm:text-base text-slate-800 truncate tracking-tight">{p.full_name}</h3>
-            {p.campus && (
-              <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 uppercase truncate max-w-[120px] tracking-wider">
-                {p.campus}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${getStatusBadgeClass(p.status)}`}>
-              {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
-            </span>
-            {p.study_stage && (
-              <span className="text-[10px] text-slate-500 font-semibold truncate tracking-tight">
-                • {p.study_stage}
-              </span>
-            )}
-          </div>
-        </div>
+        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${getStatusBadgeClass(p.status)}`}>
+          {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
+        </span>
       </div>
       
-      <div className="flex items-center shrink-0 pl-3">
-        <div className="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-[#b5852e]/10 border border-transparent group-hover:border-[#b5852e]/20 flex items-center justify-center transition-colors">
-          <IconChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#b5852e] group-hover:translate-x-0.5 transition-all" stroke={2.5} />
-        </div>
+      <div className="flex flex-col min-w-0">
+        <h3 className="font-extrabold text-sm text-slate-800 truncate tracking-tight">{p.full_name}</h3>
+        {p.campus && (
+          <span className="text-[10px] font-bold text-slate-500 truncate tracking-wider mt-0.5">
+            {p.campus}
+          </span>
+        )}
+        {p.study_stage && (
+          <span className="text-[10px] text-slate-400 font-semibold truncate tracking-tight mt-1.5">
+            Progress: {p.study_stage}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -312,8 +303,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                     <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">{groupedPeople.disciples.length}</span>
                   </h2>
                 </div>
-                <div className="flex flex-col">
-                  {groupedPeople.disciples.map(renderPersonRow)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {groupedPeople.disciples.map(renderPersonCard)}
                 </div>
               </div>
             )}
@@ -326,8 +317,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                     <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-black">{groupedPeople.studyans.length}</span>
                   </h2>
                 </div>
-                <div className="flex flex-col">
-                  {groupedPeople.studyans.map(renderPersonRow)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {groupedPeople.studyans.map(renderPersonCard)}
                 </div>
               </div>
             )}
@@ -340,8 +331,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                     <span className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 text-[11px] font-black">{groupedPeople.visitors.length}</span>
                   </h2>
                 </div>
-                <div className="flex flex-col">
-                  {groupedPeople.visitors.map(renderPersonRow)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {groupedPeople.visitors.map(renderPersonCard)}
                 </div>
               </div>
             )}
@@ -354,8 +345,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                     <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-black">{groupedPeople.inactives.length}</span>
                   </h2>
                 </div>
-                <div className="flex flex-col">
-                  {groupedPeople.inactives.map(renderPersonRow)}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {groupedPeople.inactives.map(renderPersonCard)}
                 </div>
               </div>
             )}
