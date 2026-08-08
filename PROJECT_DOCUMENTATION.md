@@ -6,7 +6,7 @@
 ## 📌 Executive Summary
 **Tugu Leadership Portal** adalah sistem manajemen jemaat, pengolahan statistik mingguan, pelacakan pemuridan (Belajar Alkitab), dan koordinasi pelayanan bagi kementerian kepemudaan & mahasiswa **ZEAL GKDI Tugu Jogja** (Gereja Kristus Di Indonesia).
 
-Aplikasi ini dibangun menggunakan **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS v4**, dan **Supabase PostgreSQL** sebagai backend database relasional secara penuh.
+Aplikasi ini dibangun menggunakan **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS v4**, dan **Supabase PostgreSQL** sebagai backend database relasional secara penuh. Desain antarmuka (UI/UX) difokuskan pada mobilitas (mobile-first), clean data-entry, dan kecepatan pelaporan.
 
 ---
 
@@ -17,7 +17,7 @@ Aplikasi ini dibangun menggunakan **Next.js 15 (App Router)**, **TypeScript**, *
 * **Leadership Assignment**: Setiap Small Group dipimpin oleh seorang **Leader** (Senior Disciple/Leader) yang bertanggung jawab atas pengembalaan anggota.
 * **Member Mapping**: Setiap anggota jemaat di-assign ke satu Small Group melalui relasi tabel `group_members`.
 
-### 2. Alur Pembinaan & Belajar Alkitab (BA Progress Tracking)
+### 2. Manajemen Direktori Jemaat & Pemuridan (People Management)
 * **Kategori Jemaat**:
   1. `LEADER`: Pemimpin kelompok/kementerian.
   2. `DISCIPLE`: Murid yang sudah dibaptis dan aktif bertumbuh.
@@ -25,33 +25,42 @@ Aplikasi ini dibangun menggunakan **Next.js 15 (App Router)**, **TypeScript**, *
   4. `VISITOR`: Tamu ibadah/acara baru.
   5. `WEAK`: Jemaat yang butuh *follow-up* dan *care* khusus (lemah/perlu dijangkau).
   6. `INACTIVE`: Jemaat yang sedang tidak aktif.
+* **Standarisasi Input Kampus (Tambah Univ)**:
+  * Terdapat fitur input dinamis untuk "Asal Kampus / Universitas". Pengguna dapat menyimpan nama universitas baru ke dalam daftar standarisasi global langsung dari formulir penambahan orang, memastikan konsistensi data kampus (mis. UGM, UNY, ATMA, dll).
 * **Weekly BA Session Log (`bible_study_logs`)**:
-  * Leader mencatat progres mingguan kandidat BA secara bertahap (Pertemuan 1 s.d. Pertemuan N).
-  * Menuliskan topik pelajaran (misal: *Cinta Alkitab*, *Dosa & Pertobatan*, *Salib Kristus*, *Baptis*), tanggal sesi, dan catatan perenungan.
-  * Status `study_stage` pada profil orang otomatis ter-update mengikuti pertemuan terbaru.
+  * Leader mencatat progres mingguan kandidat BA secara bertahap.
+  * Status `study_stage` pada profil otomatis ter-update mengikuti topik pelajaran terbaru.
 
 ### 3. Pelaporan Statistika Minggu & Ekspor WhatsApp (Statistika Minggu)
-* Setiap hari Minggu setelah ibadah, Leader mengisi laporan mingguan untuk Small Group-nya:
+* **UX/UI Overhaul (Data Grid Layout)**: Menggunakan tata letak Tabel Data yang luas dan terstruktur. Semua anggota grup dijajarkan secara vertikal, memungkinkan input masal secara instan (Dropdown kehadiran & Progres BA) di satu layar tanpa perlu memutar banyak menu pop-up.
+* **Data Flow**:
   * Jumlah Disciple aktif.
-  * Murid yang tidak hadir ibadah beserta alasan spesifik (`missing_reasons`).
-  * Progres murid Belajar Alkitab (`study_progress`).
-  * Jumlah Reachout (jiwa terjangkau baru).
-  * Jumlah Visitor Ibadah & Visitor Acara.
-  * Jumlah Baptis baru.
+  * Murid yang tidak hadir ibadah beserta alasan spesifik (terintegrasi inline).
+  * Progres murid Belajar Alkitab.
+  * Jumlah Reachout, Visitor Ibadah & Acara, serta Baptis baru.
 * **Output 1-Klik**:
-  1. Data tersimpan permanen ke tabel `weekly_stats` di Supabase untuk diolah menjadi grafik analytics.
-  2. Sistem men-generate teks laporan terformat rapi yang otomatis tersalin ke Clipboard untuk dikirim ke grup WhatsApp Leadership.
+  1. Data tersimpan permanen ke tabel `weekly_stats` di Supabase.
+  2. Sistem men-generate teks laporan terformat rapi yang otomatis tersalin ke Clipboard untuk dikirim ke grup WhatsApp.
+* **Data Visualization**: Dilengkapi dengan grafik Area Chart (via *Recharts*) untuk memantau tren Reachout dan Visitor dari minggu ke minggu.
 
 ### 4. Pelayanan Ibadah & Duty Roster (Events & Roster)
-* Koordinasi acara mingguan (PDA Gabungan, PDA Brother/Sister, Doa Youth, P&W Night, Retreat, Outreach PMK).
-* Penugasan petugas pelayanan (*Duty Roster*):
-  * **Speaker / Pembawa Firman**
-  * **Master of Ceremony (MC)**
-  * **Praise & Worship (WL / Musisi)**
-  * **Operator Zoom / Sound / Tech**
+* Koordinasi acara mingguan (PDA Gabungan, PDA Brother/Sister, dll).
+* Penugasan petugas pelayanan (*Duty Roster*): Speaker, MC, Worship, Operator, Prayer.
 
 ### 5. Komunikasi Visi & Pengumuman (Vision Directives)
 * Papan pengumuman visi kerohanian jemaat, pilar komitmen saat teduh harian, dan instruksi kegiatan kepemimpinan yang dapat di-pin di bagian atas.
+
+---
+
+## 🎨 UI/UX & Frontend Architecture
+
+### 1. Holy Grail Flexbox Modal (`FormPanel.tsx`)
+Seluruh form pop-up di aplikasi (Tambah Orang, Edit Grup, Buat Pengumuman, dll) dienkapsulasi dalam satu komponen terpusat `FormPanel`.
+* **Arsitektur Layout**: Menggunakan teknik *Holy Grail Flexbox* (`flex flex-col h-full`, `flex-shrink-0` pada Header/Footer, dan `flex-1 overflow-y-auto min-h-0` pada Body).
+* **Solusi Bug Safari/Mobile**: Mencegah *header* terdorong ke atas dan menghilang saat layar kecil di-scroll. Body konten bisa discroll secara independen sementara aksi Simpan & Batal tetap menempel (sticky).
+
+### 2. Mobile-Responsive Navigation (`Navbar.tsx`)
+Header aplikasi dirancang agar tidak *wrapping* berantakan pada layar smartphone (seperti iPhone SE). Teks otomatis ter-*truncate*, flexbox dipaksa untuk tidak melebihi lebar layar (`min-w-0`), dan tombol-tombol sekunder disembunyikan labelnya (hanya icon) pada viewport sempit.
 
 ---
 
@@ -71,6 +80,11 @@ Database menggunakan PostgreSQL di Supabase dengan **Row Level Security (RLS)** 
 │bible_study_logs  │                                      │   weekly_stats   │
 └──────────────────┘                                      └──────────────────┘
 ```
+
+### URL Parsers Edge Case
+Implementasi koneksi Supabase (`supabase.ts`) menyertakan sistem `.trim()` dan regex dinamis untuk membersihkan `process.env.NEXT_PUBLIC_SUPABASE_URL` dari spasi kosong tersembunyi (trailing space). Hal ini memperbaiki bug krusial di mana Supabase JS Client secara keliru menempelkan *path* ganda (`/rest/v1/rest/v1`) yang berujung pada error `404 Not Found` saat operasi delete group member.
+
+---
 
 ### DDL Schema SQL Complete
 
@@ -190,6 +204,7 @@ CREATE POLICY "Public Read/Write announcements" ON announcements FOR ALL USING (
 
 * **Framework**: Next.js 15.5 App Router (React 19)
 * **Styling**: Tailwind CSS v4, Geist Sans font family, GKDI Warm Light Theme (`#f8fafc` bg, `#b5852e` gold accent, `#0f172a` primary text)
+* **Data Visualization**: `recharts` (Area charts for statistical trends)
 * **Iconography**: `@tabler/icons-react`
 * **Micro-interactions**: `canvas-confetti` (efek penyelesaian pelaporan)
 * **State & Data Layer**: Client-side state sync ke Supabase API (`src/lib/supabase.ts`) dengan fallback aman ke LocalStorage browser jika offline.
@@ -207,16 +222,17 @@ D:\Zeal\Tugu\
 │   │   ├── layout.tsx       # Root Layout
 │   │   └── page.tsx         # Main Portal Orchestrator & State Container
 │   ├── components/
-│   │   ├── Navbar.tsx            # Header with GKDI Branding & Tab Controls
+│   │   ├── FormPanel.tsx         # Holy Grail Flexbox Layout untuk semua Modal Pop-Up
+│   │   ├── Navbar.tsx            # Header dengan navigasi Mobile-Responsive
 │   │   ├── DashboardView.tsx     # Overview Metrics, Motto, & Disciple Care
 │   │   ├── PeopleView.tsx        # Directory (Disciples, BA Progress, Reachout)
 │   │   ├── GroupsView.tsx        # Small Groups (PDG) & Member Assignment
-│   │   ├── StatistikaView.tsx    # Weekly Stats, WA Formatter, & Analytics Dashboard
+│   │   ├── StatistikaView.tsx    # Data Table UX, WA Formatter, & Recharts Analytics
 │   │   ├── EventsView.tsx        # Event Schedules & Duty Roster
 │   │   └── AnnouncementsView.tsx # Spiritual Vision & Announcement Directives
 │   └── lib/
 │       ├── types.ts         # TypeScript Interfaces
-│       ├── supabase.ts      # Supabase Client & CRUD API Handlers
+│       ├── supabase.ts      # Supabase Client, Trim Edge-Cases, & CRUD API Handlers
 │       └── mockData.ts      # Zero-state empty initial arrays
 └── PROJECT_DOCUMENTATION.md # Architecture Blueprint (This file)
 ```
@@ -225,9 +241,8 @@ D:\Zeal\Tugu\
 
 ## 🚀 Future Roadmap & Optimization Potential
 1. **Authentication & Multi-Role Permissions**: Integrasi Supabase Auth (misal: Role `Admin` bisa edit semua, Role `Leader` hanya bisa input kelompok sendiri).
-2. **Export Excel / PDF Report**: Fitur unduh laporan bulanan jemaat dan statistik pertumbuhan per kuartal.
-3. **Grafik Visual Interaktif Tambahan (Chart.js / Recharts)**: Visualisasi tren pertumbuhan jemaat bulanan dalam bentuk Line Chart & Bar Chart interaktif.
-4. **Push Notification / Reminder WA**: Integrasi API WhatsApp Gateway (WAPI/Fonnte) untuk otomatis mengingatkan Leader mengabdi di hari Minggu.
+2. **Export Excel / PDF Report**: Fitur unduh laporan bulanan jemaat dan statistik pertumbuhan per kuartal (saat ini CSV Export telah tersedia).
+3. **Push Notification / Reminder WA**: Integrasi API WhatsApp Gateway (WAPI/Fonnte) untuk otomatis mengingatkan Leader mengabdi di hari Minggu.
 
 ---
 
