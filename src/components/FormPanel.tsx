@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { IconX } from "@tabler/icons-react";
 
 export default function FormPanel({ 
@@ -23,6 +24,11 @@ export default function FormPanel({
   isSubmitDisabled?: boolean 
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -43,9 +49,9 @@ export default function FormPanel({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const content = (
     <div className="fixed inset-0 z-[100]">
       <div
         className="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px] animate-fade-in"
@@ -128,4 +134,6 @@ export default function FormPanel({
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
