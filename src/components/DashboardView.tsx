@@ -6,7 +6,6 @@ import {
   IconUsers, 
   IconUsersGroup, 
   IconBook, 
-  IconHeartHandshake, 
   IconCalendarEvent,
   IconClipboardCheck,
   IconCake,
@@ -74,11 +73,11 @@ export default function DashboardView({ people, groups, stats, events = [], curr
               <span>Zeal Tugu Ministry</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-black tracking-tight mb-4 leading-tight">
-              Let's make <br/>
+              Let&apos;s make <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-orange-400">an impact</span> today, {firstName}! 🚀
             </h1>
             <p className="text-white/80 text-lg font-medium max-w-lg">
-              "Love God, love people, love life." Saatnya melayani dengan semangat baru.
+              &quot;Love God, love people, love life.&quot; Saatnya melayani dengan semangat baru.
             </p>
           </div>
 
@@ -141,12 +140,12 @@ export default function DashboardView({ people, groups, stats, events = [], curr
               <div className="p-3 bg-purple-100 text-purple-600 rounded-2xl">
                 <IconCalendarEvent className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-800">What's Next?</h2>
+              <h2 className="text-2xl font-bold text-slate-800">What&apos;s Next?</h2>
             </div>
 
             {upcomingEvents.length > 0 ? (
               <div className="space-y-4">
-                {upcomingEvents.map((e, idx) => (
+                {upcomingEvents.map((e) => (
                   <div key={e.id} className="flex gap-4 items-center group cursor-pointer hover:bg-slate-50 p-4 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
                     <div className="w-16 h-16 shrink-0 bg-slate-100 rounded-2xl flex flex-col items-center justify-center text-slate-800 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors">
                       <span className="text-xs font-bold uppercase">{new Date(e.event_date).toLocaleDateString('id-ID', { month: 'short' })}</span>
