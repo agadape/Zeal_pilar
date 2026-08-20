@@ -59,6 +59,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
   // Form State for Adding/Editing
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [fullName, setFullName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender>('BROTHER');
   const [phone, setPhone] = useState('');
   const [campus, setCampus] = useState('');
@@ -81,6 +82,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
   const openAddModal = () => {
     setEditingPerson(null);
     setFullName('');
+    setNickname('');
     setGender('BROTHER');
     setPhone('');
     setCampus('');
@@ -96,6 +98,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
     setIsDetailOpen(false); // Close detail if open
     setEditingPerson(p);
     setFullName(p.full_name);
+    setNickname(p.nickname || '');
     setGender(p.gender);
     setPhone(p.phone_number || '');
     setCampus(p.campus || '');
@@ -138,6 +141,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
       await onSavePerson({
         id: editingPerson?.id,
         full_name: fullName.trim(),
+        nickname: nickname.trim() || undefined,
         gender,
         phone_number: phone.trim() || undefined,
         campus: campus.trim() || undefined,
@@ -209,7 +213,10 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
       </div>
       
       <div className="flex flex-col min-w-0 mt-2">
-        <h3 className="font-extrabold text-base text-slate-900 truncate">{p.full_name}</h3>
+        <h3 className="font-extrabold text-base text-slate-900 truncate" title={p.full_name}>
+          {p.nickname ? `${p.nickname}` : p.full_name}
+          {p.nickname && <span className="ml-1.5 text-xs text-slate-400 font-bold">({p.full_name.split(' ')[0]})</span>}
+        </h3>
         {p.campus && (
           <span className="text-xs font-medium text-slate-500 truncate mt-1 flex items-center gap-1">
             🎓 {p.campus}
@@ -377,16 +384,28 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
           <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Informasi Pribadi</h3>
             
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nama Lengkap *</label>
-              <input
-                type="text"
-                required
-                placeholder="Contoh: Axel / Sherly"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nama Lengkap *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Alexander Budi"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nama Panggilan</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Alex"
+                  value={nickname}
+                  onChange={e => setNickname(e.target.value)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -32,6 +32,7 @@ export interface Person {
   auth_id?: string; // Links to Supabase auth.users.id
   role?: 'SUPER_ADMIN' | 'GROUP_LEADER' | 'MEMBER'; // RBAC Role
   full_name: string;
+  nickname?: string; // Nama panggilan
   gender: Gender;
   phone_number?: string;
   campus?: string; // ATMA, UGM, UNY, STIPRAM, OTHER

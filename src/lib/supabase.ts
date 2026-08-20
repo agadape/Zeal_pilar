@@ -145,6 +145,7 @@ export async function fetchPeople(): Promise<Person[]> {
 export async function savePerson(person: Omit<Person, 'id'> & { id?: string; study_history?: Person['study_history'] }): Promise<Person> {
   const payload = {
     full_name: person.full_name,
+    nickname: person.nickname || null,
     gender: person.gender,
     phone_number: person.phone_number || null,
     campus: person.campus || null,

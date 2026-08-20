@@ -47,6 +47,7 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
         <div className="flex items-start justify-between bg-white border border-slate-100 p-5 rounded-3xl shadow-sm">
           <div>
             <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">{person.full_name}</h2>
+            {person.nickname && <p className="text-sm font-bold text-slate-500 mt-1">&quot;{person.nickname}&quot;</p>}
             <div className="flex items-center gap-2 mt-3">
               <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${person.gender === 'BROTHER' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-pink-100 text-pink-700 border-pink-200'}`}>
                 {person.gender}
