@@ -17,144 +17,143 @@ export default function LoginPage() {
   )
 
   return (
-    <div className="min-h-screen flex bg-white selection:bg-indigo-500 selection:text-white">
-      {/* Left Column: Glassmorphism Hero with Photo */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Background Photo */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('/login-bg.jpg')` }}
-        />
-        
-        {/* Gradient Overlay for contrast */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-slate-900/80 to-slate-900/90 mix-blend-multiply" />
-        
-        {/* Glassmorphism content container */}
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-12">
-          
-          <div className="w-full max-w-lg backdrop-blur-md bg-white/10 border border-white/20 p-10 rounded-3xl shadow-2xl flex flex-col items-start relative overflow-hidden">
-            {/* Inner glow */}
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-            
-            <div className="mb-6 relative z-20">
-              <span className="px-3 py-1 bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold uppercase tracking-widest rounded-full backdrop-blur-sm">
-                Zeal Jogja
-              </span>
-            </div>
-            
-            <h1 className="text-4xl xl:text-5xl font-bold tracking-tight text-white mb-4 leading-tight relative z-20">
-              GKDI Tugu <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-amber-200">Youth & Campus</span>
-            </h1>
-            
-            <p className="text-slate-200 text-lg font-medium leading-relaxed mb-8 relative z-20">
-              Sistem manajemen data jemaat, grup PDG, dan laporan pelayanan. Terpusat, aman, dan mudah digunakan.
-            </p>
+    <div className="min-h-screen relative flex flex-col items-center p-6 lg:p-12 overflow-hidden selection:bg-amber-500 selection:text-white font-sans">
+      {/* Fullscreen Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+        style={{ backgroundImage: `url('/login-bg-v2.webp')` }}
+      />
+      
+      {/* Light/Airy Gradient Overlay to match reference */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-slate-950/80" />
 
-            <div className="flex items-center gap-4 relative z-20">
-              <div className="flex -space-x-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://i.pravatar.cc/100?img=1" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://i.pravatar.cc/100?img=2" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800" />
-                <div className="w-10 h-10 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
-                  +12
-                </div>
-              </div>
-              <p className="text-xs font-semibold text-slate-300 tracking-wide uppercase">
-                Trusted by Leaders
-              </p>
-            </div>
+      {/* Header Pill */}
+      <div className="relative z-20 w-full max-w-7xl mx-auto flex justify-center lg:justify-between items-center mb-12 lg:mb-20 animate-fade-in-down">
+        <div className="hidden lg:block text-2xl font-black text-slate-900 drop-shadow-md tracking-tighter">
+          Zeal<span className="text-amber-500">.</span>
+        </div>
+        <div className="flex items-center gap-4 bg-white/70 backdrop-blur-xl border border-white/50 pl-3 pr-5 py-2 rounded-full shadow-lg">
+          <div className="flex -space-x-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://i.pravatar.cc/100?img=1" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://i.pravatar.cc/100?img=2" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
           </div>
-
+          <p className="text-xs font-bold text-slate-800 tracking-wide">
+            Leader&apos;s Dashboard. Welcome back!
+          </p>
         </div>
       </div>
 
-      {/* Right Column: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
-        <div className="w-full max-w-md">
-          <div className="mb-10 text-center lg:text-left">
-            <div className="inline-flex lg:hidden mb-6 items-center justify-center w-12 h-12 bg-indigo-50 rounded-xl">
-              <IconKey className="w-6 h-6 text-indigo-600" />
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Login Dashboard</h2>
-            <p className="text-slate-500 mt-2">Masuk untuk mengelola data Tugu</p>
-          </div>
+      {/* Main Content */}
+      <div className="relative z-20 w-full max-w-5xl mx-auto flex flex-col items-center flex-1">
+        
+        {/* Big Text (Reference style) */}
+        <div className="text-center mb-16 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <h1 className="text-6xl md:text-7xl lg:text-[6rem] font-black tracking-tighter text-slate-900 mb-6 drop-shadow-2xl">
+            Faith. Fellowship. Future.
+          </h1>
+          <p className="text-xl md:text-2xl text-slate-900 font-bold max-w-2xl mx-auto drop-shadow-md">
+            Sistem manajemen data jemaat dan grup GKDI Tugu.
+          </p>
+        </div>
 
-          <form action={formAction} className="space-y-5">
-            {/* Error Message */}
-            {state.error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm flex gap-3 items-start shadow-sm">
-                <IconAlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                <p className="leading-relaxed">{state.error}</p>
-              </div>
-            )}
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700" htmlFor="email">
-                Email
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-indigo-600">
-                  <IconMail className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="admin@example.com"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white transition-all placeholder:text-slate-400 font-medium"
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold text-slate-700" htmlFor="password">
-                  Password
-                </label>
-              </div>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <IconKey className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white transition-all placeholder:text-slate-400 font-medium"
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full mt-8 bg-slate-900 hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/30 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:shadow-none"
-            >
-              {isPending ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Masuk ke Dashboard</span>
-                  <IconArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
+        {/* Login Form (Glassmorphism center) */}
+        <div className="w-full max-w-md bg-white/40 backdrop-blur-3xl border border-white/60 p-10 rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] ring-1 ring-white/50 relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/60 to-transparent pointer-events-none opacity-50" />
           
-          <div className="mt-8 pt-8 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-400 font-medium">
-              &copy; {new Date().getFullYear()} GKDI Tugu. All rights reserved.
-            </p>
+          <div className="relative z-10">
+            <div className="mb-10 text-center">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Sign in</h2>
+            </div>
+
+            <form action={formAction} className="space-y-6">
+              {/* Error Message */}
+              {state.error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-700 px-4 py-3 rounded-2xl text-sm flex gap-3 items-start backdrop-blur-md">
+                  <IconAlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                  <p className="leading-relaxed font-semibold">{state.error}</p>
+                </div>
+              )}
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <IconMail className="h-5 w-5 text-slate-700 group-focus-within:text-slate-950 transition-colors" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="Email Address"
+                    className="w-full pl-12 pr-4 py-4 bg-white/50 hover:bg-white/70 border border-white/60 rounded-2xl text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-white/50 focus:border-white focus:bg-white/90 transition-all placeholder:text-slate-600 font-bold shadow-inner"
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <IconKey className="h-5 w-5 text-slate-700 group-focus-within:text-slate-950 transition-colors" />
+                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    placeholder="Password"
+                    className="w-full pl-12 pr-4 py-4 bg-white/50 hover:bg-white/70 border border-white/60 rounded-2xl text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-white/50 focus:border-white focus:bg-white/90 transition-all placeholder:text-slate-600 font-bold shadow-inner"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full mt-4 bg-slate-950 hover:bg-black hover:scale-[1.02] text-white font-bold py-4 px-4 rounded-2xl text-sm transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_15px_30px_rgba(0,0,0,0.3)]"
+              >
+                {isPending ? (
+                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Masuk ke Dashboard</span>
+                    <IconArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Stats Pill (Reference Style) */}
+      <div className="relative z-20 w-[95%] max-w-4xl mt-16 mb-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+        <div className="flex flex-wrap items-center justify-between gap-6 bg-slate-900/50 backdrop-blur-3xl border border-white/20 px-6 sm:px-10 py-8 rounded-[2.5rem] shadow-2xl text-white">
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">100+</p>
+            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Jemaat Aktif</p>
+          </div>
+          <div className="w-px h-12 bg-white/10 hidden md:block"></div>
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">24</p>
+            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Grup PDG</p>
+          </div>
+          <div className="w-px h-12 bg-white/10 hidden md:block"></div>
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">1</p>
+            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Keluarga Besar</p>
+          </div>
+          <div className="w-px h-12 bg-white/10 hidden md:block"></div>
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">{new Date().getFullYear()}</p>
+            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Tahun Kasih</p>
           </div>
         </div>
       </div>
