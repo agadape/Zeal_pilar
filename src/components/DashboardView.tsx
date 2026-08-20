@@ -19,10 +19,11 @@ interface DashboardViewProps {
   groups: Group[];
   stats: WeeklyStat[];
   events?: MinistryEvent[];
+  currentUser?: Person | null;
   onNavigate: (tab: string) => void;
 }
 
-export default function DashboardView({ people, groups, stats, events = [], onNavigate }: DashboardViewProps) {
+export default function DashboardView({ people, groups, stats, events = [], currentUser, onNavigate }: DashboardViewProps) {
   const [milestones, setMilestones] = useState<UpcomingMilestone[]>([]);
 
   useEffect(() => {
@@ -43,13 +44,26 @@ export default function DashboardView({ people, groups, stats, events = [], onNa
   // Weekly Report check (assuming this week starts on Monday, or just check if any report was submitted in the last 6 days)
   const isReportCompleted = stats.length > 0 && (new Date().getTime() - new Date(stats[0].week_date).getTime() < 7 * 24 * 60 * 60 * 1000);
 
+  // Setup greeting
+  const firstName = currentUser?.full_name?.split(' ')[0] || 'Pemimpin';
+  const roleDisplay = currentUser?.role === 'SUPER_ADMIN' 
+    ? 'Super Admin' 
+    : currentUser?.role === 'GROUP_LEADER' 
+      ? 'Group Leader' 
+      : 'Member';
+
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-          Selamat Datang
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center space-x-3">
+          <span>Halo, {firstName}! 👋</span>
+          {currentUser && (
+            <span className="text-xs sm:text-sm font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
+              {roleDisplay}
+            </span>
+          )}
         </h1>
         <p className="text-sm text-slate-500 font-medium mt-1">
           Berikut adalah ringkasan aktivitas dan prioritas pelayanan Anda hari ini.

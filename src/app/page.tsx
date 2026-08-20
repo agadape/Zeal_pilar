@@ -143,7 +143,10 @@ export default function Home() {
               {activeTab === 'dashboard' && (
                 <DashboardView 
                   people={people}
-groups={groups} stats={stats} onNavigate={setActiveTab} 
+                  groups={groups} 
+                  stats={stats} 
+                  currentUser={currentUser}
+                  onNavigate={setActiveTab} 
                 />
               )}
 
