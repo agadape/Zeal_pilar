@@ -549,12 +549,31 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
   };
 
   if (isSupabaseConfigured && supabase) {
-    // Upsert on group_id, week_date constraint to prevent duplicates
-    const { data, error } = await supabase
+    // Manual check instead of upsert to avoid missing unique constraint errors
+    const { data: existing } = await supabase
       .from('weekly_stats')
-      .upsert([payload], { onConflict: 'group_id,week_date' })
-      .select()
-      .single();
+      .select('id')
+      .eq('group_id', payload.group_id)
+      .eq('week_date', payload.week_date)
+      .maybeSingle();
+
+    let savedStatResponse;
+    if (existing && existing.id) {
+      savedStatResponse = await supabase
+        .from('weekly_stats')
+        .update(payload)
+        .eq('id', existing.id)
+        .select()
+        .single();
+    } else {
+      savedStatResponse = await supabase
+        .from('weekly_stats')
+        .insert([payload])
+        .select()
+        .single();
+    }
+
+    const { data, error } = savedStatResponse;
 
     if (!error && data) {
       const savedStat = data as WeeklyStat;
@@ -584,7 +603,7 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
 
       return savedStat;
     } else if (error) {
-      console.error('Supabase upsert weekly_stat error:', error);
+      console.error('Supabase save weekly_stat error:', error);
     }
   }
 
