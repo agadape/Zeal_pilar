@@ -17,56 +17,63 @@ export default function LoginPage() {
   )
 
   return (
-    <div className="min-h-screen flex bg-slate-50 selection:bg-indigo-500 selection:text-white">
-      {/* Left Column: Glassmorphism Hero */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-950 items-center justify-center p-12">
-        {/* Background glow effects */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full mix-blend-screen filter blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/10 rounded-full mix-blend-screen filter blur-[120px]" />
+    <div className="min-h-screen flex bg-white selection:bg-indigo-500 selection:text-white">
+      {/* Left Column: Glassmorphism Hero with Photo */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Background Photo */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('/login-bg.jpg')` }}
+        />
         
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)]" />
-
-        {/* Glass Card */}
-        <div className="relative z-10 w-full max-w-xl backdrop-blur-2xl bg-white/5 border border-white/10 p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-start ring-1 ring-white/10 overflow-hidden">
-          {/* Inner reflection */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+        {/* Gradient Overlay for contrast */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-slate-900/80 to-slate-900/90 mix-blend-multiply" />
+        
+        {/* Glassmorphism content container */}
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-12">
           
-          <div className="relative z-20">
-            <div className="mb-8">
-              <span className="px-4 py-1.5 bg-white/10 border border-white/20 text-white font-mono text-xs font-bold uppercase tracking-[0.2em] rounded-full backdrop-blur-md shadow-sm">
+          <div className="w-full max-w-lg backdrop-blur-md bg-white/10 border border-white/20 p-10 rounded-3xl shadow-2xl flex flex-col items-start relative overflow-hidden">
+            {/* Inner glow */}
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+            
+            <div className="mb-6 relative z-20">
+              <span className="px-3 py-1 bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold uppercase tracking-widest rounded-full backdrop-blur-sm">
                 Zeal Jogja
               </span>
             </div>
             
-            <h1 className="text-5xl xl:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/60 mb-6 leading-[1.1]">
+            <h1 className="text-4xl xl:text-5xl font-bold tracking-tight text-white mb-4 leading-tight relative z-20">
               GKDI Tugu <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Youth & Campus</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-amber-200">Youth & Campus</span>
             </h1>
             
-            <p className="text-slate-300/80 text-lg max-w-md font-medium leading-relaxed mb-10">
+            <p className="text-slate-200 text-lg font-medium leading-relaxed mb-8 relative z-20">
               Sistem manajemen data jemaat, grup PDG, dan laporan pelayanan. Terpusat, aman, dan mudah digunakan.
             </p>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 relative z-20">
               <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center shrink-0">
-                    <IconAlertCircle className="w-4 h-4 text-slate-500 opacity-0" />
-                  </div>
-                ))}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://i.pravatar.cc/100?img=1" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://i.pravatar.cc/100?img=2" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800" />
+                <div className="w-10 h-10 rounded-full border-2 border-slate-800 bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
+                  +12
+                </div>
               </div>
-              <p className="text-xs font-semibold text-slate-400 tracking-wide uppercase">
+              <p className="text-xs font-semibold text-slate-300 tracking-wide uppercase">
                 Trusted by Leaders
               </p>
             </div>
           </div>
+
         </div>
       </div>
 
       {/* Right Column: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white rounded-l-[3rem] lg:-ml-8 relative z-20 shadow-[-20px_0_40px_rgba(0,0,0,0.1)]">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
         <div className="w-full max-w-md">
           <div className="mb-10 text-center lg:text-left">
             <div className="inline-flex lg:hidden mb-6 items-center justify-center w-12 h-12 bg-indigo-50 rounded-xl">
