@@ -343,9 +343,19 @@ export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> 
 
 export async function deletePerson(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
+    // Delete dependent records first to avoid foreign key constraint violations
+    await supabase.from('group_members').delete().eq('person_id', id);
+    await supabase.from('bible_study_logs').delete().eq('person_id', id);
+    await supabase.from('weekly_stat_absences').delete().eq('person_id', id);
+    await supabase.from('weekly_stat_study_progress').delete().eq('person_id', id);
+
     const { error } = await supabase.from('people').delete().eq('id', id);
-    if (error) console.error("Supabase error (deletePerson):", error);
-    if (!error) return true;
+    if (error) {
+      console.error("Supabase error (deletePerson):", error);
+      alert("Gagal menghapus data! Pastikan orang ini bukan ketua grup.");
+      return false;
+    }
+    return true;
   }
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
   const updated = people.filter(p => p.id !== id);

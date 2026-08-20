@@ -8,9 +8,10 @@ import {
   IconPlus, 
   IconX, 
   IconCheck, 
-  IconShield,
-  IconArrowsExchange,
   IconInfoCircle,
+  IconAlertCircle,
+  IconChartBar,
+  IconArrowsExchange,
   IconUsersGroup
 } from '@tabler/icons-react';
 

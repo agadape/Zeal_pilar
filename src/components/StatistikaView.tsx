@@ -15,9 +15,7 @@ import {
   CartesianGrid 
 } from 'recharts';
 import { 
-  IconClipboardCheck, 
   IconCopy, 
-  IconCheck, 
   IconSparkles, 
   IconSend, 
   IconUsers, 
@@ -183,17 +181,18 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
         <div className="flex flex-wrap items-center gap-3 self-start xl:self-auto">
           <button
             onClick={() => exportStatsToCSV(stats)}
-            className="px-4 py-2.5 rounded-2xl border-2 border-slate-100 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm"
+            className="px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl border-2 border-slate-100 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold flex items-center space-x-1.5 sm:space-x-2 transition-all shadow-sm"
             title="Download CSV Excel"
           >
             <IconDownload className="w-4 h-4 text-slate-500" stroke={2} />
-            <span>Export CSV</span>
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">Export</span>
           </button>
 
-          <div className="flex items-center p-1.5 bg-slate-100/80 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-inner">
+          <div className="flex items-center p-1 sm:p-1.5 bg-slate-100/80 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-inner w-full sm:w-auto overflow-x-auto">
             <button
               onClick={() => setActiveSubTab('form')}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center space-x-2 transition-all ${
+              className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 sm:space-x-2 transition-all ${
                 activeSubTab === 'form'
                   ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/50'
                   : 'text-slate-500 hover:text-slate-800'
@@ -205,14 +204,15 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
             
             <button
               onClick={() => setActiveSubTab('analytics')}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center space-x-2 transition-all ${
+              className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 sm:space-x-2 transition-all ${
                 activeSubTab === 'analytics'
                   ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/50'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               <IconChartBar className="w-4 h-4" stroke={2} />
-              <span>Visualisasi ({stats.length})</span>
+              <span>Visualisasi</span>
+              <span className="hidden sm:inline">({stats.length})</span>
             </button>
           </div>
         </div>

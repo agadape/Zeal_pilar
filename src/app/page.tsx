@@ -51,6 +51,14 @@ export default function Home() {
         getCurrentUserProfile()
       ]);
 
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL && !userProfile) {
+        // Clear session if they are stuck in a state where auth exists but profile is missing
+        const { supabase } = await import('@/lib/supabase');
+        if (supabase) await supabase.auth.signOut();
+        window.location.href = '/login';
+        return;
+      }
+
       setPeople(peopleData);
       setGroups(groupsData);
       setStats(statsData);
