@@ -65,3 +65,36 @@ export async function createLeaderAccount(formData: FormData) {
     return { error: 'Terjadi kesalahan sistem.' };
   }
 }
+
+export async function resetLeaderPassword(formData: FormData) {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    return { error: 'SUPABASE_SERVICE_ROLE_KEY belum di-set.' };
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+
+  const authId = formData.get('auth_id') as string;
+  const newPassword = formData.get('password') as string;
+
+  if (!authId || !newPassword) {
+    return { error: 'Auth ID dan password baru wajib diisi.' };
+  }
+
+  try {
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(authId, {
+      password: newPassword
+    });
+
+    if (authError) {
+      return { error: `Gagal mereset password: ${authError.message}` };
+    }
+    return { success: true };
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return { error: err.message || 'Terjadi kesalahan sistem saat mereset password.' };
+    }
+    return { error: 'Terjadi kesalahan sistem saat mereset password.' };
+  }
+}
