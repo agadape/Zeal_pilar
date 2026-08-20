@@ -1,8 +1,8 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { login } from './actions'
-import { IconKey, IconMail, IconArrowRight, IconAlertCircle } from '@tabler/icons-react'
+import { IconKey, IconMail, IconArrowRight, IconAlertCircle, IconX } from '@tabler/icons-react'
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(
@@ -16,23 +16,57 @@ export default function LoginPage() {
     { error: null }
   )
 
+  const [showModal, setShowModal] = useState(false)
+
   return (
-    <div className="min-h-screen relative flex flex-col items-center p-6 lg:p-12 overflow-hidden selection:bg-amber-500 selection:text-white font-sans">
+    <div className="min-h-screen relative flex flex-col justify-between overflow-hidden selection:bg-indigo-500 selection:text-white font-sans text-slate-900">
       {/* Fullscreen Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url('/login-bg-v2.webp')` }}
       />
       
-      {/* Light/Airy Gradient Overlay to match reference */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-slate-950/80" />
+      {/* Subtle overlays to match reference (whiteish at top, darkish at bottom) */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/10 to-transparent h-1/2" />
+      <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
 
-      {/* Header Pill */}
-      <div className="relative z-20 w-full max-w-7xl mx-auto flex justify-center lg:justify-between items-center mb-12 lg:mb-20 animate-fade-in-down">
-        <div className="hidden lg:block text-2xl font-black text-slate-900 drop-shadow-md tracking-tighter">
-          Zeal<span className="text-amber-500">.</span>
+      {/* 1. Header Navigation */}
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center animate-fade-in-down">
+        <div className="flex items-center gap-2">
+          {/* Logo mock */}
+          <div className="w-10 h-10 bg-[#FF5722] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            Z
+          </div>
         </div>
-        <div className="flex items-center gap-4 bg-white/70 backdrop-blur-xl border border-white/50 pl-3 pr-5 py-2 rounded-full shadow-lg">
+        
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
+          <span className="cursor-pointer hover:text-black transition-colors">Home</span>
+          <span className="cursor-pointer hover:text-black transition-colors">Groups</span>
+          <span className="cursor-pointer hover:text-black transition-colors">Events</span>
+          <span className="cursor-pointer hover:text-black transition-colors">Resources</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowModal(true)}
+            className="px-5 py-2.5 rounded-full bg-white/50 hover:bg-white/80 backdrop-blur-md border border-white/40 text-slate-900 font-semibold text-sm transition-all shadow-sm"
+          >
+            Sign in
+          </button>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="hidden sm:block px-5 py-2.5 rounded-full bg-black hover:bg-slate-800 text-white font-semibold text-sm transition-all shadow-md"
+          >
+            Dashboard
+          </button>
+        </div>
+      </header>
+
+      {/* 2. Main Hero Content (Centered) */}
+      <main className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 text-center mt-[-4rem]">
+        
+        {/* Floating Avatars Pill */}
+        <div className="flex items-center gap-3 bg-white/70 backdrop-blur-xl border border-white/50 pl-2 pr-5 py-1.5 rounded-full shadow-sm mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <div className="flex -space-x-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://i.pravatar.cc/100?img=1" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
@@ -40,123 +74,138 @@ export default function LoginPage() {
             <img src="https://i.pravatar.cc/100?img=2" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://i.pravatar.cc/100?img=4" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
           </div>
-          <p className="text-xs font-bold text-slate-800 tracking-wide">
-            Leader&apos;s Dashboard. Welcome back!
+          <p className="text-xs font-medium text-slate-700">
+            100+ leaders join the mission. Join us!
           </p>
+        </div>
+
+        {/* Big Text */}
+        <h1 className="text-[3.5rem] sm:text-6xl md:text-[5rem] lg:text-[6rem] leading-[1.05] font-black tracking-[-0.04em] text-slate-900 mb-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          Faith. Fellowship. Future.
+        </h1>
+        
+        <p className="text-lg sm:text-xl text-slate-700 font-medium max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          Sistem manajemen eksklusif GKDI Tugu Youth & Campus.
+        </p>
+
+        {/* Center CTA Button */}
+        <button 
+          onClick={() => setShowModal(true)}
+          className="px-8 py-4 rounded-full bg-black hover:bg-slate-800 hover:scale-105 active:scale-95 text-white font-medium text-lg transition-all shadow-xl animate-fade-in-up" style={{ animationDelay: '400ms' }}
+        >
+          Sign In to Dashboard
+        </button>
+      </main>
+
+      {/* 3. Bottom Stats Pill */}
+      <div className="relative z-10 w-full flex justify-center pb-8 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+        <div className="w-[95%] max-w-4xl flex flex-wrap items-center justify-between gap-6 bg-[#2d3748]/80 backdrop-blur-xl border border-white/10 px-8 py-6 rounded-full shadow-2xl text-white">
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">100+</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Active Members</p>
+          </div>
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">24</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">PDG Groups</p>
+          </div>
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">1</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Family</p>
+          </div>
+          <div className="text-center flex-1">
+            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">{new Date().getFullYear()}</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Years of Grace</p>
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-20 w-full max-w-5xl mx-auto flex flex-col items-center flex-1">
-        
-        {/* Big Text (Reference style) */}
-        <div className="text-center mb-16 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <h1 className="text-6xl md:text-7xl lg:text-[6rem] font-black tracking-tighter text-slate-900 mb-6 drop-shadow-2xl">
-            Faith. Fellowship. Future.
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-900 font-bold max-w-2xl mx-auto drop-shadow-md">
-            Sistem manajemen data jemaat dan grup GKDI Tugu.
-          </p>
-        </div>
-
-        {/* Login Form (Glassmorphism center) */}
-        <div className="w-full max-w-md bg-white/40 backdrop-blur-3xl border border-white/60 p-10 rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] ring-1 ring-white/50 relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/60 to-transparent pointer-events-none opacity-50" />
+      {/* Login Modal Overlay */}
+      {showModal && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center px-4 animate-fade-in">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setShowModal(false)}
+          />
           
-          <div className="relative z-10">
-            <div className="mb-10 text-center">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Sign in</h2>
+          {/* Modal Card */}
+          <div className="relative w-full max-w-md bg-white p-8 rounded-[2rem] shadow-2xl animate-slide-in-up">
+            <button 
+              onClick={() => setShowModal(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors bg-slate-100 hover:bg-slate-200 p-2 rounded-full"
+            >
+              <IconX className="w-5 h-5" />
+            </button>
+            
+            <div className="mb-8">
+              <div className="w-12 h-12 bg-[#FF5722] rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-6">
+                Z
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h2>
+              <p className="text-slate-500 mt-2 font-medium">Enter your credentials to access the dashboard.</p>
             </div>
 
-            <form action={formAction} className="space-y-6">
-              {/* Error Message */}
+            <form action={formAction} className="space-y-5">
               {state.error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-700 px-4 py-3 rounded-2xl text-sm flex gap-3 items-start backdrop-blur-md">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm flex gap-3 items-start shadow-sm">
                   <IconAlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                  <p className="leading-relaxed font-semibold">{state.error}</p>
+                  <p className="leading-relaxed">{state.error}</p>
                 </div>
               )}
 
-              {/* Email Field */}
               <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 ml-1">Email</label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <IconMail className="h-5 w-5 text-slate-700 group-focus-within:text-slate-950 transition-colors" />
+                    <IconMail className="h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                   </div>
                   <input
-                    id="email"
                     name="email"
                     type="email"
                     required
-                    placeholder="Email Address"
-                    className="w-full pl-12 pr-4 py-4 bg-white/50 hover:bg-white/70 border border-white/60 rounded-2xl text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-white/50 focus:border-white focus:bg-white/90 transition-all placeholder:text-slate-600 font-bold shadow-inner"
+                    placeholder="admin@zeal.com"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all placeholder:text-slate-400 font-medium"
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
               <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 ml-1">Password</label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <IconKey className="h-5 w-5 text-slate-700 group-focus-within:text-slate-950 transition-colors" />
+                    <IconKey className="h-5 w-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                   </div>
                   <input
-                    id="password"
                     name="password"
                     type="password"
                     required
-                    placeholder="Password"
-                    className="w-full pl-12 pr-4 py-4 bg-white/50 hover:bg-white/70 border border-white/60 rounded-2xl text-sm text-slate-900 focus:outline-none focus:ring-4 focus:ring-white/50 focus:border-white focus:bg-white/90 transition-all placeholder:text-slate-600 font-bold shadow-inner"
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all placeholder:text-slate-400 font-medium"
                   />
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full mt-4 bg-slate-950 hover:bg-black hover:scale-[1.02] text-white font-bold py-4 px-4 rounded-2xl text-sm transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_15px_30px_rgba(0,0,0,0.3)]"
+                className="w-full mt-4 bg-black hover:bg-slate-800 active:scale-95 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isPending ? (
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Masuk ke Dashboard</span>
-                    <IconArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <span>Continue</span>
+                    <IconArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
           </div>
         </div>
-
-      </div>
-
-      {/* Bottom Stats Pill (Reference Style) */}
-      <div className="relative z-20 w-[95%] max-w-4xl mt-16 mb-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-        <div className="flex flex-wrap items-center justify-between gap-6 bg-slate-900/50 backdrop-blur-3xl border border-white/20 px-6 sm:px-10 py-8 rounded-[2.5rem] shadow-2xl text-white">
-          <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">100+</p>
-            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Jemaat Aktif</p>
-          </div>
-          <div className="w-px h-12 bg-white/10 hidden md:block"></div>
-          <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">24</p>
-            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Grup PDG</p>
-          </div>
-          <div className="w-px h-12 bg-white/10 hidden md:block"></div>
-          <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">1</p>
-            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Keluarga Besar</p>
-          </div>
-          <div className="w-px h-12 bg-white/10 hidden md:block"></div>
-          <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-black mb-2 tracking-tight">{new Date().getFullYear()}</p>
-            <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-widest">Tahun Kasih</p>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
