@@ -33,14 +33,14 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 border-b border-slate-200 backdrop-blur-md shadow-xs">
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* BRAND & ACTION ROW */}
         <div className="flex items-center justify-between py-3 sm:py-0 sm:h-20 gap-2">
           
           <div className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0">
-            <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden border border-slate-200 shadow-xs bg-white flex items-center justify-center shrink-0">
+            <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded overflow-hidden border border-slate-200 bg-white flex items-center justify-center shrink-0">
               <Image 
                 src="/logo.jpg" 
                 alt="ZEAL Logo" 
@@ -51,8 +51,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
             </div>
             <div className="min-w-0 flex flex-col justify-center">
               <div className="flex items-center space-x-1.5 sm:space-x-2 flex-wrap sm:flex-nowrap">
-                <span className="font-black text-base sm:text-xl tracking-tight text-slate-900 whitespace-nowrap">GKDI TUGU</span>
-                <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono font-bold tracking-wider uppercase border border-amber-200 whitespace-nowrap">
+                <span className="font-black text-base sm:text-lg tracking-tight text-slate-900 whitespace-nowrap">GKDI TUGU</span>
+                <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-sm bg-slate-100 text-slate-600 font-mono font-bold tracking-widest uppercase border border-slate-200 whitespace-nowrap">
                   ZEAL JOGJA
                 </span>
               </div>
@@ -62,6 +62,20 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
 
           <div className="flex items-center shrink-0 ml-2 space-x-2">
             <button
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  localStorage.clear();
+                  window.location.reload();
+                }
+              }}
+              title="Reset Cache / Refresh"
+              className="px-2.5 sm:px-3 py-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors hidden sm:flex"
+            >
+              <IconRefresh className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-slate-500 shrink-0" stroke={1.5} />
+              <span className="text-[10px] sm:text-xs hidden min-[360px]:inline-block whitespace-nowrap uppercase tracking-wider">Muat Ulang</span>
+            </button>
+
+            <button
               onClick={async () => {
                 if (typeof window !== 'undefined') {
                   const { supabase } = await import('@/lib/supabase');
@@ -70,31 +84,17 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
                 }
               }}
               title="Logout"
-              className="btn-tactile px-2.5 sm:px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors"
+              className="px-2.5 sm:px-3 py-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-rose-600 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors"
             >
-              <IconLogout className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" stroke={2} />
-              <span className="text-[10px] sm:text-xs min-[360px]:inline-block whitespace-nowrap">Logout</span>
-            </button>
-
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.clear();
-                  window.location.reload();
-                }
-              }}
-              title="Reset Cache / Refresh"
-              className="btn-tactile px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold flex items-center space-x-1 sm:space-x-1.5 transition-colors hidden sm:flex"
-            >
-              <IconRefresh className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-slate-500 shrink-0" stroke={2} />
-              <span className="text-[10px] sm:text-xs hidden min-[360px]:inline-block whitespace-nowrap">Reset</span>
+              <IconLogout className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" stroke={1.5} />
+              <span className="text-[10px] sm:text-xs min-[360px]:inline-block whitespace-nowrap uppercase tracking-wider">Keluar</span>
             </button>
           </div>
 
         </div>
 
         {/* NAVIGATION TABS */}
-        <nav className="flex space-x-1.5 overflow-x-auto pb-3 pt-2 no-scrollbar border-t border-slate-100">
+        <nav className="flex space-x-1 overflow-x-auto pb-3 pt-2 no-scrollbar">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -102,13 +102,13 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`btn-tactile flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
                   isActive
-                    ? 'bg-[#b5852e] text-white shadow-sm font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} stroke={1.5} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} stroke={isActive ? 2 : 1.5} />
                 <span>{item.label}</span>
               </button>
             );

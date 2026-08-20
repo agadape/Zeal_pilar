@@ -7,12 +7,11 @@ import {
   IconUsersGroup, 
   IconBook, 
   IconHeartHandshake, 
-  IconAlertCircle,
   IconCalendarEvent,
   IconClipboardCheck,
   IconCake,
   IconArrowRight,
-  IconCheck
+  IconSettings
 } from '@tabler/icons-react';
 
 interface DashboardViewProps {
@@ -47,7 +46,7 @@ export default function DashboardView({ people, groups, stats, events = [], curr
   const totalPeople = people.length;
   const totalBibleStudies = people.filter(p => p.status === 'BIBLE_STUDY').length;
   
-  // Weekly Report check (assuming this week starts on Monday, or just check if any report was submitted in the last 6 days)
+  // Weekly Report check (assuming this week starts on Monday)
   const isReportCompleted = stats.length > 0 && (new Date().getTime() - new Date(stats[0].week_date).getTime() < 7 * 24 * 60 * 60 * 1000);
 
   // Setup greeting
@@ -59,222 +58,219 @@ export default function DashboardView({ people, groups, stats, events = [], curr
       : 'Member';
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
+    <div className="space-y-12 animate-fade-in pb-24 max-w-6xl mx-auto">
       
-      {/* HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center space-x-3">
-              <span>Halo, {firstName}! 👋</span>
-              {currentUser && (
-                <span className="text-xs sm:text-sm font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
-                  {roleDisplay}
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">
-              Berikut adalah ringkasan aktivitas dan prioritas pelayanan Anda hari ini.
-            </p>
+      {/* HEADER - Minimalist Editorial */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-widest">
+              {roleDisplay}
+            </span>
           </div>
-          {currentUser && (
-            <button
-              onClick={() => setIsPasswordModalOpen(true)}
-              className="btn-tactile px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm shrink-0 self-start sm:self-auto"
-            >
-              <span>Ubah Password</span>
-            </button>
-          )}
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900 font-serif">
+            Halo, {firstName}.
+          </h1>
+          <p className="text-sm text-slate-500 mt-2 font-medium">
+            Berikut adalah ringkasan aktivitas pelayanan Anda hari ini.
+          </p>
         </div>
+        {currentUser && (
+          <button
+            onClick={() => setIsPasswordModalOpen(true)}
+            className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold uppercase tracking-wider rounded flex items-center gap-2 transition-all shrink-0"
+          >
+            <IconSettings className="w-4 h-4" />
+            Pengaturan Akun
+          </button>
+        )}
+      </div>
 
-      {/* NEEDS ATTENTION */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-          <IconAlertCircle className="w-4 h-4" />
-          Perlu Perhatian
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* LEFT COLUMN: URGENT & TASKS (8 cols) */}
+        <div className="lg:col-span-8 space-y-8">
           
-          {/* WEAK/FOLLOW UP */}
-          <div className="tugu-card p-5 rounded-2xl border border-rose-200/60 bg-rose-50/30 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-rose-900">Follow-up Disciple</h3>
-                <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2 py-0.5 rounded-full">{weakPeople.length} Orang</span>
-              </div>
-              {weakPeople.length > 0 ? (
-                <div className="space-y-2 mb-4">
-                  {weakPeople.slice(0, 3).map(p => (
-                    <div key={p.id} className="text-sm text-rose-800 bg-white/60 p-2 rounded-lg border border-rose-100 flex justify-between items-center">
-                      <span className="font-semibold">{p.full_name}</span>
-                      <span className="text-xs">{p.campus || p.status}</span>
-                    </div>
-                  ))}
-                  {weakPeople.length > 3 && (
-                    <p className="text-xs text-rose-600 font-medium">+ {weakPeople.length - 3} lainnya...</p>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-slate-900 rounded-full"></div>
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Minggu Ini</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* WEEKLY REPORT STATUS */}
+            <div className="bg-white border border-slate-200 p-6 rounded flex flex-col justify-between group hover:border-slate-300 transition-colors shadow-sm">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2 bg-slate-50 rounded text-slate-700">
+                    <IconClipboardCheck className="w-5 h-5" stroke={1.5} />
+                  </div>
+                  {isReportCompleted ? (
+                    <span className="bg-[#EDF3EC] text-[#346538] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                      Terkirim
+                    </span>
+                  ) : (
+                    <span className="bg-[#FDEBEC] text-[#9F2F2D] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                      Pending
+                    </span>
                   )}
                 </div>
+                <h3 className="font-bold text-slate-900 mb-2">Laporan Mingguan</h3>
+                <p className="text-sm text-slate-500 leading-relaxed mb-6">
+                  {isReportCompleted 
+                    ? "Laporan kehadiran dan statistik PDG minggu ini sudah Anda lengkapi." 
+                    : "Anda belum mengisi kehadiran, progress BA, dan statistik grup PDG minggu ini."}
+                </p>
+              </div>
+              <button 
+                onClick={() => onNavigate('statistika')}
+                className={`text-xs font-bold uppercase tracking-wider w-full py-3 rounded transition-all ${
+                  isReportCompleted 
+                    ? 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200' 
+                    : 'bg-[#111] text-white hover:bg-black'
+                }`}
+              >
+                {isReportCompleted ? 'Lihat Arsip' : 'Isi Sekarang'}
+              </button>
+            </div>
+
+            {/* UPCOMING EVENTS */}
+            <div className="bg-white border border-slate-200 p-6 rounded flex flex-col justify-between group hover:border-slate-300 transition-colors shadow-sm">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="p-2 bg-slate-50 rounded text-slate-700">
+                    <IconCalendarEvent className="w-5 h-5" stroke={1.5} />
+                  </div>
+                </div>
+                <h3 className="font-bold text-slate-900 mb-4">Agenda Terdekat</h3>
+                {upcomingEvents.length > 0 ? (
+                  <div className="space-y-4 mb-6">
+                    {upcomingEvents.map(e => (
+                      <div key={e.id} className="border-l-2 border-slate-200 pl-3 py-1">
+                        <p className="font-bold text-sm text-slate-900 leading-tight mb-1">{e.title}</p>
+                        <p className="text-xs text-slate-500">
+                          {new Date(e.event_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 mb-6 py-4">Tidak ada agenda khusus dalam waktu dekat.</p>
+                )}
+              </div>
+              <button 
+                onClick={() => onNavigate('events')}
+                className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1 uppercase tracking-wider transition-colors pt-2"
+              >
+                Semua Agenda <IconArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-12 flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-[#9F2F2D] rounded-full"></div>
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Perhatian Khusus</h2>
+          </div>
+
+          {/* WEAK/FOLLOW UP - Minimalist Horizontal list */}
+          <div className="bg-white border border-slate-200 rounded shadow-sm">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="font-semibold text-sm text-slate-900">Follow-up Disciple ({weakPeople.length})</h3>
+              <button onClick={() => onNavigate('people')} className="text-xs font-bold text-slate-500 hover:text-slate-900 uppercase tracking-wider">
+                Lihat Semua
+              </button>
+            </div>
+            <div className="p-0">
+              {weakPeople.length > 0 ? (
+                <div className="divide-y divide-slate-100">
+                  {weakPeople.slice(0, 4).map(p => (
+                    <div key={p.id} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                      <div>
+                        <p className="font-bold text-sm text-slate-900">{p.full_name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{p.campus || 'Tidak ada info kampus'}</p>
+                      </div>
+                      <span className="bg-[#FDEBEC] text-[#9F2F2D] text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">
+                        {p.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm text-rose-600/80 mb-4">Semua disciple dalam kondisi aktif dan baik.</p>
+                <div className="p-8 text-center">
+                  <p className="text-sm text-slate-500">Semua anggota dalam kondisi aktif.</p>
+                </div>
               )}
             </div>
-            <button 
-              onClick={() => onNavigate('people')}
-              className="text-xs font-bold text-rose-700 hover:text-rose-900 flex items-center gap-1 transition-colors mt-2"
-            >
-              Lihat Data Disciple <IconArrowRight className="w-3.5 h-3.5" />
-            </button>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN: STATS & MILESTONES (4 cols) */}
+        <div className="lg:col-span-4 space-y-8">
+          
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Metrik Komunitas</h2>
+          </div>
+
+          {/* METRICS BENTO */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white border border-slate-200 p-5 rounded flex flex-col justify-between aspect-square shadow-sm">
+              <IconUsers className="w-5 h-5 text-slate-400 mb-2" stroke={1.5} />
+              <div>
+                <p className="text-3xl font-light tracking-tight text-slate-900">{totalPeople}</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Total Disciple</p>
+              </div>
+            </div>
+            <div className="bg-white border border-slate-200 p-5 rounded flex flex-col justify-between aspect-square shadow-sm">
+              <IconUsersGroup className="w-5 h-5 text-slate-400 mb-2" stroke={1.5} />
+              <div>
+                <p className="text-3xl font-light tracking-tight text-slate-900">{groups.length}</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Grup PDG</p>
+              </div>
+            </div>
+            <div className="bg-white border border-slate-200 p-5 rounded flex flex-col justify-between aspect-square shadow-sm">
+              <IconBook className="w-5 h-5 text-slate-400 mb-2" stroke={1.5} />
+              <div>
+                <p className="text-3xl font-light tracking-tight text-slate-900">{totalBibleStudies}</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">B.A. Aktif</p>
+              </div>
+            </div>
+            <div className="bg-[#111] p-5 rounded flex flex-col justify-between aspect-square shadow-sm">
+              <IconHeartHandshake className="w-5 h-5 text-white/50 mb-2" stroke={1.5} />
+              <div>
+                <p className="text-3xl font-light tracking-tight text-white">{people.filter(p => p.status === 'VISITOR' || p.status === 'WEAK' || p.status === 'INACTIVE').length}</p>
+                <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mt-1">Reachout</p>
+              </div>
+            </div>
           </div>
 
           {/* UPCOMING MILESTONES */}
-          <div className="tugu-card p-5 rounded-2xl border border-amber-200/60 bg-amber-50/30 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-amber-900">Milestone Terdekat</h3>
-                <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">{milestones.length} Acara</span>
-              </div>
+          <div className="bg-white border border-slate-200 rounded shadow-sm">
+            <div className="p-4 border-b border-slate-100 flex items-center gap-2 bg-slate-50/50">
+              <IconCake className="w-4 h-4 text-slate-400" stroke={1.5} />
+              <h3 className="font-semibold text-sm text-slate-900">Ulang Tahun</h3>
+            </div>
+            <div className="p-0">
               {milestones.length > 0 ? (
-                <div className="space-y-2 mb-4">
-                  {milestones.slice(0, 3).map((m, idx) => (
-                    <div key={idx} className="text-sm text-amber-900 bg-white/60 p-2 rounded-lg border border-amber-100 flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        {m.milestone_type === 'BIRTHDAY' ? <IconCake className="w-4 h-4 text-pink-500" /> : <IconCake className="w-4 h-4 text-amber-600" />}
-                        <span className="font-semibold">{m.full_name}</span>
-                      </div>
-                      <span className="text-xs font-bold">{m.days_until === 0 ? 'HARI INI' : `${m.days_until} Hari`}</span>
+                <div className="divide-y divide-slate-100">
+                  {milestones.slice(0, 5).map((m, idx) => (
+                    <div key={idx} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                      <span className="font-bold text-sm text-slate-900">{m.full_name}</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        {m.days_until === 0 ? 'HARI INI' : `${m.days_until} Hari`}
+                      </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-amber-700/80 mb-4">Belum ada ulang tahun dalam waktu dekat.</p>
+                <p className="text-sm text-slate-500 text-center py-6">Belum ada yang ulang tahun dalam waktu dekat.</p>
               )}
             </div>
-            <button 
-              onClick={() => onNavigate('people')}
-              className="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 transition-colors mt-2"
-            >
-              Lihat Data Disciple <IconArrowRight className="w-3.5 h-3.5" />
-            </button>
           </div>
 
         </div>
-      </section>
 
-      {/* THIS WEEK */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-          <IconCalendarEvent className="w-4 h-4" />
-          Minggu Ini
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* WEEKLY REPORT STATUS */}
-          <div className="tugu-card p-5 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-slate-900">Status Laporan Mingguan</h3>
-                {isReportCompleted ? (
-                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1 border border-emerald-200">
-                    <IconCheck className="w-3 h-3" /> Selesai
-                  </span>
-                ) : (
-                  <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase border border-slate-200">
-                    Belum Dibuat
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-slate-600 mb-4">
-                {isReportCompleted 
-                  ? "Laporan minggu ini sudah diisi. Anda dapat menyalin laporannya ke WhatsApp dari menu Laporan Mingguan." 
-                  : "Jangan lupa untuk mengisi kehadiran, progress BA, dan statistik grup PDG untuk minggu ini."}
-              </p>
-            </div>
-            <button 
-              onClick={() => onNavigate('statistika')}
-              className={`text-sm font-bold flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
-                isReportCompleted 
-                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' 
-                  : 'bg-[#b5852e] text-white hover:bg-amber-700 shadow-sm'
-              }`}
-            >
-              <IconClipboardCheck className="w-4 h-4" />
-              {isReportCompleted ? 'Lihat Laporan' : 'Isi Laporan Sekarang'}
-            </button>
-          </div>
-
-          {/* UPCOMING EVENTS */}
-          <div className="tugu-card p-5 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-slate-900 mb-3">Jadwal Terdekat</h3>
-              {upcomingEvents.length > 0 ? (
-                <div className="space-y-3 mb-4">
-                  {upcomingEvents.map(e => (
-                    <div key={e.id} className="bg-slate-50 border border-slate-100 p-3 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-sm text-slate-900">{e.title}</span>
-                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded uppercase">
-                          {e.type.replace('_', ' ')}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 font-medium">
-                        {new Date(e.event_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500 mb-4 bg-slate-50 p-4 rounded-xl text-center border border-slate-100">
-                  Tidak ada jadwal pelayanan atau acara terdekat minggu ini.
-                </p>
-              )}
-            </div>
-            <button 
-              onClick={() => onNavigate('events')}
-              className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors mt-2"
-            >
-              Lihat Jadwal Lengkap <IconArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-        </div>
-      </section>
-
-      {/* COMMUNITY STATS */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-          <IconUsers className="w-4 h-4" />
-          Komunitas
-        </h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          
-          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
-            <div className="text-slate-500 mb-2"><IconUsers className="w-5 h-5" /></div>
-            <p className="text-2xl font-black text-slate-900 tabular-nums">{totalPeople}</p>
-            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Total Disciple</p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
-            <div className="text-emerald-500 mb-2"><IconUsersGroup className="w-5 h-5" /></div>
-            <p className="text-2xl font-black text-slate-900 tabular-nums">{groups.length}</p>
-            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Grup PDG</p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
-            <div className="text-amber-500 mb-2"><IconBook className="w-5 h-5" /></div>
-            <p className="text-2xl font-black text-slate-900 tabular-nums">{totalBibleStudies}</p>
-            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Belajar Alkitab</p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center sm:items-start text-center sm:text-left">
-            <div className="text-cyan-500 mb-2"><IconHeartHandshake className="w-5 h-5" /></div>
-            <p className="text-2xl font-black text-slate-900 tabular-nums">{people.filter(p => p.status === 'VISITOR' || p.status === 'WEAK' || p.status === 'INACTIVE').length}</p>
-            <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Reachout / Tamu</p>
-          </div>
-
-        </div>
-      </section>
+      </div>
 
       {/* Change Password Modal */}
       <FormPanel
@@ -285,8 +281,8 @@ export default function DashboardView({ people, groups, stats, events = [], curr
           setConfirmPassword('');
           setPasswordError('');
         }}
-        title="Ubah Password"
-        submitLabel="Ubah Password"
+        title="Pengaturan Akun"
+        submitLabel="Simpan Perubahan"
         isSubmitDisabled={passwordLoading || newPassword.length < 6 || newPassword !== confirmPassword}
         onSubmit={async (e) => {
           e.preventDefault();
@@ -312,31 +308,36 @@ export default function DashboardView({ people, groups, stats, events = [], curr
           }
         }}
       >
-        <div className="space-y-4">
+        <div className="space-y-6 pt-2">
           {passwordError && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+            <div className="p-3 rounded bg-[#FDEBEC] border border-[#FDEBEC] text-[#9F2F2D] text-xs font-medium">
               {passwordError}
             </div>
           )}
           <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Password Baru</label>
-            <input
-              type="password"
-              required
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Konfirmasi Password</label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-            />
+            <h3 className="text-sm font-bold text-slate-900 mb-4">Ubah Password</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Password Baru</label>
+                <input
+                  type="password"
+                  required
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Konfirmasi Password</label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </FormPanel>
