@@ -26,9 +26,8 @@ export default function LoginPage() {
         style={{ backgroundImage: `url('/login-bg-v2.webp')` }}
       />
       
-      {/* Subtle overlays to match reference (whiteish at top, darkish at bottom) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/10 to-transparent h-1/2" />
-      <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+      {/* Cinematic Dark Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 
       {/* 1. Header Navigation */}
       <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center animate-fade-in-down">
@@ -39,23 +38,23 @@ export default function LoginPage() {
           </div>
         </div>
         
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
-          <span className="cursor-pointer hover:text-black transition-colors">Home</span>
-          <span className="cursor-pointer hover:text-black transition-colors">Groups</span>
-          <span className="cursor-pointer hover:text-black transition-colors">Events</span>
-          <span className="cursor-pointer hover:text-black transition-colors">Resources</span>
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/90">
+          <span className="cursor-pointer hover:text-white transition-colors">Home</span>
+          <span className="cursor-pointer hover:text-white transition-colors">Groups</span>
+          <span className="cursor-pointer hover:text-white transition-colors">Events</span>
+          <span className="cursor-pointer hover:text-white transition-colors">Resources</span>
         </div>
 
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowModal(true)}
-            className="px-5 py-2.5 rounded-full bg-white/50 hover:bg-white/80 backdrop-blur-md border border-white/40 text-slate-900 font-semibold text-sm transition-all shadow-sm"
+            className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm transition-all shadow-sm"
           >
             Sign in
           </button>
           <button 
             onClick={() => setShowModal(true)}
-            className="hidden sm:block px-5 py-2.5 rounded-full bg-black hover:bg-slate-800 text-white font-semibold text-sm transition-all shadow-md"
+            className="hidden sm:block px-5 py-2.5 rounded-full bg-white hover:bg-slate-200 text-slate-900 font-semibold text-sm transition-all shadow-md"
           >
             Dashboard
           </button>
@@ -66,35 +65,35 @@ export default function LoginPage() {
       <main className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 text-center mt-[-4rem]">
         
         {/* Floating Avatars Pill */}
-        <div className="flex items-center gap-3 bg-white/70 backdrop-blur-xl border border-white/50 pl-2 pr-5 py-1.5 rounded-full shadow-sm mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl border border-white/20 pl-2 pr-5 py-1.5 rounded-full shadow-sm mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <div className="flex -space-x-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://i.pravatar.cc/100?img=1" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            <img src="https://i.pravatar.cc/100?img=1" alt="User" className="w-7 h-7 rounded-full border-2 border-white/20 shadow-sm" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://i.pravatar.cc/100?img=2" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            <img src="https://i.pravatar.cc/100?img=2" alt="User" className="w-7 h-7 rounded-full border-2 border-white/20 shadow-sm" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            <img src="https://i.pravatar.cc/100?img=3" alt="User" className="w-7 h-7 rounded-full border-2 border-white/20 shadow-sm" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://i.pravatar.cc/100?img=4" alt="User" className="w-7 h-7 rounded-full border-2 border-white shadow-sm" />
+            <img src="https://i.pravatar.cc/100?img=4" alt="User" className="w-7 h-7 rounded-full border-2 border-white/20 shadow-sm" />
           </div>
-          <p className="text-xs font-medium text-slate-700">
+          <p className="text-xs font-medium text-white/90">
             100+ leaders join the mission. Join us!
           </p>
         </div>
 
         {/* Big Text */}
-        <h1 className="text-[3.5rem] sm:text-6xl md:text-[5rem] lg:text-[6rem] leading-[1.05] font-black tracking-[-0.04em] text-slate-900 mb-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          Faith. Fellowship. Future.
+        <h1 className="text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] font-black tracking-[-0.02em] text-white mb-6 animate-fade-in-up drop-shadow-2xl" style={{ animationDelay: '200ms', textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}>
+          Love God, Love People,<br className="hidden md:block"/> Love Life.
         </h1>
         
-        <p className="text-lg sm:text-xl text-slate-700 font-medium max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+        <p className="text-lg sm:text-xl text-white/90 font-medium max-w-2xl mx-auto mb-10 animate-fade-in-up drop-shadow-lg" style={{ animationDelay: '300ms' }}>
           Sistem manajemen eksklusif GKDI Tugu Youth & Campus.
         </p>
 
         {/* Center CTA Button */}
         <button 
           onClick={() => setShowModal(true)}
-          className="px-8 py-4 rounded-full bg-black hover:bg-slate-800 hover:scale-105 active:scale-95 text-white font-medium text-lg transition-all shadow-xl animate-fade-in-up" style={{ animationDelay: '400ms' }}
+          className="px-8 py-4 rounded-full bg-white hover:bg-slate-200 hover:scale-105 active:scale-95 text-slate-900 font-bold text-lg transition-all shadow-xl animate-fade-in-up" style={{ animationDelay: '400ms' }}
         >
           Sign In to Dashboard
         </button>
@@ -102,22 +101,25 @@ export default function LoginPage() {
 
       {/* 3. Bottom Stats Pill */}
       <div className="relative z-10 w-full flex justify-center pb-8 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
-        <div className="w-[95%] max-w-4xl flex flex-wrap items-center justify-between gap-6 bg-[#2d3748]/80 backdrop-blur-xl border border-white/10 px-8 py-6 rounded-full shadow-2xl text-white">
+        <div className="w-[95%] max-w-4xl flex flex-wrap items-center justify-between gap-6 bg-white/10 backdrop-blur-md border border-white/20 px-8 py-6 rounded-full shadow-2xl text-white">
           <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">100+</p>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Active Members</p>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight">100+</p>
+            <p className="text-[10px] sm:text-xs text-white/70 font-semibold uppercase tracking-widest">Active Members</p>
           </div>
+          <div className="w-px h-12 bg-white/20 hidden md:block"></div>
           <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">24</p>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">PDG Groups</p>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight">24</p>
+            <p className="text-[10px] sm:text-xs text-white/70 font-semibold uppercase tracking-widest">PDG Groups</p>
           </div>
+          <div className="w-px h-12 bg-white/20 hidden md:block"></div>
           <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">1</p>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Family</p>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight">1</p>
+            <p className="text-[10px] sm:text-xs text-white/70 font-semibold uppercase tracking-widest">Family</p>
           </div>
+          <div className="w-px h-12 bg-white/20 hidden md:block"></div>
           <div className="text-center flex-1">
-            <p className="text-3xl sm:text-4xl font-normal mb-1 tracking-tight">{new Date().getFullYear()}</p>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Years of Grace</p>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight">{new Date().getFullYear()}</p>
+            <p className="text-[10px] sm:text-xs text-white/70 font-semibold uppercase tracking-widest">Years of Grace</p>
           </div>
         </div>
       </div>
