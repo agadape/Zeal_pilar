@@ -142,6 +142,15 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
         notes
       });
       handleCopyWA();
+      
+      // Reset form
+      setMissingMembers([]);
+      setReachoutMembers([]);
+      setSundayVisitorsCount(0);
+      setBaptismsCount(0);
+      setNotes('');
+      
+      setActiveSubTab('analytics'); // Pindah ke tab visualisasi otomatis
     } finally {
       setSaving(false);
     }
@@ -204,15 +213,19 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
             
             <button
               onClick={() => setActiveSubTab('analytics')}
-              className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 sm:space-x-2 transition-all ${
+              className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${
                 activeSubTab === 'analytics'
                   ? 'bg-white text-indigo-700 shadow-md shadow-slate-200/50'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <IconChartBar className="w-4 h-4" stroke={2} />
+              <IconChartBar className="w-4 h-4 shrink-0" stroke={2} />
               <span>Visualisasi</span>
-              <span className="hidden sm:inline">({stats.length})</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                activeSubTab === 'analytics' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200/60 text-slate-500'
+              }`}>
+                {stats.length}
+              </span>
             </button>
           </div>
         </div>
