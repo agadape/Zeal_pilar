@@ -7,8 +7,8 @@ export async function updateSession(request: NextRequest) {
   })
 
   const supabaseUrlRaw = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-  const supabaseUrl = supabaseUrlRaw.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-  const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
+  const supabaseUrl = supabaseUrlRaw ? supabaseUrlRaw.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '') : 'https://dummy.supabase.co';
+  const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim() || 'dummy_key';
 
   const supabase = createServerClient(
     supabaseUrl,
