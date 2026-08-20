@@ -176,6 +176,7 @@ export default function Home() {
                   onSaveGroup={handleSaveGroup} 
                   onDeleteGroup={handleDeleteGroup} 
                   onHandoverLeadership={handleHandoverLeadership}
+                  onRefreshData={loadAllData}
                 />
               )}
 

@@ -377,7 +377,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         onClose={() => setIsFormOpen(false)}
         title={editingPerson ? 'Edit Data Disciple' : 'Tambah Disciple Baru'}
         onSubmit={handleSavePersonSubmit}
-        submitLabel="Simpan Data"
+        submitLabel={submittingPerson ? 'Menyimpan...' : 'Simpan Data'}
         isSubmitDisabled={submittingPerson}
       >
         <div className="space-y-6">
@@ -584,7 +584,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         onClose={() => setTrackingBAPerson(null)}
         title="Catat Progress BA"
         onSubmit={handleAddBALog}
-        submitLabel="Simpan Log"
+        submitLabel={submittingBA ? 'Menyimpan...' : 'Simpan Log'}
         isSubmitDisabled={submittingBA}
       >
         <div className="space-y-6">

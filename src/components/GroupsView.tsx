@@ -22,9 +22,10 @@ interface GroupsViewProps {
   onSaveGroup: (group: Omit<Group, 'id'> & { id?: string }) => Promise<void>;
   onDeleteGroup: (id: string) => Promise<void>;
   onHandoverLeadership?: (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => Promise<void>;
+  onRefreshData?: () => Promise<void>;
 }
 
-export default function GroupsView({ groups, people, currentUser, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
+export default function GroupsView({ groups, people, currentUser, onSaveGroup, onDeleteGroup, onHandoverLeadership, onRefreshData }: GroupsViewProps) {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -47,6 +48,7 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
   const [managingMembersGroup, setManagingMembersGroup] = useState<Group | null>(null);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [submittingMembers, setSubmittingMembers] = useState(false);
   
   // Handover Modal
   const [handoverGroup, setHandoverGroup] = useState<Group | null>(null);
@@ -145,9 +147,18 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
 
   const handleSaveMembers = async () => {
     if (!managingMembersGroup) return;
-    await updateGroupMembers(managingMembersGroup.id, selectedMemberIds);
-    setManagingMembersGroup(null);
-    if (typeof window !== 'undefined') window.location.reload();
+    setSubmittingMembers(true);
+    try {
+      await updateGroupMembers(managingMembersGroup.id, selectedMemberIds);
+      setManagingMembersGroup(null);
+      if (onRefreshData) {
+        await onRefreshData();
+      } else if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
+    } finally {
+      setSubmittingMembers(false);
+    }
   };
 
   return (
@@ -339,7 +350,7 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
         title={editingGroup ? 'Edit Grup PDG' : 'Buat Grup Baru'}
         onSubmit={handleGroupSubmit}
         isSubmitDisabled={submittingGroup}
-        submitLabel="Simpan Grup PDG"
+        submitLabel={submittingGroup ? 'Menyimpan...' : 'Simpan Grup PDG'}
       >
         <div className="space-y-4">
           <div>
@@ -462,10 +473,11 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
                 <button
                   type="button"
                   onClick={handleSaveMembers}
-                  className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2"
+                  disabled={submittingMembers}
+                  className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white text-sm font-bold transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2"
                 >
-                  <IconCheck className="w-5 h-5" stroke={2} />
-                  <span>Simpan</span>
+                  <IconCheck className={`w-5 h-5 ${submittingMembers ? 'animate-spin' : ''}`} stroke={2} />
+                  <span>{submittingMembers ? 'Menyimpan...' : 'Simpan'}</span>
                 </button>
               </div>
             </div>
