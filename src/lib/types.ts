@@ -29,6 +29,8 @@ export interface WeeklyStudyProgressLog {
 
 export interface Person {
   id: string;
+  auth_id?: string; // Links to Supabase auth.users.id
+  role?: 'SUPER_ADMIN' | 'GROUP_LEADER' | 'MEMBER'; // RBAC Role
   full_name: string;
   gender: Gender;
   phone_number?: string;

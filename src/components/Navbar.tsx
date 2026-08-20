@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { Person } from '@/lib/types';
 import { 
   IconLayoutDashboard, 
   IconUsers,
@@ -8,15 +9,17 @@ import {
   IconClipboardCheck, 
   IconRefresh,
   IconLogout,
-  IconSpeakerphone
+  IconSpeakerphone,
+  IconShieldLock
 } from '@tabler/icons-react';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  currentUser?: Person | null;
 }
 
-export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
+export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
     { id: 'people', label: 'Data Disciple', icon: IconUsers },
@@ -24,6 +27,10 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     { id: 'statistika', label: 'Statistik Grup', icon: IconClipboardCheck },
     { id: 'announcements', label: 'Pengumuman', icon: IconSpeakerphone },
   ];
+
+  if (currentUser?.role === 'SUPER_ADMIN') {
+    navItems.push({ id: 'admin', label: 'Akun Admin', icon: IconShieldLock });
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 border-b border-slate-200 backdrop-blur-md shadow-xs">

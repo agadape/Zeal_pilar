@@ -85,6 +85,25 @@ function setLocalData<T>(key: string, value: T): void {
   }
 }
 
+// ==========================================
+// AUTH & CURRENT USER API
+// ==========================================
+
+export async function getCurrentUserProfile(): Promise<Person | null> {
+  if (!isSupabaseConfigured || !supabase) return null;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  
+  const { data, error } = await supabase
+    .from('people')
+    .select('*')
+    .eq('auth_id', user.id)
+    .single();
+    
+  if (!error && data) return data as Person;
+  return null;
+}
+
 // ---------------- PEOPLE & BIBLE STUDY LOGS API ----------------
 
 export async function fetchPeople(): Promise<Person[]> {

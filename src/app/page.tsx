@@ -7,6 +7,7 @@ import PeopleView from '@/components/PeopleView';
 import GroupsView from '@/components/GroupsView';
 import StatistikaView from '@/components/StatistikaView';
 import AnnouncementsView from '@/components/AnnouncementsView';
+import AdminAccountsView from '@/components/AdminAccountsView';
 
 import { Person, Group, WeeklyStat, Announcement } from '@/lib/types';
 import { 
@@ -23,12 +24,14 @@ import {
   deleteWeeklyStat,
   fetchAnnouncements,
   saveAnnouncement,
-  deleteAnnouncement
+  deleteAnnouncement,
+  getCurrentUserProfile
   } from '@/lib/supabase';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<Person | null>(null);
 
   // Core App State
   const [people, setPeople] = useState<Person[]>([]);
@@ -40,17 +43,19 @@ export default function Home() {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [peopleData, groupsData, statsData, announcementsData] = await Promise.all([
+      const [peopleData, groupsData, statsData, announcementsData, userProfile] = await Promise.all([
         fetchPeople(),
         fetchGroups(),
         fetchWeeklyStats(),
-        fetchAnnouncements()
+        fetchAnnouncements(),
+        getCurrentUserProfile()
       ]);
 
       setPeople(peopleData);
       setGroups(groupsData);
       setStats(statsData);
       setAnnouncements(announcementsData);
+      setCurrentUser(userProfile);
     } catch (err) {
       console.error('Data loading error:', err);
     } finally {
@@ -125,7 +130,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between selection:bg-[#b5852e] selection:text-white">
       
       <div>
-        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {loading ? (
@@ -176,6 +181,14 @@ groups={groups} stats={stats} onNavigate={setActiveTab}
                   announcements={announcements} 
                   onSaveAnnouncement={handleSaveAnnouncement} 
                   onDeleteAnnouncement={handleDeleteAnnouncement}
+                />
+              )}
+
+              {activeTab === 'admin' && (
+                <AdminAccountsView 
+                  currentUser={currentUser}
+                  people={people}
+                  onRefreshData={loadAllData}
                 />
               )}
             </>
