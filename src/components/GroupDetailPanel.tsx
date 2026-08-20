@@ -146,7 +146,7 @@ export default function GroupDetailPanel({
 
           {loading ? (
             <p className="text-sm font-bold text-slate-500 text-center py-8">Memuat anggota...</p>
-          ) : members.length === 0 ? (
+          ) : members.filter(m => m.id !== group.leader_id).length === 0 ? (
             <div className="text-center py-10 bg-slate-50 border-2 border-slate-100 border-dashed rounded-[2rem]">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
                 <IconUser className="w-6 h-6 text-slate-300" stroke={2} />
@@ -154,20 +154,51 @@ export default function GroupDetailPanel({
               <p className="text-sm font-bold text-slate-500">Belum ada anggota di grup ini.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-              {members.map(m => (
-                <div key={m.id} className="flex justify-between items-center p-4 bg-white border border-slate-100 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ${m.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-400 to-indigo-500' : 'bg-gradient-to-br from-rose-400 to-pink-500'}`}>
-                      {m.full_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-extrabold text-slate-900">{m.full_name}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{m.status} {m.campus ? `• ${m.campus}` : ''}</p>
+            <div className="space-y-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+              {['DISCIPLE', 'BIBLE_STUDY', 'VISITOR'].map((sectionType) => {
+                const sectionMembers = members
+                  .filter(m => m.id !== group.leader_id)
+                  .filter(m => {
+                    if (sectionType === 'DISCIPLE') return ['DISCIPLE', 'WEAK', 'LEADER'].includes(m.status);
+                    if (sectionType === 'BIBLE_STUDY') return m.status === 'BIBLE_STUDY';
+                    return m.status === 'VISITOR' || m.status === 'INACTIVE';
+                  });
+                
+                if (sectionMembers.length === 0) return null;
+
+                const sectionTitle = 
+                  sectionType === 'DISCIPLE' ? 'Anggota Disciple' : 
+                  sectionType === 'BIBLE_STUDY' ? 'Studyan (Progress BA)' : 'Visitor / Tamu';
+
+                return (
+                  <div key={sectionType} className="space-y-2">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">{sectionTitle} ({sectionMembers.length})</h4>
+                    <div className="grid grid-cols-1 gap-2">
+                      {sectionMembers.map(m => (
+                        <div key={m.id} className="flex flex-col justify-center p-3.5 bg-white border border-slate-100 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0 ${m.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-400 to-indigo-500' : 'bg-gradient-to-br from-rose-400 to-pink-500'}`}>
+                              {m.full_name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-extrabold text-slate-900 truncate">{m.full_name}</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">{m.status} {m.campus ? `• ${m.campus}` : ''}</p>
+                            </div>
+                          </div>
+                          {m.status === 'BIBLE_STUDY' && m.study_stage && (
+                            <div className="mt-2 ml-11 bg-amber-50 border border-amber-100 rounded-lg p-2 flex items-start gap-2">
+                              <span className="text-xs">📖</span>
+                              <p className="text-[10px] font-bold text-amber-700 leading-tight">
+                                {m.study_stage}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

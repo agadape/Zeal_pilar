@@ -527,7 +527,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
 
             <div className={`grid gap-4 ${status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK' ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tgl Lahir Jasmani</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tanggal Lahir</label>
                 <input
                   type="date"
                   value={birthDate}
@@ -537,7 +537,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
               </div>
               {(status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK') && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tgl Baptis</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tanggal Baptis</label>
                   <input
                     type="date"
                     value={baptismDate}

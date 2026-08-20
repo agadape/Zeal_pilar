@@ -418,7 +418,7 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
               ) : (
                 <div className="space-y-3">
                   {people
-                    .filter(p => p.gender === managingMembersGroup.category)
+                    .filter(p => p.gender === managingMembersGroup.category && p.id !== managingMembersGroup.leader_id)
                     .map(p => {
                       const isSelected = selectedMemberIds.includes(p.id);
                       return (

@@ -102,13 +102,13 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
               <div className="w-full">
                 {person.birth_date && (
                   <div className="flex justify-between w-full items-center">
-                    <span className="text-xs font-bold text-slate-500">Lahir Jasmani</span>
+                    <span className="text-xs font-bold text-slate-500">Tanggal Lahir</span>
                     <span className="text-xs font-extrabold text-slate-900">{new Date(person.birth_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</span>
                   </div>
                 )}
                 {person.baptism_date && (
                   <div className="flex justify-between w-full items-center mt-2 pt-2 border-t border-slate-100">
-                    <span className="text-xs font-bold text-slate-500">Lahir Rohani (Baptis)</span>
+                    <span className="text-xs font-bold text-slate-500">Tanggal Baptis</span>
                     <span className="text-xs font-extrabold text-slate-900">{new Date(person.baptism_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</span>
                   </div>
                 )}
