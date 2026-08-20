@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Person, Group, WeeklyStat, UpcomingMilestone, MinistryEvent } from '@/lib/types';
-import { fetchUpcomingMilestones } from '@/lib/supabase';
+import { fetchUpcomingMilestones, updateUserPassword } from '@/lib/supabase';
+import FormPanel from './FormPanel';
 import { 
   IconUsers, 
   IconUsersGroup, 
@@ -11,7 +12,8 @@ import {
   IconClipboardCheck,
   IconCake,
   IconArrowRight,
-  IconCheck
+  IconCheck,
+  IconKey
 } from '@tabler/icons-react';
 
 interface DashboardViewProps {
@@ -25,6 +27,11 @@ interface DashboardViewProps {
 
 export default function DashboardView({ people, groups, stats, events = [], currentUser, onNavigate }: DashboardViewProps) {
   const [milestones, setMilestones] = useState<UpcomingMilestone[]>([]);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     fetchUpcomingMilestones().then(data => setMilestones(data));
@@ -56,19 +63,29 @@ export default function DashboardView({ people, groups, stats, events = [], curr
     <div className="space-y-8 animate-fade-in pb-12">
       
       {/* HEADER */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center space-x-3">
-          <span>Halo, {firstName}! 👋</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center space-x-3">
+              <span>Halo, {firstName}! 👋</span>
+              {currentUser && (
+                <span className="text-xs sm:text-sm font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
+                  {roleDisplay}
+                </span>
+              )}
+            </h1>
+            <p className="text-sm text-slate-500 font-medium mt-1">
+              Berikut adalah ringkasan aktivitas dan prioritas pelayanan Anda hari ini.
+            </p>
+          </div>
           {currentUser && (
-            <span className="text-xs sm:text-sm font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
-              {roleDisplay}
-            </span>
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="btn-tactile px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm shrink-0 self-start sm:self-auto"
+            >
+              <span>Ubah Password</span>
+            </button>
           )}
-        </h1>
-        <p className="text-sm text-slate-500 font-medium mt-1">
-          Berikut adalah ringkasan aktivitas dan prioritas pelayanan Anda hari ini.
-        </p>
-      </div>
+        </div>
 
       {/* NEEDS ATTENTION */}
       <section className="space-y-4">
@@ -259,6 +276,73 @@ export default function DashboardView({ people, groups, stats, events = [], curr
 
         </div>
       </section>
+
+    </div>
+      
+      {/* Change Password Modal */}
+      <FormPanel
+        isOpen={isPasswordModalOpen}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          setNewPassword('');
+          setConfirmPassword('');
+          setPasswordError('');
+        }}
+        title="Ubah Password"
+        submitLabel="Ubah Password"
+        isSubmitDisabled={passwordLoading || newPassword.length < 6 || newPassword !== confirmPassword}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (newPassword.length < 6) {
+            setPasswordError('Password minimal 6 karakter.');
+            return;
+          }
+          if (newPassword !== confirmPassword) {
+            setPasswordError('Konfirmasi password tidak cocok.');
+            return;
+          }
+          setPasswordLoading(true);
+          setPasswordError('');
+          const { error } = await updateUserPassword(newPassword);
+          setPasswordLoading(false);
+          if (error) {
+            setPasswordError(error.message);
+          } else {
+            alert('Password berhasil diubah!');
+            setIsPasswordModalOpen(false);
+            setNewPassword('');
+            setConfirmPassword('');
+          }
+        }}
+      >
+        <div className="space-y-4">
+          {passwordError && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+              {passwordError}
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Password Baru</label>
+            <input
+              type="password"
+              required
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Konfirmasi Password</label>
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+            />
+          </div>
+        </div>
+      </FormPanel>
 
     </div>
   );

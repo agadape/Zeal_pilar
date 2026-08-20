@@ -667,3 +667,16 @@ export async function deleteAnnouncement(id: string): Promise<void> {
   setLocalData(STORAGE_KEYS.ANNOUNCEMENTS, announcements.filter(a => a.id !== id));
 }
 
+// ---------------- AUTHENTICATION API ----------------
+
+export async function updateUserPassword(newPassword: string): Promise<{ error: Error | null }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return { error: new Error("Supabase tidak terkonfigurasi") };
+  }
+  
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+  
+  return { error };
+}
