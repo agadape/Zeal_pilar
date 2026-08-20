@@ -34,13 +34,17 @@ interface StatistikaViewProps {
   groups: Group[];
   people?: Person[];
   stats?: WeeklyStat[];
+  currentUser?: Person | null;
   onSaveStat: (stat: Omit<WeeklyStat, 'id'> & { id?: string }) => Promise<void>;
   onDeleteStat?: (id: string) => Promise<void>;
 }
 
-export default function StatistikaView({ groups, stats = [], onSaveStat, onDeleteStat }: StatistikaViewProps) {
+export default function StatistikaView({ groups, stats = [], currentUser, onSaveStat, onDeleteStat }: StatistikaViewProps) {
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const allowedGroups = isSuperAdmin ? groups : groups.filter(g => g.leader_id === currentUser?.id);
+
   const [activeSubTab, setActiveSubTab] = useState<'form' | 'analytics'>('form');
-  const [selectedGroupId, setSelectedGroupId] = useState<string>(groups[0]?.id || '');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(allowedGroups.length > 0 ? allowedGroups[0].id : '');
   const getMostRecentSunday = () => {
     const d = new Date();
     d.setDate(d.getDate() - d.getDay());
@@ -234,7 +238,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                     onChange={e => setSelectedGroupId(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 font-bold focus:outline-none focus:border-[#b5852e]"
                   >
-                    {groups.map(g => (
+                    {allowedGroups.map(g => (
                       <option key={g.id} value={g.id}>
                         {g.group_name} ({g.category})
                       </option>
@@ -681,7 +685,7 @@ export default function StatistikaView({ groups, stats = [], onSaveStat, onDelet
                         <td className="px-4 py-3 text-center font-bold text-slate-700">{s.sunday_visitors_count}</td>
                         <td className="px-4 py-3 text-center font-bold text-emerald-600">{s.baptisms_count}</td>
                         <td className="px-4 py-3 text-right">
-                          {onDeleteStat && (
+                          {onDeleteStat && (isSuperAdmin || groups.find(g => g.id === s.group_id)?.leader_id === currentUser?.id) && (
                             <button
                               onClick={() => onDeleteStat(s.id)}
                               className="btn-tactile p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-100"

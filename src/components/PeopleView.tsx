@@ -12,7 +12,8 @@ import PersonDetailPanel from './PersonDetailPanel';
 
 interface PeopleViewProps {
   people: Person[];
-    onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
+  currentUser?: Person | null;
+  onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
   onDeletePerson: (id: string) => Promise<void>;
   onSaveBALog?: (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
 }
@@ -42,7 +43,7 @@ function saveCampusToList(name: string) {
   } catch { /* ignore */ }
 }
 
-export default function PeopleView({ people, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
+export default function PeopleView({ people, currentUser, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
 
   const [search, setSearch] = useState('');
   const [campusList, setCampusList] = useState<string[]>(getCampusList);
@@ -540,12 +541,12 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
             />
           </div>
           
-          {editingPerson && (
-             <div className="pt-2">
+           {editingPerson && currentUser?.role === 'SUPER_ADMIN' && (
+             <div className="pt-6 border-t border-slate-100 mt-4">
                <button
                  type="button"
                  onClick={() => {
-                   if (confirm("Data akan dihapus permanen. Apakah Anda yakin?")) {
+                   if (confirm('Yakin ingin menghapus data disciple ini secara permanen?')) {
                      onDeletePerson(editingPerson.id);
                      setIsFormOpen(false);
                    }
@@ -555,8 +556,8 @@ export default function PeopleView({ people, onSavePerson, onDeletePerson, onSav
                  Hapus Data Disciple
                </button>
              </div>
-          )}
-        </div>
+           )}
+         </div>
       </FormPanel>
 
       {/* Tracker BA Modal */}

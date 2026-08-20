@@ -17,12 +17,13 @@ import {
 interface GroupsViewProps {
   groups: Group[];
   people: Person[];
+  currentUser?: Person | null;
   onSaveGroup: (group: Omit<Group, 'id'> & { id?: string }) => Promise<void>;
   onDeleteGroup: (id: string) => Promise<void>;
   onHandoverLeadership?: (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => Promise<void>;
 }
 
-export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
+export default function GroupsView({ groups, people, currentUser, onSaveGroup, onDeleteGroup, onHandoverLeadership }: GroupsViewProps) {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -157,13 +158,15 @@ export default function GroupsView({ groups, people, onSaveGroup, onDeleteGroup,
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Grup PDG</h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium">Manajemen grup kecil (PDG Brother/Sister) dan anggotanya.</p>
         </div>
-        <button
-          onClick={openAddGroupModal}
-          className="btn-tactile btn-primary shrink-0"
-        >
-          <IconPlus className="w-4 h-4" stroke={2} />
-          <span>Buat Grup Baru</span>
-        </button>
+        {(!currentUser || currentUser.role === 'SUPER_ADMIN') && (
+          <button
+            onClick={openAddGroupModal}
+            className="btn-tactile btn-primary shrink-0"
+          >
+            <IconPlus className="w-4 h-4" stroke={2} />
+            <span>Buat Grup Baru</span>
+          </button>
+        )}
       </div>
 
       {/* GROUPS GRID */}

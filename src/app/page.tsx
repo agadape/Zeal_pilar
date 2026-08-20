@@ -153,6 +153,7 @@ export default function Home() {
               {activeTab === 'people' && (
                 <PeopleView 
                   people={people} 
+                  currentUser={currentUser}
                   onSavePerson={handleSavePerson} 
                   onDeletePerson={handleDeletePerson} 
                   onSaveBALog={handleSaveBALog}
@@ -163,6 +164,7 @@ export default function Home() {
                 <GroupsView 
                   groups={groups} 
                   people={people} 
+                  currentUser={currentUser}
                   onSaveGroup={handleSaveGroup} 
                   onDeleteGroup={handleDeleteGroup} 
                   onHandoverLeadership={handleHandoverLeadership}
@@ -174,6 +176,7 @@ export default function Home() {
                   groups={groups} 
                   people={people} 
                   stats={stats} 
+                  currentUser={currentUser}
                   onSaveStat={handleSaveStat} 
                   onDeleteStat={handleDeleteStat}
                 />

@@ -15,6 +15,7 @@ import {
 interface GroupDetailPanelProps {
   group: Group | null;
   isOpen: boolean;
+  currentUser?: Person | null;
   onClose: () => void;
   onEdit: (g: Group) => void;
   onManageMembers: (g: Group) => void;
@@ -25,6 +26,7 @@ interface GroupDetailPanelProps {
 export default function GroupDetailPanel({ 
   group, 
   isOpen, 
+  currentUser,
   onClose, 
   onEdit, 
   onManageMembers, 
@@ -45,6 +47,10 @@ export default function GroupDetailPanel({
   }, [isOpen, group]);
 
   if (!group) return null;
+
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isLeaderOfThisGroup = currentUser?.id === group.leader_id;
+  const canEdit = isSuperAdmin || isLeaderOfThisGroup;
 
   return (
     <FormPanel
@@ -70,27 +76,31 @@ export default function GroupDetailPanel({
           </div>
           
           <div className="flex gap-1">
-            <button 
-              type="button"
-              onClick={() => { onClose(); onEdit(group); }}
-              className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 transition-colors"
-              title="Edit Grup PDG"
-            >
-              <IconEdit className="w-4 h-4" />
-            </button>
-            <button 
-              type="button"
-              onClick={() => { 
-                if (confirm('Yakin ingin menghapus grup ini? Semua data statistik yang terhubung akan hilang.')) {
-                  onDelete(group.id);
-                  onClose();
-                }
-              }}
-              className="p-2 bg-rose-50 hover:bg-rose-100 rounded-xl text-rose-700 transition-colors"
-              title="Hapus Grup PDG"
-            >
-              <IconTrash className="w-4 h-4" />
-            </button>
+            {canEdit && (
+              <button 
+                type="button"
+                onClick={() => { onClose(); onEdit(group); }}
+                className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 transition-colors"
+                title="Edit Grup PDG"
+              >
+                <IconEdit className="w-4 h-4" />
+              </button>
+            )}
+            {isSuperAdmin && (
+              <button 
+                type="button"
+                onClick={() => { 
+                  if (confirm('Yakin ingin menghapus grup ini? Semua data statistik yang terhubung akan hilang.')) {
+                    onDelete(group.id);
+                    onClose();
+                  }
+                }}
+                className="p-2 bg-rose-50 hover:bg-rose-100 rounded-xl text-rose-700 transition-colors"
+                title="Hapus Grup PDG"
+              >
+                <IconTrash className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -103,13 +113,15 @@ export default function GroupDetailPanel({
               {group.leader_name || 'Belum Ada Leader'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => { onClose(); onHandover(group); }}
-            className="text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
-          >
-            <IconArrowsExchange className="w-3.5 h-3.5" /> Handover
-          </button>
+          {isSuperAdmin && (
+            <button
+              type="button"
+              onClick={() => { onClose(); onHandover(group); }}
+              className="text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+            >
+              <IconArrowsExchange className="w-3.5 h-3.5" /> Handover
+            </button>
+          )}
         </div>
 
         {/* Members List */}
@@ -119,13 +131,15 @@ export default function GroupDetailPanel({
               <IconUsersGroup className="w-4 h-4 text-[#b5852e]" />
               Daftar Anggota
             </h3>
-            <button 
-              type="button"
-              onClick={() => { onClose(); onManageMembers(group); }}
-              className="text-[10px] font-bold text-[#b5852e] hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-1 rounded-lg transition-colors"
-            >
-              + Kelola Anggota
-            </button>
+            {canEdit && (
+              <button 
+                type="button"
+                onClick={() => { onClose(); onManageMembers(group); }}
+                className="text-[10px] font-bold text-[#b5852e] hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-1 rounded-lg transition-colors"
+              >
+                + Kelola Anggota
+              </button>
+            )}
           </div>
 
           {loading ? (
