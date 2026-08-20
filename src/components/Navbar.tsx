@@ -7,7 +7,8 @@ import {
   IconUsersGroup, 
   IconClipboardCheck, 
   IconRefresh,
-  IconLogout
+  IconLogout,
+  IconSpeakerphone
 } from '@tabler/icons-react';
 
 interface NavbarProps {
@@ -21,6 +22,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     { id: 'people', label: 'Data Disciple', icon: IconUsers },
     { id: 'groups', label: 'Grup PDG', icon: IconUsersGroup },
     { id: 'statistika', label: 'Statistik Grup', icon: IconClipboardCheck },
+    { id: 'announcements', label: 'Pengumuman', icon: IconSpeakerphone },
   ];
 
   return (

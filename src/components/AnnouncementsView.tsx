@@ -16,7 +16,7 @@ import FormPanel from './FormPanel';
 
 interface AnnouncementsViewProps {
   announcements: Announcement[];
-  onSaveAnnouncement: (announcement: Omit<Announcement, 'id'> & { id?: string }) => Promise<void>;
+  onSaveAnnouncement: (announcement: Omit<Announcement, 'id' | 'author_name'> & { id?: string }) => Promise<void>;
   onDeleteAnnouncement: (id: string) => Promise<void>;
 }
 
@@ -24,7 +24,6 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [title, setTitle] = useState('');
-  const [authorName, setAuthorName] = useState('');
   const [content, setContent] = useState('');
   const [isPinned, setIsPinned] = useState(true);
 
@@ -34,7 +33,6 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
     setSubmitting(true);
     await onSaveAnnouncement({
       title: title.trim(),
-      author_name: authorName.trim() || 'Tugu Leader',
       content: content.trim(),
       is_pinned: isPinned
     });
@@ -155,17 +153,6 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
             placeholder="Judul visi atau pengumuman..."
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Penulis</label>
-          <input
-            type="text"
-            placeholder="Bang Daniel / Om Hendra"
-            value={authorName}
-            onChange={e => setAuthorName(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
           />
         </div>

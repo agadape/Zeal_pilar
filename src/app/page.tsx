@@ -6,8 +6,9 @@ import DashboardView from '@/components/DashboardView';
 import PeopleView from '@/components/PeopleView';
 import GroupsView from '@/components/GroupsView';
 import StatistikaView from '@/components/StatistikaView';
+import AnnouncementsView from '@/components/AnnouncementsView';
 
-import { Person, Group, WeeklyStat,  } from '@/lib/types';
+import { Person, Group, WeeklyStat, Announcement } from '@/lib/types';
 import { 
   fetchPeople, 
   savePerson, 
@@ -20,11 +21,9 @@ import {
   fetchWeeklyStats, 
   saveWeeklyStat,
   deleteWeeklyStat,
-   
-  
-  
-   
-  
+  fetchAnnouncements,
+  saveAnnouncement,
+  deleteAnnouncement
   } from '@/lib/supabase';
 
 export default function Home() {
@@ -35,20 +34,23 @@ export default function Home() {
   const [people, setPeople] = useState<Person[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [stats, setStats] = useState<WeeklyStat[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   // Load all initial data
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [peopleData, groupsData, statsData] = await Promise.all([
+      const [peopleData, groupsData, statsData, announcementsData] = await Promise.all([
         fetchPeople(),
         fetchGroups(),
-        fetchWeeklyStats()
+        fetchWeeklyStats(),
+        fetchAnnouncements()
       ]);
 
       setPeople(peopleData);
       setGroups(groupsData);
       setStats(statsData);
+      setAnnouncements(announcementsData);
     } catch (err) {
       console.error('Data loading error:', err);
     } finally {
@@ -107,6 +109,18 @@ export default function Home() {
     }
   };
 
+  const handleSaveAnnouncement = async (announcement: Omit<Announcement, 'id' | 'author_name'> & { id?: string }) => {
+    await saveAnnouncement(announcement);
+    await loadAllData();
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
+      await deleteAnnouncement(id);
+      await loadAllData();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between selection:bg-[#b5852e] selection:text-white">
       
@@ -157,6 +171,13 @@ groups={groups} stats={stats} onNavigate={setActiveTab}
                 />
               )}
 
+              {activeTab === 'announcements' && (
+                <AnnouncementsView 
+                  announcements={announcements} 
+                  onSaveAnnouncement={handleSaveAnnouncement} 
+                  onDeleteAnnouncement={handleDeleteAnnouncement}
+                />
+              )}
             </>
           )}
         </main>
