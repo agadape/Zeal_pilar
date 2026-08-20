@@ -12,8 +12,7 @@ import {
   IconClipboardCheck,
   IconCake,
   IconArrowRight,
-  IconCheck,
-  IconKey
+  IconCheck
 } from '@tabler/icons-react';
 
 interface DashboardViewProps {
@@ -277,8 +276,6 @@ export default function DashboardView({ people, groups, stats, events = [], curr
         </div>
       </section>
 
-    </div>
-      
       {/* Change Password Modal */}
       <FormPanel
         isOpen={isPasswordModalOpen}
