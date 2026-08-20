@@ -17,32 +17,56 @@ export default function LoginPage() {
   )
 
   return (
-    <div className="min-h-screen flex bg-white selection:bg-indigo-500 selection:text-white">
-      {/* Left Column: Image Background */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-          style={{ backgroundImage: `url('/login-bg.jpg')` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
+    <div className="min-h-screen flex bg-slate-50 selection:bg-indigo-500 selection:text-white">
+      {/* Left Column: Glassmorphism Hero */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-950 items-center justify-center p-12">
+        {/* Background glow effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full mix-blend-screen filter blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/10 rounded-full mix-blend-screen filter blur-[120px]" />
         
-        <div className="relative z-10 w-full h-full flex flex-col justify-end p-12 lg:p-16 text-white">
-          <div className="mb-4">
-            <span className="px-3 py-1 bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold uppercase tracking-widest rounded-full backdrop-blur-sm">
-              Zeal Jogja
-            </span>
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)]" />
+
+        {/* Glass Card */}
+        <div className="relative z-10 w-full max-w-xl backdrop-blur-2xl bg-white/5 border border-white/10 p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-start ring-1 ring-white/10 overflow-hidden">
+          {/* Inner reflection */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-50" />
+          
+          <div className="relative z-20">
+            <div className="mb-8">
+              <span className="px-4 py-1.5 bg-white/10 border border-white/20 text-white font-mono text-xs font-bold uppercase tracking-[0.2em] rounded-full backdrop-blur-md shadow-sm">
+                Zeal Jogja
+              </span>
+            </div>
+            
+            <h1 className="text-5xl xl:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/60 mb-6 leading-[1.1]">
+              GKDI Tugu <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Youth & Campus</span>
+            </h1>
+            
+            <p className="text-slate-300/80 text-lg max-w-md font-medium leading-relaxed mb-10">
+              Sistem manajemen data jemaat, grup PDG, dan laporan pelayanan. Terpusat, aman, dan mudah digunakan.
+            </p>
+
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center shrink-0">
+                    <IconAlertCircle className="w-4 h-4 text-slate-500 opacity-0" />
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs font-semibold text-slate-400 tracking-wide uppercase">
+                Trusted by Leaders
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-            GKDI Tugu<br />Youth & Campus
-          </h1>
-          <p className="text-slate-300 text-lg max-w-md font-medium leading-relaxed">
-            Sistem manajemen data jemaat dan grup PDG. Silakan masuk untuk mengakses *dashboard*.
-          </p>
         </div>
       </div>
 
       {/* Right Column: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white rounded-l-[3rem] lg:-ml-8 relative z-20 shadow-[-20px_0_40px_rgba(0,0,0,0.1)]">
         <div className="w-full max-w-md">
           <div className="mb-10 text-center lg:text-left">
             <div className="inline-flex lg:hidden mb-6 items-center justify-center w-12 h-12 bg-indigo-50 rounded-xl">
