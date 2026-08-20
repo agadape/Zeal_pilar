@@ -1,0 +1,1 @@
+ALTER TABLE bible_study_logs ADD COLUMN IF NOT EXISTS mentor_id UUID REFERENCES people(id) ON DELETE SET NULL;

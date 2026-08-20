@@ -88,7 +88,7 @@ export default function Home() {
     }
   };
 
-  const handleSaveBALog = async (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => {
+  const handleSaveBALog = async (log: { person_id: string; mentor_id?: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => {
     await saveBibleStudyLog(log);
     await loadAllData();
   };

@@ -15,7 +15,7 @@ interface PeopleViewProps {
   currentUser?: Person | null;
   onSavePerson: (person: Omit<Person, 'id'> & { id?: string; study_history?: WeeklyStudyProgressLog[] }) => Promise<void>;
   onDeletePerson: (id: string) => Promise<void>;
-  onSaveBALog?: (log: { person_id: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
+  onSaveBALog?: (log: { person_id: string; mentor_id?: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => Promise<void>;
 }
 
 const DEFAULT_CAMPUSES = ['UGM', 'UNY', 'Atma Jaya', 'STIPRAM', 'UPN', 'AMPTA', 'ISI', 'UMY', 'UAJY', 'Sanata Dharma', 'Bukan Mahasiswa'];
@@ -77,6 +77,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
   const [newLogTopic, setNewLogTopic] = useState<string>('Pelajaran 1: Cinta Alkitab');
   const [newLogDate, setNewLogDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [newLogNotes, setNewLogNotes] = useState<string>('');
+  const [newLogMentorId, setNewLogMentorId] = useState<string>('');
 
   // Helpers
   const openAddModal = () => {
@@ -131,6 +132,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
     setNewLogTopic(LESSON_PRESETS[Math.min(existingLogs.length, LESSON_PRESETS.length - 1)]);
     setNewLogDate(new Date().toISOString().split('T')[0]);
     setNewLogNotes('');
+    setNewLogMentorId('');
   };
 
   const handleSavePersonSubmit = async (e: React.FormEvent) => {
@@ -167,6 +169,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
       if (onSaveBALog) {
         await onSaveBALog({
           person_id: trackingBAPerson.id,
+          mentor_id: newLogMentorId || undefined,
           week_number: newLogWeekNum,
           study_date: newLogDate,
           lesson_topic: newLogTopic.trim(),
@@ -639,6 +642,25 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
               onChange={e => setNewLogNotes(e.target.value)}
               className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-medium text-slate-900 resize-none focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
             />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mentor (Opsional)</label>
+            <select
+              value={newLogMentorId}
+              onChange={e => setNewLogMentorId(e.target.value)}
+              className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+            >
+              <option value="">-- Pilih Mentor --</option>
+              {people
+                .filter(p => p.status === 'LEADER' || p.status === 'DISCIPLE')
+                .sort((a, b) => a.full_name.localeCompare(b.full_name))
+                .map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.full_name}
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
       </FormPanel>

@@ -20,6 +20,7 @@ export type EventType =
 export interface WeeklyStudyProgressLog {
   id: string;
   person_id?: string;
+  mentor_id?: string;
   week_number: number;
   study_date: string;
   lesson_topic: string;

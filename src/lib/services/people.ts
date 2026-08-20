@@ -102,6 +102,7 @@ export async function deletePerson(id: string): Promise<boolean> {
 export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> & { person_id: string }): Promise<WeeklyStudyProgressLog> {
   const payload = {
     person_id: log.person_id,
+    mentor_id: log.mentor_id || null,
     week_number: log.week_number,
     study_date: log.study_date,
     lesson_topic: log.lesson_topic,
