@@ -32,10 +32,9 @@ export default function LoginPage() {
       {/* 1. Header Navigation */}
       <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center animate-fade-in-down">
         <div className="flex items-center gap-2">
-          {/* Logo mock */}
-          <div className="w-10 h-10 bg-[#FF5722] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-            Z
-          </div>
+          {/* Logo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.jpg" alt="Zeal Logo" className="w-10 h-10 rounded-full object-cover shadow-lg border border-white/20" />
         </div>
         
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/90">
@@ -143,11 +142,12 @@ export default function LoginPage() {
             </button>
             
             <div className="mb-8">
-              <div className="w-12 h-12 bg-[#FF5722] rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-6">
-                Z
+              <div className="flex justify-center mb-6">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.jpg" alt="Zeal Logo" className="w-16 h-16 rounded-full object-cover shadow-lg border-4 border-white" />
               </div>
-              <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h2>
-              <p className="text-slate-500 mt-2 font-medium">Enter your credentials to access the dashboard.</p>
+              <h2 className="text-3xl font-bold text-slate-900 tracking-tight text-center">Welcome back</h2>
+              <p className="text-slate-500 mt-2 font-medium text-center">Enter your credentials to access the dashboard.</p>
             </div>
 
             <form action={formAction} className="space-y-5">
