@@ -197,27 +197,27 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
     <div 
       key={p.id} 
       onClick={() => openDetail(p)}
-      className="group flex flex-col p-4 bg-white border border-slate-200 hover:border-slate-300 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all duration-200 ease-out"
+      className="group flex flex-col p-5 bg-white border border-slate-100 rounded-3xl shadow-xl shadow-slate-200/40 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-200/50 cursor-pointer transition-all duration-300"
     >
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${p.gender === 'BROTHER' ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-rose-50/50 border-rose-100 text-rose-700'}`}>
-          <span className="font-bold text-sm">{p.full_name.charAt(0).toUpperCase()}</span>
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border-4 border-white shadow-md ${p.gender === 'BROTHER' ? 'bg-gradient-to-br from-blue-400 to-indigo-500 text-white' : 'bg-gradient-to-br from-rose-400 to-pink-500 text-white'}`}>
+          <span className="font-bold text-lg">{p.full_name.charAt(0).toUpperCase()}</span>
         </div>
-        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold tracking-wide border ${getStatusBadgeClass(p.status)}`}>
+        <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-sm ${getStatusBadgeClass(p.status)}`}>
           {p.status === 'BIBLE_STUDY' ? 'STUDYAN' : p.status}
         </span>
       </div>
       
-      <div className="flex flex-col min-w-0">
-        <h3 className="font-bold text-sm text-slate-900 truncate">{p.full_name}</h3>
+      <div className="flex flex-col min-w-0 mt-2">
+        <h3 className="font-extrabold text-base text-slate-900 truncate">{p.full_name}</h3>
         {p.campus && (
-          <span className="text-[11px] text-slate-500 truncate mt-0.5">
-            {p.campus}
+          <span className="text-xs font-medium text-slate-500 truncate mt-1 flex items-center gap-1">
+            🎓 {p.campus}
           </span>
         )}
         {p.study_stage && (
-          <span className="text-[10px] text-amber-700 font-medium truncate mt-2 bg-amber-50 border border-amber-100/50 px-1.5 py-0.5 rounded w-fit">
-            {p.study_stage}
+          <span className="text-[10px] text-amber-700 font-bold truncate mt-3 bg-amber-100/50 px-2.5 py-1 rounded-lg w-fit inline-block">
+            📖 {p.study_stage}
           </span>
         )}
       </div>
@@ -226,126 +226,126 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
 
   const getStatusBadgeClass = (st: PersonStatus) => {
     switch (st) {
-      case 'LEADER': return 'text-purple-700 bg-purple-50 border-purple-200';
-      case 'DISCIPLE': return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      case 'BIBLE_STUDY': return 'text-amber-700 bg-amber-50 border-amber-200';
-      case 'VISITOR': return 'text-cyan-700 bg-cyan-50 border-cyan-200';
-      case 'WEAK': return 'text-rose-700 bg-rose-50 border-rose-200';
-      case 'INACTIVE': return 'text-slate-500 bg-slate-50 border-slate-200';
-      default: return 'text-slate-700 bg-slate-50 border-slate-200';
+      case 'LEADER': return 'text-purple-700 bg-purple-100 border border-purple-200';
+      case 'DISCIPLE': return 'text-emerald-700 bg-emerald-100 border border-emerald-200';
+      case 'BIBLE_STUDY': return 'text-amber-700 bg-amber-100 border border-amber-200';
+      case 'VISITOR': return 'text-cyan-700 bg-cyan-100 border border-cyan-200';
+      case 'WEAK': return 'text-rose-700 bg-rose-100 border border-rose-200';
+      case 'INACTIVE': return 'text-slate-500 bg-slate-100 border border-slate-200';
+      default: return 'text-slate-700 bg-slate-100 border border-slate-200';
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-12">
+    <div className="space-y-8 animate-fade-in pb-24 max-w-7xl mx-auto">
       
-      {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* HEADER - Playful & Modern */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white/60 backdrop-blur-xl border border-white p-6 sm:p-8 rounded-[2rem] shadow-xl shadow-slate-200/40">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Data Disciple
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
+            Data Disciple 👥
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Direktori disciple, pengunjung, dan partisipan kelas Alkitab.
+          <p className="text-sm sm:text-base text-slate-500 font-medium mt-2">
+            Direktori lengkap disciple, pengunjung, dan partisipan belajar Alkitab.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
             onClick={() => exportPeopleToCSV(people)}
-            className="btn-tactile px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm"
+            className="px-5 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm"
           >
-            <IconDownload className="w-4 h-4 text-slate-500" stroke={2} />
+            <IconDownload className="w-5 h-5 text-slate-500" stroke={2} />
             <span className="hidden sm:inline">Export CSV</span>
           </button>
 
           <button
             onClick={openAddModal}
-            className="btn-tactile btn-primary py-2.5 px-4 text-sm font-bold shadow-sm"
+            className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-blue-500/30 flex items-center space-x-2 transition-transform hover:-translate-y-0.5"
           >
-            <IconUserPlus className="w-4 h-4" stroke={2} />
+            <IconUserPlus className="w-5 h-5" stroke={2} />
             <span>Tambah Data</span>
           </button>
         </div>
       </div>
 
-      {/* SEARCH & FILTERS - Redesigned as a prominent bar */}
-      <div className="relative w-full shadow-sm rounded-2xl">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <IconSearch className="w-5 h-5 text-slate-400" stroke={2.5} />
+      {/* SEARCH - Floating Pill */}
+      <div className="relative w-full max-w-2xl mx-auto group">
+        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+          <IconSearch className="w-6 h-6 text-indigo-400 group-focus-within:text-indigo-600 transition-colors" stroke={2.5} />
         </div>
         <input
           type="text"
-          placeholder="Cari nama, status, kampus, atau catatan..."
+          placeholder="Cari nama, status, kampus..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 text-base text-slate-900 focus:outline-none focus:border-[#b5852e] focus:ring-4 focus:ring-[#b5852e]/10 transition-all font-medium placeholder-slate-400"
+          className="w-full bg-white border-2 border-slate-100 rounded-full pl-14 pr-6 py-4 text-base text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all font-bold placeholder-slate-400 shadow-xl shadow-slate-200/30"
         />
       </div>
 
       {/* DIRECTORY LIST */}
-      <div className="space-y-10 pt-4">
+      <div className="space-y-12 pt-4">
         {(groupedPeople.disciples.length === 0 && groupedPeople.studyans.length === 0 && groupedPeople.visitors.length === 0 && groupedPeople.inactives.length === 0) ? (
-          <div className="py-20 text-center bg-white rounded-3xl border border-slate-200 border-dashed">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-              <IconUsers className="w-8 h-8 text-slate-300" stroke={1.5} />
+          <div className="py-24 text-center bg-white/50 rounded-[2rem] border-2 border-slate-200 border-dashed backdrop-blur-sm">
+            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-200/50">
+              <IconUsers className="w-10 h-10 text-slate-300" stroke={1.5} />
             </div>
-            <p className="text-slate-500 font-bold text-sm">Tidak ada data yang ditemukan.</p>
-            <p className="text-slate-400 text-xs mt-1">Coba gunakan kata kunci lain.</p>
+            <p className="text-slate-800 font-extrabold text-lg">Waduh, nggak ketemu nih! 🙈</p>
+            <p className="text-slate-500 text-sm mt-2 font-medium">Coba gunakan kata kunci pencarian yang lain.</p>
           </div>
         ) : (
           <>
             {groupedPeople.disciples.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                  <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-3">
                     <span>Sudah Disciple</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">{groupedPeople.disciples.length}</span>
+                    <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-black shadow-sm">{groupedPeople.disciples.length}</span>
                   </h2>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {groupedPeople.disciples.map(renderPersonCard)}
                 </div>
               </div>
             )}
             
             {groupedPeople.studyans.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                  <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
-                    <span>Studyan / Progress BA</span>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-black">{groupedPeople.studyans.length}</span>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-3">
+                    <span>Lagi Belajar Alkitab</span>
+                    <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-black shadow-sm">{groupedPeople.studyans.length}</span>
                   </h2>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {groupedPeople.studyans.map(renderPersonCard)}
                 </div>
               </div>
             )}
 
             {groupedPeople.visitors.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                  <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center space-x-2">
-                    <span>Visitor / Tamu</span>
-                    <span className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 text-[11px] font-black">{groupedPeople.visitors.length}</span>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-3">
+                    <span>Visitor & Reachout</span>
+                    <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-sm font-black shadow-sm">{groupedPeople.visitors.length}</span>
                   </h2>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {groupedPeople.visitors.map(renderPersonCard)}
                 </div>
               </div>
             )}
 
             {groupedPeople.inactives.length > 0 && (
-              <div className="space-y-4 opacity-70 hover:opacity-100 transition-opacity">
+              <div className="space-y-6 opacity-70 hover:opacity-100 transition-opacity">
                 <div className="flex items-center justify-between px-2">
-                  <h2 className="text-lg font-black text-slate-500 tracking-tight flex items-center space-x-2">
-                    <span>Lainnya / Inactive</span>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[11px] font-black">{groupedPeople.inactives.length}</span>
+                  <h2 className="text-xl font-bold text-slate-500 tracking-tight flex items-center space-x-3">
+                    <span>Inactive / Keluar</span>
+                    <span className="px-3 py-1 rounded-full bg-slate-200 text-slate-600 text-xs font-black">{groupedPeople.inactives.length}</span>
                   </h2>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {groupedPeople.inactives.map(renderPersonCard)}
                 </div>
               </div>
@@ -356,7 +356,6 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
 
       {/* MODALS */}
 
-      {/* Person Detail Panel */}
       <PersonDetailPanel 
         person={selectedPerson} 
         group={undefined}
@@ -366,7 +365,6 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         onTrackBA={openBATracker}
       />
 
-      {/* Form Panel (Create / Edit) */}
       <FormPanel
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -375,79 +373,95 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         submitLabel="Simpan Data"
         isSubmitDisabled={submittingPerson}
       >
-        <div className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Informasi Pribadi</h3>
-          
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nama Lengkap *</label>
-            <input
-              type="text"
-              required
-              placeholder="Contoh: Axel / Sherly"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-6">
+          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Informasi Pribadi</h3>
+            
             <div>
-              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Gender *</label>
-              <select
-                value={gender}
-                onChange={e => setGender(e.target.value as Gender)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-              >
-                <option value="BROTHER">BROTHER</option>
-                <option value="SISTER">SISTER</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Nomor HP</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nama Lengkap *</label>
               <input
                 type="text"
-                placeholder="0812..."
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
+                required
+                placeholder="Contoh: Axel / Sherly"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Kampus / Univ</label>
-            {!addingCampus ? (
-              <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Gender *</label>
                 <select
-                  value={campus}
-                  onChange={e => setCampus(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#b5852e]"
+                  value={gender}
+                  onChange={e => setGender(e.target.value as Gender)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
                 >
-                  <option value="">-- Kosong / Bukan Mhs --</option>
-                  {campusList.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  <option value="BROTHER">BROTHER 👦🏻</option>
+                  <option value="SISTER">SISTER 👧🏻</option>
                 </select>
-                <button
-                  type="button"
-                  onClick={() => { setAddingCampus(true); setNewCampusInput(''); }}
-                  title="Tambah kampus baru"
-                  className="shrink-0 px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors"
-                >
-                  + Baru
-                </button>
               </div>
-            ) : (
-              <div className="flex gap-2">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nomor HP</label>
                 <input
-                  autoFocus
                   type="text"
-                  placeholder="Nama institusi..."
-                  value={newCampusInput}
-                  onChange={e => setNewCampusInput(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
+                  placeholder="0812..."
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Kampus / Univ</label>
+              {!addingCampus ? (
+                <div className="flex gap-2">
+                  <select
+                    value={campus}
+                    onChange={e => setCampus(e.target.value)}
+                    className="flex-1 bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+                  >
+                    <option value="">-- Kosong / Bukan Mhs --</option>
+                    {campusList.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => { setAddingCampus(true); setNewCampusInput(''); }}
+                    title="Tambah kampus baru"
+                    className="shrink-0 px-4 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold transition-colors"
+                  >
+                    + Baru
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Nama institusi..."
+                    value={newCampusInput}
+                    onChange={e => setNewCampusInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const trimmed = newCampusInput.trim();
+                        if (trimmed) {
+                          saveCampusToList(trimmed);
+                          setCampusList(getCampusList());
+                          setCampus(trimmed);
+                        }
+                        setAddingCampus(false);
+                      }
+                      if (e.key === 'Escape') setAddingCampus(false);
+                    }}
+                    className="flex-1 bg-white border-2 border-indigo-300 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
                       const trimmed = newCampusInput.trim();
                       if (trimmed) {
                         saveCampusToList(trimmed);
@@ -455,171 +469,156 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
                         setCampus(trimmed);
                       }
                       setAddingCampus(false);
-                    }
-                    if (e.key === 'Escape') setAddingCampus(false);
-                  }}
-                  className="flex-1 bg-white border border-[#b5852e] rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const trimmed = newCampusInput.trim();
-                    if (trimmed) {
-                      saveCampusToList(trimmed);
-                      setCampusList(getCampusList());
-                      setCampus(trimmed);
-                    }
-                    setAddingCampus(false);
-                  }}
-                  className="shrink-0 px-3 py-2.5 rounded-xl bg-[#b5852e] text-white text-xs font-bold transition-colors"
-                >
-                  Set
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4 pt-4 border-t border-slate-100">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Informasi Keanggotaan</h3>
-          
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Status Pelayanan *</label>
-              <select
-                value={status}
-                onChange={e => setStatus(e.target.value as PersonStatus)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none"
-              >
-                <optgroup label="Sudah Disciple">
-                  <option value="DISCIPLE">Disciple (Aktif / Biasa)</option>
-                  <option value="LEADER">Leader</option>
-                  <option value="WEAK">Weak (Butuh Care)</option>
-                </optgroup>
-                <optgroup label="Belum Disciple">
-                  <option value="VISITOR">Visitor / Tamu</option>
-                  <option value="BIBLE_STUDY">Studyan (Progress BA)</option>
-                </optgroup>
-                <optgroup label="Lainnya">
-                  <option value="INACTIVE">Inactive / Keluar</option>
-                </optgroup>
-              </select>
+                    }}
+                    className="shrink-0 px-5 py-3.5 rounded-2xl bg-indigo-600 text-white text-xs font-bold transition-colors shadow-lg shadow-indigo-500/30"
+                  >
+                    Set
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className={`grid gap-4 ${status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK' ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Lahir Jasmani</label>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={e => setBirthDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
-              />
-            </div>
-            {(status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK') && (
+          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Informasi Keanggotaan</h3>
+            
+            <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase mb-1">Tgl Baptis</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Status Pelayanan *</label>
+                <select
+                  value={status}
+                  onChange={e => setStatus(e.target.value as PersonStatus)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+                >
+                  <optgroup label="Sudah Disciple">
+                    <option value="DISCIPLE">Disciple (Aktif / Biasa)</option>
+                    <option value="LEADER">Leader</option>
+                    <option value="WEAK">Weak (Butuh Care)</option>
+                  </optgroup>
+                  <optgroup label="Belum Disciple">
+                    <option value="VISITOR">Visitor / Tamu</option>
+                    <option value="BIBLE_STUDY">Studyan (Progress BA)</option>
+                  </optgroup>
+                  <optgroup label="Lainnya">
+                    <option value="INACTIVE">Inactive / Keluar</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+
+            <div className={`grid gap-4 ${status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tgl Lahir Jasmani</label>
                 <input
                   type="date"
-                  value={baptismDate}
-                  onChange={e => setBaptismDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
+                  value={birthDate}
+                  onChange={e => setBirthDate(e.target.value)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
                 />
               </div>
-            )}
-          </div>
+              {(status === 'DISCIPLE' || status === 'LEADER' || status === 'WEAK') && (
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tgl Baptis</label>
+                  <input
+                    type="date"
+                    value={baptismDate}
+                    onChange={e => setBaptismDate(e.target.value)}
+                    className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+                  />
+                </div>
+              )}
+            </div>
 
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan Tambahan</label>
-            <textarea
-              rows={2}
-              placeholder="Info penting, progres khusus, dll..."
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 resize-none focus:outline-none"
-            />
-          </div>
-          
-           {editingPerson && currentUser?.role === 'SUPER_ADMIN' && (
-             <div className="pt-6 border-t border-slate-100 mt-4">
-               <button
-                 type="button"
-                 onClick={() => {
-                   if (confirm('Yakin ingin menghapus data disciple ini secara permanen?')) {
-                     onDeletePerson(editingPerson.id);
-                     setIsFormOpen(false);
-                   }
-                 }}
-                 className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-lg w-full transition-colors border border-rose-100"
-               >
-                 Hapus Data Disciple
-               </button>
-             </div>
-           )}
-         </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Catatan Tambahan</label>
+              <textarea
+                rows={2}
+                placeholder="Info penting, progres khusus, dll..."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-medium text-slate-900 resize-none focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
+              />
+            </div>
+            
+             {editingPerson && currentUser?.role === 'SUPER_ADMIN' && (
+               <div className="pt-6 border-t border-slate-200 mt-4">
+                 <button
+                   type="button"
+                   onClick={() => {
+                     if (confirm('Yakin ingin menghapus data disciple ini secara permanen?')) {
+                       onDeletePerson(editingPerson.id);
+                       setIsFormOpen(false);
+                     }
+                   }}
+                   className="text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 px-4 py-3.5 rounded-2xl w-full transition-colors shadow-lg shadow-rose-500/30"
+                 >
+                   Hapus Data Disciple
+                 </button>
+               </div>
+             )}
+           </div>
+        </div>
       </FormPanel>
 
-      {/* Tracker BA Modal */}
       <FormPanel
         isOpen={!!trackingBAPerson}
         onClose={() => setTrackingBAPerson(null)}
-        title="Catat Progress Belajar Alkitab"
+        title="Catat Progress BA"
         onSubmit={handleAddBALog}
         submitLabel="Simpan Log"
         isSubmitDisabled={submittingBA}
       >
-        <div className="space-y-4">
-          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl mb-4">
-            <p className="text-xs text-amber-800">
-              Mencatat progress untuk: <strong className="font-bold">{trackingBAPerson?.full_name}</strong>
+        <div className="space-y-6">
+          <div className="bg-amber-100/50 border-2 border-amber-200 p-4 rounded-2xl">
+            <p className="text-sm text-amber-800">
+              Mencatat progress untuk: <strong className="font-black text-amber-900">{trackingBAPerson?.full_name}</strong>
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Sesi Ke-</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Sesi Ke-</label>
               <input
                 type="number"
                 min="1"
                 required
                 value={newLogWeekNum}
                 onChange={e => setNewLogWeekNum(parseInt(e.target.value) || 1)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 font-bold focus:outline-none"
+                className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Tanggal</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tanggal</label>
               <input
                 type="date"
                 required
                 value={newLogDate}
                 onChange={e => setNewLogDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none"
+                className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Topik Pelajaran *</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Topik Pelajaran *</label>
             <input
               type="text"
               required
               placeholder="Contoh: Pelajaran 1: Cinta Alkitab"
               value={newLogTopic}
               onChange={e => setNewLogTopic(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none"
+              className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono font-semibold text-slate-600 uppercase mb-1">Catatan & Kesan</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Catatan & Kesan</label>
             <textarea
               rows={3}
               placeholder="Bagaimana responsnya? Apa kendalanya?"
               value={newLogNotes}
               onChange={e => setNewLogNotes(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 resize-none focus:outline-none"
+              className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-medium text-slate-900 resize-none focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
             />
           </div>
         </div>
