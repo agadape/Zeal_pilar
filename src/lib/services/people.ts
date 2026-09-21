@@ -4,23 +4,37 @@ import { supabase, isSupabaseConfigured, getLocalData, setLocalData, STORAGE_KEY
 
 export async function fetchPeople(): Promise<Person[]> {
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.from('people').select(`
-      *,
-      bible_study_logs (*)
-    `).order('full_name');
+    const [peopleResult, logsResult] = await Promise.all([
+      supabase.from('people').select('*').order('full_name'),
+      supabase.from('bible_study_logs').select('*').order('week_number')
+    ]);
 
-    if (!error && data) {
-      return data.map((p: Record<string, unknown> & { bible_study_logs?: WeeklyStudyProgressLog[] }) => {
-        const logs = (p.bible_study_logs || []).sort((a, b) => a.week_number - b.week_number);
-        const latestLog = logs[logs.length - 1];
-        const computedStage = latestLog ? `Minggu ${latestLog.week_number}: ${latestLog.lesson_topic}` : (p.study_stage as string);
-        return {
-          ...p,
-          study_stage: computedStage,
-          study_history: logs
-        } as Person;
+    if (peopleResult.error) throw peopleResult.error;
+    if (logsResult.error) throw logsResult.error;
+
+    const peopleData = (peopleResult.data || []) as Person[];
+    const peopleNames = new Map(peopleData.map(person => [person.id, person.full_name]));
+    const logsByPerson = new Map<string, WeeklyStudyProgressLog[]>();
+
+    ((logsResult.data || []) as WeeklyStudyProgressLog[]).forEach(log => {
+      if (!log.person_id) return;
+      const personLogs = logsByPerson.get(log.person_id) || [];
+      personLogs.push({
+        ...log,
+        mentor_name: log.mentor_id ? peopleNames.get(log.mentor_id) : undefined
       });
-    }
+      logsByPerson.set(log.person_id, personLogs);
+    });
+
+    return peopleData.map(person => {
+      const logs = logsByPerson.get(person.id) || [];
+      const latestLog = logs[logs.length - 1];
+      return {
+        ...person,
+        study_stage: latestLog ? `Minggu ${latestLog.week_number}: ${latestLog.lesson_topic}` : person.study_stage,
+        study_history: logs
+      };
+    });
   }
 
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
@@ -56,12 +70,12 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
   if (isSupabaseConfigured && supabase) {
     if (person.id) {
       const { data, error } = await supabase.from('people').update(payload).eq('id', person.id).select().single();
-      if (error) console.error("Supabase error (savePerson update):", error);
-      if (!error && data) return { ...data, study_history: person.study_history } as Person;
+      if (error) throw error;
+      return { ...data, study_history: person.study_history } as Person;
     } else {
       const { data, error } = await supabase.from('people').insert([payload]).select().single();
-      if (error) console.error("Supabase error (savePerson insert):", error);
-      if (!error && data) return { ...data, study_history: person.study_history } as Person;
+      if (error) throw error;
+      return { ...data, study_history: person.study_history } as Person;
     }
   }
 
@@ -80,17 +94,14 @@ export async function savePerson(person: Omit<Person, 'id'> & { id?: string; stu
 
 export async function deletePerson(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('group_members').delete().eq('person_id', id);
-    await supabase.from('bible_study_logs').delete().eq('person_id', id);
-    await supabase.from('weekly_stat_absences').delete().eq('person_id', id);
-    await supabase.from('weekly_stat_study_progress').delete().eq('person_id', id);
+    const { error: memberError } = await supabase.from('group_members').delete().eq('person_id', id);
+    if (memberError) throw memberError;
+
+    const { error: logError } = await supabase.from('bible_study_logs').delete().eq('person_id', id);
+    if (logError) throw logError;
 
     const { error } = await supabase.from('people').delete().eq('id', id);
-    if (error) {
-      console.error("Supabase error (deletePerson):", error);
-      alert("Gagal menghapus data! Pastikan orang ini bukan ketua grup.");
-      return false;
-    }
+    if (error) throw error;
     return true;
   }
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
@@ -111,13 +122,8 @@ export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> 
 
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('bible_study_logs').insert([payload]).select().single();
-    if (error) console.error("Supabase error (saveBibleStudyLog):", error);
-    if (!error && data) {
-      await supabase.from('people').update({
-        study_stage: `Minggu ${log.week_number}: ${log.lesson_topic}`
-      }).eq('id', log.person_id);
-      return data as WeeklyStudyProgressLog;
-    }
+    if (error) throw error;
+    return data as WeeklyStudyProgressLog;
   }
 
   const logs = getLocalData<WeeklyStudyProgressLog[]>(STORAGE_KEYS.BIBLE_STUDY_LOGS, []);
@@ -134,8 +140,8 @@ export async function saveBibleStudyLog(log: Omit<WeeklyStudyProgressLog, 'id'> 
 export async function fetchUpcomingMilestones(): Promise<UpcomingMilestone[]> {
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('upcoming_milestones').select('*');
-    if (error) console.error("Supabase error (fetchUpcomingMilestones):", error);
-    if (!error && data) {
+    if (error) throw error;
+    if (data) {
       return (data as UpcomingMilestone[])
         .map(m => {
           const nextDate = new Date(m.next_occurrence);

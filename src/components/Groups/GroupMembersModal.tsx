@@ -15,6 +15,7 @@ export default function GroupMembersModal({ managingMembersGroup, people, onClos
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [submittingMembers, setSubmittingMembers] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     if (managingMembersGroup) {
@@ -42,6 +43,7 @@ export default function GroupMembersModal({ managingMembersGroup, people, onClos
 
   const handleSaveMembers = async () => {
     setSubmittingMembers(true);
+    setSubmitError('');
     try {
       await updateGroupMembers(managingMembersGroup.id, selectedMemberIds);
       onClose();
@@ -50,6 +52,8 @@ export default function GroupMembersModal({ managingMembersGroup, people, onClos
       } else if (typeof window !== 'undefined') {
         window.location.reload();
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Gagal menyimpan anggota grup.');
     } finally {
       setSubmittingMembers(false);
     }
@@ -107,7 +111,10 @@ export default function GroupMembersModal({ managingMembersGroup, people, onClos
         </div>
 
         <div className="flex-shrink-0 flex items-center justify-between p-6 border-t border-slate-100 bg-slate-50/50">
-          <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{selectedMemberIds.length} Anggota Terpilih</span>
+          <div>
+            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{selectedMemberIds.length} Anggota Terpilih</span>
+            {submitError && <p className="text-xs font-bold text-rose-600 mt-1">{submitError}</p>}
+          </div>
           <div className="flex gap-3">
             <button
               type="button"

@@ -15,6 +15,7 @@ import {
   IconFlame
 } from '@tabler/icons-react';
 import Image from 'next/image';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface DashboardViewProps {
   people: Person[];
@@ -45,7 +46,12 @@ export default function DashboardView({ people, groups, stats, events = [], curr
 
   const totalPeople = people.length;
   const totalBibleStudies = people.filter(p => p.status === 'BIBLE_STUDY').length;
-  const isReportCompleted = stats.length > 0 && (new Date().getTime() - new Date(stats[0].week_date).getTime() < 7 * 24 * 60 * 60 * 1000);
+  const visibleGroupIds = isAdminPerson(currentUser)
+    ? groups.map(group => group.id)
+    : groups.filter(group => group.leader_id === currentUser?.id).map(group => group.id);
+  const relevantStats = stats.filter(stat => visibleGroupIds.includes(stat.group_id));
+  const latestRelevantStat = [...relevantStats].sort((a, b) => new Date(b.week_date).getTime() - new Date(a.week_date).getTime())[0];
+  const isReportCompleted = Boolean(latestRelevantStat && (new Date().getTime() - new Date(latestRelevantStat.week_date).getTime() < 7 * 24 * 60 * 60 * 1000));
 
   const firstName = currentUser?.full_name?.split(' ')[0] || 'Leaders';
 

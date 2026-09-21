@@ -13,15 +13,18 @@ import {
    
   } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface EventsViewProps {
   events: MinistryEvent[];
   people: Person[];
+  currentUser?: Person | null;
   onSaveEvent: (event: Omit<MinistryEvent, 'id'> & { id?: string }) => Promise<void>;
   onDeleteEvent: (id: string) => Promise<void>;
 }
 
-export default function EventsView({ events, people, onSaveEvent, onDeleteEvent }: EventsViewProps) {
+export default function EventsView({ events, people, currentUser, onSaveEvent, onDeleteEvent }: EventsViewProps) {
+  const canManageEvents = isAdminPerson(currentUser);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<MinistryEvent | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -78,25 +81,27 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
     e.preventDefault();
     if (!title.trim()) return;
     setSubmitting(true);
+    try {
+      const roster: EventRoster[] = [];
+      if (speakerId) roster.push({ id: '', event_id: '', person_id: speakerId, role: 'SPEAKER' });
+      if (mcId) roster.push({ id: '', event_id: '', person_id: mcId, role: 'MC' });
+      if (operatorId) roster.push({ id: '', event_id: '', person_id: operatorId, role: 'OPERATOR' });
+      if (worshipId) roster.push({ id: '', event_id: '', person_id: worshipId, role: 'WORSHIP' });
 
-    const roster: EventRoster[] = [];
-    if (speakerId) roster.push({ id: '', event_id: '', person_id: speakerId, role: 'SPEAKER' });
-    if (mcId) roster.push({ id: '', event_id: '', person_id: mcId, role: 'MC' });
-    if (operatorId) roster.push({ id: '', event_id: '', person_id: operatorId, role: 'OPERATOR' });
-    if (worshipId) roster.push({ id: '', event_id: '', person_id: worshipId, role: 'WORSHIP' });
+      await onSaveEvent({
+        id: editingEvent?.id,
+        title: title.trim(),
+        type,
+        event_date: new Date(eventDate).toISOString(),
+        location: location.trim() || undefined,
+        description: description.trim() || undefined,
+        roster
+      });
 
-    await onSaveEvent({
-      id: editingEvent?.id,
-      title: title.trim(),
-      type,
-      event_date: new Date(eventDate).toISOString(),
-      location: location.trim() || undefined,
-      description: description.trim() || undefined,
-      roster
-    });
-
-    setIsModalOpen(false);
-    setSubmitting(false);
+      setIsModalOpen(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getTypeBadgeClass = (t: EventType) => {
@@ -124,13 +129,15 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
             Jadwal Persekutuan Doa Anggota (PDA), Retreat, dan pembagian tugas pelayanan.
           </p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white rounded-2xl text-sm font-bold shadow-lg shadow-orange-500/30 flex items-center space-x-2 transition-transform hover:-translate-y-0.5 shrink-0"
-        >
-          <IconPlus className="w-5 h-5" stroke={2} />
-          <span>Buat Jadwal Event</span>
-        </button>
+        {canManageEvents && (
+          <button
+            onClick={openAddModal}
+            className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white rounded-2xl text-sm font-bold shadow-lg shadow-orange-500/30 flex items-center space-x-2 transition-transform hover:-translate-y-0.5 shrink-0"
+          >
+            <IconPlus className="w-5 h-5" stroke={2} />
+            <span>Buat Jadwal Event</span>
+          </button>
+        )}
       </div>
 
       {/* EVENTS GRID */}
@@ -152,7 +159,7 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getTypeBadgeClass(ev.type)}`}>
                     {ev.type.replace('_', ' ')}
                   </span>
-                  <div className="flex items-center space-x-2">
+                  {canManageEvents && <div className="flex items-center space-x-2">
                     <button
                       onClick={() => openEditModal(ev)}
                       className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 text-slate-400 transition-all shadow-sm"
@@ -167,7 +174,7 @@ export default function EventsView({ events, people, onSaveEvent, onDeleteEvent 
                     >
                       <IconTrash className="w-4 h-4" stroke={2} />
                     </button>
-                  </div>
+                  </div>}
                 </div>
 
                 <div>

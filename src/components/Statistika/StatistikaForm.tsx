@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Group, Person, WeeklyStat, MissingReason } from '@/lib/types';
 import { fetchGroupMembers } from '@/lib/supabase';
 import confetti from 'canvas-confetti';
-import { IconCopy, IconSend, IconUsers, IconAlertCircle, IconX, IconSparkles } from '@tabler/icons-react';
+import { IconCopy, IconSend, IconUsers, IconX, IconSparkles } from '@tabler/icons-react';
 
 interface Props {
   groups: Group[];

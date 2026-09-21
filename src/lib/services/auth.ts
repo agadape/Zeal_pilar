@@ -6,13 +6,24 @@ export async function getCurrentUserProfile(): Promise<Person | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
   
-  const { data, error } = await supabase
+  const { data: canonicalProfile, error: canonicalError } = await supabase
+    .from('people')
+    .select('*')
+    .eq('auth_user_id', user.id)
+    .maybeSingle();
+
+  if (canonicalError) throw canonicalError;
+  if (canonicalProfile) return canonicalProfile as Person;
+
+  // Temporary compatibility while the alignment migration is being deployed.
+  const { data: legacyProfile, error: legacyError } = await supabase
     .from('people')
     .select('*')
     .eq('auth_id', user.id)
-    .single();
-    
-  if (!error && data) return data as Person;
+    .maybeSingle();
+
+  if (legacyError) throw legacyError;
+  if (legacyProfile) return legacyProfile as Person;
   return null;
 }
 

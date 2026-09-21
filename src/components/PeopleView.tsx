@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
 import PersonDetailPanel from './PersonDetailPanel';
+import { isAdminPerson, isGroupLeaderPerson } from '@/lib/permissions';
 
 interface PeopleViewProps {
   people: Person[];
@@ -44,6 +45,8 @@ function saveCampusToList(name: string) {
 }
 
 export default function PeopleView({ people, currentUser, onSavePerson, onDeletePerson, onSaveBALog }: PeopleViewProps) {
+  const canManagePeople = isAdminPerson(currentUser);
+  const canTrackBA = isGroupLeaderPerson(currentUser);
 
   const [search, setSearch] = useState('');
   const [campusList, setCampusList] = useState<string[]>(getCampusList);
@@ -261,13 +264,13 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <button
+          {canManagePeople && <button
             onClick={() => exportPeopleToCSV(people)}
             className="px-5 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm"
           >
             <IconDownload className="w-5 h-5 text-slate-500" stroke={2} />
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </button>}
 
           <button
             onClick={openAddModal}
@@ -368,8 +371,9 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
 
       <PersonDetailPanel 
         person={selectedPerson} 
-        group={undefined}
         isOpen={isDetailOpen} 
+        canEdit={canManagePeople}
+        canTrackBA={canTrackBA}
         onClose={() => setIsDetailOpen(false)}
         onEdit={openEditModal}
         onTrackBA={openBATracker}
@@ -562,13 +566,13 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
               />
             </div>
             
-             {editingPerson && currentUser?.role === 'SUPER_ADMIN' && (
+             {editingPerson && canManagePeople && (
                <div className="pt-6 border-t border-slate-200 mt-4">
                  <button
                    type="button"
-                   onClick={() => {
+                   onClick={async () => {
                      if (confirm('Yakin ingin menghapus data disciple ini secara permanen?')) {
-                       onDeletePerson(editingPerson.id);
+                       await onDeletePerson(editingPerson.id);
                        setIsFormOpen(false);
                      }
                    }}

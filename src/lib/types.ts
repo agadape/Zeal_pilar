@@ -21,6 +21,7 @@ export interface WeeklyStudyProgressLog {
   id: string;
   person_id?: string;
   mentor_id?: string;
+  mentor_name?: string;
   week_number: number;
   study_date: string;
   lesson_topic: string;
@@ -30,8 +31,10 @@ export interface WeeklyStudyProgressLog {
 
 export interface Person {
   id: string;
-  auth_id?: string; // Links to Supabase auth.users.id
-  role?: 'SUPER_ADMIN' | 'GROUP_LEADER' | 'MEMBER'; // RBAC Role
+  auth_user_id?: string; // Canonical link to Supabase auth.users.id
+  auth_id?: string; // Legacy compatibility; migrated into auth_user_id
+  is_admin?: boolean; // Legacy compatibility; role is the canonical authorization field
+  role?: 'SUPER_ADMIN' | 'GROUP_LEADER' | 'MEMBER';
   full_name: string;
   nickname?: string; // Nama panggilan
   gender: Gender;
@@ -150,6 +153,7 @@ export interface Announcement {
   id: string;
   title: string;
   author_name: string;
+  author_id?: string;
   content: string;
   is_pinned: boolean;
   created_at?: string;

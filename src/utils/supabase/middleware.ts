@@ -7,8 +7,11 @@ export async function updateSession(request: NextRequest) {
   })
 
   const supabaseUrlRaw = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-  const supabaseUrl = supabaseUrlRaw ? supabaseUrlRaw.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '') : 'https://dummy.supabase.co';
-  const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim() || 'dummy_key';
+  const supabaseUrl = supabaseUrlRaw.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+  const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
+
+  // Explicit local mode: allow the app to use its LocalStorage fallback.
+  if (!supabaseUrl || !supabaseAnonKey) return supabaseResponse;
 
   const supabase = createServerClient(
     supabaseUrl,

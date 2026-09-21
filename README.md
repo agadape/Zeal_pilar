@@ -1,128 +1,88 @@
-# 🏔️ GKDI Tugu — Leaders Portal
+# GKDI Tugu — Leaders Portal
 
-> **Website internal untuk core ZEAL Yogyakarta** — kelola statistik ibadah, track progress murid Belajar Alkitab, atur small group, dan pantau pertumbuhan jemaat dari satu dashboard.
+Portal internal ZEAL Youth & Campus Ministry GKDI Jogja untuk mengelola disciple, grup PDG, laporan mingguan, progres Belajar Alkitab, event pelayanan, milestone, dan pengumuman.
 
-[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://vercel.com)
-[![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase)](https://supabase.com)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+## Stack
 
----
+- Next.js 15 App Router, React 19, dan TypeScript
+- Tailwind CSS v4
+- Supabase Auth dan PostgreSQL
+- Recharts, Tabler Icons, dan canvas-confetti
+- PWA manifest dan service worker sederhana
 
-## ✨ Apa ini?
+## Fitur aktif
 
-Portal kepemimpinan all-in-one untuk **ZEAL (GKDI) Pilar → Tugu Yogyakarta**. Dari nge-track siapa aja yang hadir ibadah Minggu, sampai tau siapa yang lagi Belajar Alkitab di pertemuan ke berapa — semua ada di sini. Bukan spreadsheet Excel yang ribet. Bukan grup WA yang berantakan. Ini dashboard-nya para pemimpin.
+- Dashboard ringkas, milestone ulang tahun, status laporan, dan event terdekat
+- Direktori jemaat dengan data pribadi, status, kampus, dan histori BA
+- Grup PDG, assignment anggota, target baptisan, dan handover leader
+- Laporan mingguan, formatter WhatsApp, analitik, histori, dan ekspor CSV
+- Jadwal event beserta duty roster
+- Pengumuman yang dapat dibuat leader dan dikelola author/admin
+- Login, ganti password, pembuatan akun leader, dan reset password oleh admin
+- LocalStorage hanya sebagai mode development ketika Supabase tidak dikonfigurasi
 
----
-
-## 🚀 Features
-
-| Fitur | Deskripsi |
-|---|---|
-| 📊 **Statistika Minggu** | Input laporan mingguan per group: disciple aktif, missing, reachout, visitor, baptis |
-| 📈 **Trend Grafik** | Visualisasi area chart interaktif perkembangan reachout & visitor per minggu |
-| 👥 **Direktori Jemaat** | Kelola data lengkap jemaat dengan filter kampus, status, dan gender |
-| 📖 **BA Progress Tracker** | Track progres Belajar Alkitab per orang, per minggu, per pertemuan |
-| 🏠 **Small Group Manager** | Buat & atur PDG Brother/Sister, mapping anggota, tugaskan pemimpin |
-| 🔄 **Leader Handover Wizard** | Transfer kepemimpinan group dengan histori resmi & alasan pergantian |
-| 🎂 **Milestone Tracker** | Pengingat ulang tahun jasmani & spiritual birthday (tanggal baptis) jemaat |
-| 🗓️ **Events & Duty Roster** | Jadwal PDA, PW Night, Retreat — lengkap dengan pembagian tugas pelayanan |
-| 📢 **Pengumuman** | Papan visi & pengumuman yang bisa di-pin oleh pemimpin |
-| 📥 **CSV Export** | Export data jemaat & statistik mingguan langsung ke Excel 1-klik |
-| 🌄 **Discipleship Funnel** | Dashboard visual alur pertumbuhan: Visitor → BA → Disciple → Leader |
-
----
-
-## 🗄️ Database Schema
-
-Dibangun di atas **Supabase PostgreSQL** dengan relational schema yang proper:
-
-```
-people
-├── bible_study_logs        (weekly BA progress per person)
-│
-groups
-├── group_members           (many-to-many: people ↔ groups)
-├── group_leadership_history (auto-logged via DB trigger)
-│
-weekly_stats
-├── weekly_stat_absences    (normalized: siapa missing + alasan)
-└── weekly_stat_study_progress (normalized: siapa di stage BA apa)
-```
-
-**Views:**
-- `upcoming_milestones` — birthday & spiritual birthday 30 hari ke depan (live, no cron)
-- `leadership_tenure` — histori & durasi kepemimpinan per group
-
-**Keamanan data:** `archived_at` soft delete + `updated_at` audit trail + upsert constraint `UNIQUE(group_id, week_date)` untuk mencegah laporan ganda.
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend:** Next.js 15 (App Router) + Tailwind CSS v4
-- **Database:** Supabase (PostgreSQL + RLS + DB Triggers)
-- **Charts:** Recharts (AreaChart interaktif)
-- **Icons:** Tabler Icons
-- **Deploy:** Vercel (auto-deploy dari GitHub `main`)
-- **Fallback:** LocalStorage untuk offline/dev mode
-
----
-
-## 🏃 Run Locally
+## Menjalankan secara lokal
 
 ```bash
-# Install dependencies
 npm install
-
-# Set environment variables
-cp .env.local.example .env.local
-# Isi NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-# Dev server
+copy .env.local.example .env.local
 npm run dev
 ```
 
-Buka [http://localhost:3000](http://localhost:3000).
+Isi `.env.local`:
 
----
-
-## 🗂️ Project Structure
-
-```
-src/
-├── app/
-│   ├── page.tsx            # Root state orchestration
-│   └── globals.css         # Design tokens & utilities
-├── components/
-│   ├── DashboardView.tsx   # Overview + milestone widget + funnel
-│   ├── PeopleView.tsx      # Direktori jemaat + BA tracker
-│   ├── GroupsView.tsx      # Small groups + handover wizard
-│   ├── StatistikaView.tsx  # Laporan mingguan + charts
-│   ├── EventsView.tsx      # Event & duty roster
-│   └── AnnouncementsView.tsx
-└── lib/
-    ├── supabase.ts         # All DB queries & API functions
-    ├── types.ts            # TypeScript interfaces
-    ├── exportUtils.ts      # CSV export utilities
-    └── initialData.ts      # Fallback seed data
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 ```
 
----
+`SUPABASE_SERVICE_ROLE_KEY` hanya boleh tersedia di server/Vercel. Jangan pernah menggunakan prefix `NEXT_PUBLIC_` untuk key tersebut.
 
-## 📋 Database Migrations
+## Database
 
-Jalankan secara berurutan di **Supabase SQL Editor**:
+Untuk database lama yang sudah berjalan, jalankan hanya:
 
-| File | Isi |
-|---|---|
-| `supabase_schema_v2.sql` | Indexes, soft delete, normalized absence tables, upsert constraint |
-| `supabase_schema_v3.sql` | Birthday/baptism columns, milestone view, leadership history + trigger |
+1. `supabase_security_alignment.sql`
+2. Verifikasi menggunakan query pada `DATABASE_MIGRATION.md`
+3. Deploy aplikasi setelah migrasi berhasil
 
----
+Migrasi alignment menambah kontrak yang hilang, menyatukan identitas, menghapus policy public `USING (true)`, memasang RLS final, memperbaiki trigger handover, dan mengamankan view.
 
-## 🙏 Built for
+Untuk instalasi baru, jalankan schema lama berurutan lalu selalu akhiri dengan `supabase_security_alignment.sql`. Alignment juga membuat `bible_study_logs` bila tabel tersebut belum tersedia.
 
-**ZEAL Youth & Campus Ministry — GKDI Jogja**  
-*"Love God • Love People • Love Life"*
+## Model akses
 
-> 🏛️ **GKDI (Gereja Kristus Ditaati Indonesia)** — *"Rumah Tuhan Rumah Kita"*
+| Kemampuan | Super Admin | Group Leader | Member |
+|---|---:|---:|---:|
+| Melihat direktori, grup, statistik, event | Ya | Ya | Ya |
+| Mengelola data jemaat | Ya | Diri sendiri via RLS | Diri sendiri via RLS |
+| Mengelola anggota/statistik grup | Ya | Grup sendiri | Tidak |
+| Mencatat progres BA | Ya | Ya | Tidak |
+| Mengelola event | Ya | Tidak | Tidak |
+| Membuat pengumuman | Ya | Ya | Tidak |
+| Membuat/reset akun | Ya | Tidak | Tidak |
+
+Identitas kanonik adalah `people.auth_user_id`. `auth_id` dan `is_admin` masih dipertahankan sementara untuk kompatibilitas data lama.
+
+## Pemeriksaan kualitas
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+## Struktur penting
+
+```text
+src/app/page.tsx                 orkestrasi state dan navigasi
+src/app/actions.ts               server actions khusus Super Admin
+src/components/                  seluruh view dan panel UI
+src/lib/services/                akses Supabase per domain
+src/lib/permissions.ts           helper permission UI
+src/lib/types.ts                 kontrak TypeScript
+src/utils/supabase/              client browser/server/middleware
+supabase_security_alignment.sql  migrasi final skema dan RLS
+DATABASE_MIGRATION.md            panduan deployment database
+```

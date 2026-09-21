@@ -8,8 +8,9 @@ import GroupsView from '@/components/GroupsView';
 import StatistikaView from '@/components/StatistikaView';
 import AnnouncementsView from '@/components/AnnouncementsView';
 import AdminAccountsView from '@/components/AdminAccountsView';
+import EventsView from '@/components/EventsView';
 
-import { Person, Group, WeeklyStat, Announcement } from '@/lib/types';
+import { Person, Group, WeeklyStat, Announcement, MinistryEvent } from '@/lib/types';
 import { 
   fetchPeople, 
   savePerson, 
@@ -25,12 +26,26 @@ import {
   fetchAnnouncements,
   saveAnnouncement,
   deleteAnnouncement,
+  fetchEvents,
+  saveEvent,
+  deleteEvent,
+  isSupabaseConfigured,
   getCurrentUserProfile
   } from '@/lib/supabase';
+
+const LOCAL_ADMIN_PROFILE: Person = {
+  id: 'local_admin',
+  full_name: 'Local Admin',
+  gender: 'BROTHER',
+  status: 'LEADER',
+  role: 'SUPER_ADMIN',
+  is_admin: true
+};
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string>('');
   const [currentUser, setCurrentUser] = useState<Person | null>(null);
 
   // Core App State
@@ -38,20 +53,23 @@ export default function Home() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [stats, setStats] = useState<WeeklyStat[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [events, setEvents] = useState<MinistryEvent[]>([]);
 
   // Load all initial data
   const loadAllData = async () => {
     setLoading(true);
+    setLoadError('');
     try {
-      const [peopleData, groupsData, statsData, announcementsData, userProfile] = await Promise.all([
+      const [peopleData, groupsData, statsData, announcementsData, eventsData, userProfile] = await Promise.all([
         fetchPeople(),
         fetchGroups(),
         fetchWeeklyStats(),
         fetchAnnouncements(),
+        fetchEvents(),
         getCurrentUserProfile()
       ]);
 
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && !userProfile) {
+      if (isSupabaseConfigured && !userProfile) {
         // Clear session if they are stuck in a state where auth exists but profile is missing
         const { supabase } = await import('@/lib/supabase');
         if (supabase) await supabase.auth.signOut();
@@ -63,9 +81,11 @@ export default function Home() {
       setGroups(groupsData);
       setStats(statsData);
       setAnnouncements(announcementsData);
-      setCurrentUser(userProfile);
+      setEvents(eventsData);
+      setCurrentUser(userProfile || LOCAL_ADMIN_PROFILE);
     } catch (err) {
       console.error('Data loading error:', err);
+      setLoadError(err instanceof Error ? err.message : 'Gagal memuat data portal.');
     } finally {
       setLoading(false);
     }
@@ -75,63 +95,64 @@ export default function Home() {
     loadAllData();
   }, []);
 
+  const runMutation = async (operation: () => Promise<unknown>) => {
+    try {
+      await operation();
+      await loadAllData();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Terjadi kesalahan saat menyimpan data.';
+      alert(message);
+      throw error;
+    }
+  };
+
   // Handlers
   const handleSavePerson = async (person: Omit<Person, 'id'> & { id?: string }) => {
-    await savePerson(person);
-    await loadAllData();
+    await runMutation(() => savePerson(person));
   };
 
   const handleDeletePerson = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus data orang ini?')) {
-      await deletePerson(id);
-      await loadAllData();
-    }
+    await runMutation(() => deletePerson(id));
   };
 
   const handleSaveBALog = async (log: { person_id: string; mentor_id?: string; week_number: number; study_date: string; lesson_topic: string; notes?: string }) => {
-    await saveBibleStudyLog(log);
-    await loadAllData();
+    await runMutation(() => saveBibleStudyLog(log));
   };
 
   const handleSaveGroup = async (group: Omit<Group, 'id'> & { id?: string }) => {
-    await saveGroup(group);
-    await loadAllData();
+    await runMutation(() => saveGroup(group));
   };
 
   const handleDeleteGroup = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus Small Group ini?')) {
-      await deleteGroup(id);
-      await loadAllData();
-    }
+    await runMutation(() => deleteGroup(id));
   };
 
   const handleHandoverLeadership = async (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => {
-    await handoverGroupLeadership(params);
-    await loadAllData();
+    await runMutation(() => handoverGroupLeadership(params));
   };
 
   const handleSaveStat = async (stat: Omit<WeeklyStat, 'id'> & { id?: string }) => {
-    await saveWeeklyStat(stat);
-    await loadAllData();
+    await runMutation(() => saveWeeklyStat(stat));
   };
 
   const handleDeleteStat = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus laporan statistik ini?')) {
-      await deleteWeeklyStat(id);
-      await loadAllData();
-    }
+    await runMutation(() => deleteWeeklyStat(id));
   };
 
   const handleSaveAnnouncement = async (announcement: Omit<Announcement, 'id' | 'author_name'> & { id?: string }) => {
-    await saveAnnouncement(announcement);
-    await loadAllData();
+    await runMutation(() => saveAnnouncement(announcement));
   };
 
   const handleDeleteAnnouncement = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
-      await deleteAnnouncement(id);
-      await loadAllData();
-    }
+    await runMutation(() => deleteAnnouncement(id));
+  };
+
+  const handleSaveEvent = async (event: Omit<MinistryEvent, 'id'> & { id?: string }) => {
+    await runMutation(() => saveEvent(event));
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    await runMutation(() => deleteEvent(id));
   };
 
   return (
@@ -146,6 +167,18 @@ export default function Home() {
               <div className="w-8 h-8 border-2 border-[#b5852e] border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-sm text-slate-500 font-medium">Memuat portal Tugu Leaders...</p>
             </div>
+          ) : loadError ? (
+            <div className="py-20 px-6 text-center bg-white border border-rose-100 rounded-[2rem] shadow-xl shadow-rose-100/40 max-w-2xl mx-auto">
+              <h1 className="text-xl font-black text-slate-900">Data portal gagal dimuat</h1>
+              <p className="text-sm text-rose-600 font-medium mt-2">{loadError}</p>
+              <button
+                type="button"
+                onClick={loadAllData}
+                className="mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-colors"
+              >
+                Coba Lagi
+              </button>
+            </div>
           ) : (
             <>
               {activeTab === 'dashboard' && (
@@ -153,6 +186,7 @@ export default function Home() {
                   people={people}
                   groups={groups} 
                   stats={stats} 
+                  events={events}
                   currentUser={currentUser}
                   onNavigate={setActiveTab} 
                 />
@@ -194,8 +228,19 @@ export default function Home() {
               {activeTab === 'announcements' && (
                 <AnnouncementsView 
                   announcements={announcements} 
+                  currentUser={currentUser}
                   onSaveAnnouncement={handleSaveAnnouncement} 
                   onDeleteAnnouncement={handleDeleteAnnouncement}
+                />
+              )}
+
+              {activeTab === 'events' && (
+                <EventsView
+                  events={events}
+                  people={people}
+                  currentUser={currentUser}
+                  onSaveEvent={handleSaveEvent}
+                  onDeleteEvent={handleDeleteEvent}
                 />
               )}
 

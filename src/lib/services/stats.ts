@@ -11,7 +11,8 @@ export async function fetchWeeklyStats(): Promise<WeeklyStat[]> {
       weekly_stat_study_progress ( person_id, person_name, stage )
     `).order('week_date', { ascending: false });
 
-    if (!error && data) {
+    if (error) throw error;
+    if (data) {
       return data.map((ws: Record<string, unknown> & { groups?: { group_name?: string }; weekly_stat_absences?: MissingReason[]; weekly_stat_study_progress?: StudyProgress[] }) => {
         const { weekly_stat_absences, weekly_stat_study_progress, ...rest } = ws;
         return {
@@ -58,36 +59,39 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
       .select()
       .single();
 
-    if (!error && data) {
-      const savedStat = data as WeeklyStat;
+    if (error) throw error;
+    if (!data) throw new Error('Supabase tidak mengembalikan data laporan yang disimpan.');
 
-      // Populate normalized relational tables
-      if (stat.missing_reasons && stat.missing_reasons.length > 0) {
-        await supabase.from('weekly_stat_absences').delete().eq('weekly_stat_id', savedStat.id);
-        const absenceRows = stat.missing_reasons.map(m => ({
-          weekly_stat_id: savedStat.id,
-          person_id: m.person_id || null,
-          person_name: m.person_name,
-          reason: m.reason
-        }));
-        await supabase.from('weekly_stat_absences').insert(absenceRows);
-      }
+    const savedStat = data as WeeklyStat;
 
-      if (stat.study_progress && stat.study_progress.length > 0) {
-        await supabase.from('weekly_stat_study_progress').delete().eq('weekly_stat_id', savedStat.id);
-        const progressRows = stat.study_progress.map(sp => ({
-          weekly_stat_id: savedStat.id,
-          person_id: sp.person_id || null,
-          person_name: sp.person_name,
-          stage: sp.stage
-        }));
-        await supabase.from('weekly_stat_study_progress').insert(progressRows);
-      }
-
-      return savedStat;
-    } else if (error) {
-      console.error('Supabase upsert weekly_stat error:', error);
+    // Populate normalized relational tables
+    const { error: deleteAbsenceError } = await supabase.from('weekly_stat_absences').delete().eq('weekly_stat_id', savedStat.id);
+    if (deleteAbsenceError) throw deleteAbsenceError;
+    if (stat.missing_reasons && stat.missing_reasons.length > 0) {
+      const absenceRows = stat.missing_reasons.map(m => ({
+        weekly_stat_id: savedStat.id,
+        person_id: m.person_id || null,
+        person_name: m.person_name,
+        reason: m.reason
+      }));
+      const { error: absenceError } = await supabase.from('weekly_stat_absences').insert(absenceRows);
+      if (absenceError) throw absenceError;
     }
+
+    const { error: deleteProgressError } = await supabase.from('weekly_stat_study_progress').delete().eq('weekly_stat_id', savedStat.id);
+    if (deleteProgressError) throw deleteProgressError;
+    if (stat.study_progress && stat.study_progress.length > 0) {
+      const progressRows = stat.study_progress.map(sp => ({
+        weekly_stat_id: savedStat.id,
+        person_id: sp.person_id || null,
+        person_name: sp.person_name,
+        stage: sp.stage
+      }));
+      const { error: progressError } = await supabase.from('weekly_stat_study_progress').insert(progressRows);
+      if (progressError) throw progressError;
+    }
+
+    return savedStat;
   }
 
   const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
@@ -104,7 +108,9 @@ export async function saveWeeklyStat(stat: Omit<WeeklyStat, 'id'> & { id?: strin
 
 export async function deleteWeeklyStat(id: string): Promise<void> {
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('weekly_stats').delete().eq('id', id);
+    const { error } = await supabase.from('weekly_stats').delete().eq('id', id);
+    if (error) throw error;
+    return;
   }
   const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
   setLocalData(STORAGE_KEYS.STATS, stats.filter(s => s.id !== id));

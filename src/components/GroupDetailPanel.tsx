@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Group, Person } from '@/lib/types';
 import { fetchGroupMembers } from '@/lib/supabase';
 import FormPanel from './FormPanel';
+import { isAdminPerson } from '@/lib/permissions';
 import { 
   IconUsersGroup, 
   IconEdit, 
@@ -19,7 +20,7 @@ interface GroupDetailPanelProps {
   onEdit: (g: Group) => void;
   onManageMembers: (g: Group) => void;
   onHandover: (g: Group) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
 }
 
 export default function GroupDetailPanel({ 
@@ -47,7 +48,7 @@ export default function GroupDetailPanel({
 
   if (!group) return null;
 
-  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = isAdminPerson(currentUser);
   const isLeaderOfThisGroup = currentUser?.id === group.leader_id;
   const canEdit = isSuperAdmin || isLeaderOfThisGroup;
 
@@ -88,9 +89,9 @@ export default function GroupDetailPanel({
             {isSuperAdmin && (
               <button 
                 type="button"
-                onClick={() => { 
+                onClick={async () => {
                   if (confirm('Yakin ingin menghapus grup ini? Semua data statistik yang terhubung akan hilang.')) {
-                    onDelete(group.id);
+                    await onDelete(group.id);
                     onClose();
                   }
                 }}

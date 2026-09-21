@@ -8,6 +8,7 @@ import { IconDownload, IconChartBar } from '@tabler/icons-react';
 import StatistikaForm from './Statistika/StatistikaForm';
 import StatistikaAnalytics from './Statistika/StatistikaAnalytics';
 import StatistikaHistory from './Statistika/StatistikaHistory';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface StatistikaViewProps {
   groups: Group[];
@@ -19,15 +20,16 @@ interface StatistikaViewProps {
 }
 
 export default function StatistikaView({ groups, stats = [], currentUser, onSaveStat, onDeleteStat }: StatistikaViewProps) {
-  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = isAdminPerson(currentUser);
   const allowedGroups = isSuperAdmin ? groups : groups.filter(g => g.leader_id === currentUser?.id);
+  const visibleStats = isSuperAdmin ? stats : stats.filter(stat => allowedGroups.some(group => group.id === stat.group_id));
   const [activeSubTab, setActiveSubTab] = useState<'form' | 'analytics'>('form');
 
   // Analytics Metrics Calculation
-  const totalDisciplesTracked = stats.reduce((acc, curr) => acc + (curr.active_disciples_count || 0), 0);
-  const totalReachoutsRecorded = stats.reduce((acc, curr) => acc + (curr.reachout_count || 0), 0);
-  const totalVisitorsRecorded = stats.reduce((acc, curr) => acc + (curr.sunday_visitors_count || 0), 0);
-  const totalBaptismsRecorded = stats.reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
+  const totalDisciplesTracked = visibleStats.reduce((acc, curr) => acc + (curr.active_disciples_count || 0), 0);
+  const totalReachoutsRecorded = visibleStats.reduce((acc, curr) => acc + (curr.reachout_count || 0), 0);
+  const totalVisitorsRecorded = visibleStats.reduce((acc, curr) => acc + (curr.sunday_visitors_count || 0), 0);
+  const totalBaptismsRecorded = visibleStats.reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
 
   return (
     <div className="space-y-8 animate-fade-in pb-24 max-w-7xl mx-auto">
@@ -45,7 +47,7 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
 
         <div className="flex flex-wrap items-center gap-3 self-start xl:self-auto">
           <button
-            onClick={() => exportStatsToCSV(stats)}
+            onClick={() => exportStatsToCSV(visibleStats)}
             className="px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl border-2 border-slate-100 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold flex items-center space-x-1.5 sm:space-x-2 transition-all shadow-sm"
             title="Download CSV Excel"
           >
@@ -79,7 +81,7 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
               <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
                 activeSubTab === 'analytics' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200/60 text-slate-500'
               }`}>
-                {stats.length}
+                {visibleStats.length}
               </span>
             </button>
           </div>
@@ -89,7 +91,7 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
       {activeSubTab === 'form' ? (
         <StatistikaForm 
           groups={allowedGroups} 
-          stats={stats} 
+          stats={visibleStats}
           onSaveStat={onSaveStat} 
           onSuccess={() => setActiveSubTab('analytics')} 
         />
@@ -118,9 +120,9 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
             </div>
           </div>
 
-          <StatistikaAnalytics stats={stats} />
+          <StatistikaAnalytics stats={visibleStats} />
           <StatistikaHistory 
-            stats={stats} 
+            stats={visibleStats}
             groups={groups} 
             currentUser={currentUser} 
             onDeleteStat={onDeleteStat} 

@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Person, Group } from '@/lib/types';
+import { fetchPersonGroups } from '@/lib/supabase';
 import FormPanel from './FormPanel';
 import { 
   IconPhone, 
@@ -11,14 +13,26 @@ import {
 
 interface PersonDetailPanelProps {
   person: Person | null;
-  group?: Group;
   isOpen: boolean;
+  canEdit?: boolean;
+  canTrackBA?: boolean;
   onClose: () => void;
   onEdit: (p: Person) => void;
   onTrackBA: (p: Person) => void;
 }
 
-export default function PersonDetailPanel({ person, group, isOpen, onClose, onEdit, onTrackBA }: PersonDetailPanelProps) {
+export default function PersonDetailPanel({ person, isOpen, canEdit = false, canTrackBA = false, onClose, onEdit, onTrackBA }: PersonDetailPanelProps) {
+  const [personGroups, setPersonGroups] = useState<Group[]>([]);
+
+  useEffect(() => {
+    if (!isOpen || !person) return;
+    let active = true;
+    fetchPersonGroups(person.id)
+      .then(groups => { if (active) setPersonGroups(groups); })
+      .catch(() => { if (active) setPersonGroups([]); });
+    return () => { active = false; };
+  }, [isOpen, person]);
+
   if (!person) return null;
 
   const getStatusBadgeClass = (st: string) => {
@@ -57,14 +71,14 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
               </span>
             </div>
           </div>
-          <button 
+          {canEdit && <button
             type="button"
             onClick={() => { onClose(); onEdit(person); }}
             className="p-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-2xl text-indigo-600 transition-colors shadow-sm"
             title="Edit Profil"
           >
             <IconEdit className="w-5 h-5" stroke={2} />
-          </button>
+          </button>}
         </div>
 
         {/* Info Grid */}
@@ -92,7 +106,9 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
               <div className="p-3 bg-emerald-50 rounded-xl text-emerald-500"><IconUsersGroup className="w-5 h-5" stroke={2} /></div>
               <div>
                 <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Grup PDG</p>
-                <p className="text-sm font-bold text-slate-900">{group ? group.group_name : 'Belum Ada Grup'}</p>
+                <p className="text-sm font-bold text-slate-900">
+                  {personGroups.length > 0 ? personGroups.map(group => group.group_name).join(', ') : 'Belum Ada Grup'}
+                </p>
               </div>
             </div>
           )}
@@ -133,13 +149,13 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
                 <IconBook className="w-5 h-5 text-indigo-400" />
                 {['DISCIPLE', 'LEADER', 'WEAK'].includes(person.status) ? 'Follow-up Study' : 'Belajar Alkitab'}
               </h3>
-              <button 
+              {canTrackBA && <button
                 type="button"
                 onClick={() => { onClose(); onTrackBA(person); }}
                 className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition-colors"
               >
                 + Catat Progress
-              </button>
+              </button>}
             </div>
 
             <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl shadow-inner">
@@ -156,6 +172,7 @@ export default function PersonDetailPanel({ person, group, isOpen, onClose, onEd
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(log.study_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}</span>
                     </div>
                     {log.notes && <p className="text-xs font-medium text-slate-600 leading-relaxed">{log.notes}</p>}
+                    {log.mentor_name && <p className="text-[10px] font-bold text-indigo-500 mt-2">Mentor: {log.mentor_name}</p>}
                   </div>
                 ))}
               </div>

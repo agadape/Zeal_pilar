@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Announcement } from '@/lib/types';
+import { Announcement, Person } from '@/lib/types';
+import { isAdminPerson, isGroupLeaderPerson } from '@/lib/permissions';
 import { 
   IconSpeakerphone, 
   IconPlus, 
@@ -16,11 +17,13 @@ import FormPanel from './FormPanel';
 
 interface AnnouncementsViewProps {
   announcements: Announcement[];
+  currentUser?: Person | null;
   onSaveAnnouncement: (announcement: Omit<Announcement, 'id' | 'author_name'> & { id?: string }) => Promise<void>;
   onDeleteAnnouncement: (id: string) => Promise<void>;
 }
 
-export default function AnnouncementsView({ announcements, onSaveAnnouncement, onDeleteAnnouncement }: AnnouncementsViewProps) {
+export default function AnnouncementsView({ announcements, currentUser, onSaveAnnouncement, onDeleteAnnouncement }: AnnouncementsViewProps) {
+  const canCreate = isGroupLeaderPerson(currentUser);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [title, setTitle] = useState('');
@@ -31,15 +34,18 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
     setSubmitting(true);
-    await onSaveAnnouncement({
-      title: title.trim(),
-      content: content.trim(),
-      is_pinned: isPinned
-    });
-    setSubmitting(false);
-    setTitle('');
-    setContent('');
-    setIsModalOpen(false);
+    try {
+      await onSaveAnnouncement({
+        title: title.trim(),
+        content: content.trim(),
+        is_pinned: isPinned
+      });
+      setTitle('');
+      setContent('');
+      setIsModalOpen(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -55,13 +61,13 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
             Pusat visi kerohanian ZEAL Tugu Jogja, komitmen, dan pengumuman resmi leadership.
           </p>
         </div>
-        <button
+        {canCreate && <button
           onClick={() => setIsModalOpen(true)}
           className="px-5 py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white rounded-2xl text-sm font-bold shadow-lg shadow-rose-500/30 flex items-center space-x-2 transition-transform hover:-translate-y-0.5 shrink-0"
         >
           <IconPlus className="w-5 h-5" stroke={2} />
           <span>Buat Pengumuman</span>
-        </button>
+        </button>}
       </div>
 
       {/* SPIRITUAL COMMITMENT BANNER - GKDI PILLARS */}
@@ -130,14 +136,14 @@ export default function AnnouncementsView({ announcements, onSaveAnnouncement, o
                   </span>
                 </div>
                 
-                <button
+                {(isAdminPerson(currentUser) || a.author_id === currentUser?.id) && <button
                   onClick={() => {
                     if (confirm('Yakin ingin menghapus pengumuman ini?')) onDeleteAnnouncement(a.id);
                   }}
                   className="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-400 transition-all shadow-sm self-end sm:self-auto"
                 >
                   <IconTrash className="w-5 h-5" stroke={2} />
-                </button>
+                </button>}
               </div>
 
               <div>

@@ -5,27 +5,46 @@ import { supabase, isSupabaseConfigured, getLocalData, setLocalData, STORAGE_KEY
 export async function fetchAnnouncements(): Promise<Announcement[]> {
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.from('announcements').select('*').order('is_pinned', { ascending: false }).order('created_at', { ascending: false });
-    if (!error && data) return data as Announcement[];
+    if (error) throw error;
+    return (data || []) as Announcement[];
   }
   return getLocalData<Announcement[]>(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
 }
 
 export async function saveAnnouncement(announcement: Omit<Announcement, 'id' | 'author_name'> & { id?: string }): Promise<Announcement> {
   let authorName = 'System';
+  let authorId: string | null = null;
   
   if (isSupabaseConfigured && supabase) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user && user.email) {
-      authorName = user.email.split('@')[0];
-    }
+    if (!user) throw new Error('Sesi login tidak valid.');
+
+    const { data: profile, error: profileError } = await supabase
+      .from('people')
+      .select('id, full_name')
+      .or(`auth_user_id.eq.${user.id},auth_id.eq.${user.id}`)
+      .maybeSingle();
+    if (profileError) throw profileError;
+    if (!profile) throw new Error('Profil user tidak terhubung ke data people.');
+    authorId = profile.id;
+    authorName = profile.full_name;
     
-    const annToSave = { ...announcement, author_name: authorName };
-    const { data, error } = await supabase.from('announcements').insert([annToSave]).select().single();
-    if (!error && data) return data as Announcement;
+    const annToSave = {
+      title: announcement.title,
+      content: announcement.content,
+      is_pinned: announcement.is_pinned,
+      author_name: authorName,
+      author_id: authorId
+    };
+    const result = announcement.id
+      ? await supabase.from('announcements').update(annToSave).eq('id', announcement.id).select().single()
+      : await supabase.from('announcements').insert([annToSave]).select().single();
+    if (result.error) throw result.error;
+    return result.data as Announcement;
   }
 
   const announcements = getLocalData<Announcement[]>(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
-  const newAnn: Announcement = { ...announcement, author_name: authorName, id: 'an_' + Date.now(), created_at: new Date().toISOString() } as Announcement;
+  const newAnn: Announcement = { ...announcement, author_name: authorName, author_id: authorId || undefined, id: 'an_' + Date.now(), created_at: new Date().toISOString() } as Announcement;
   const updated = [newAnn, ...announcements];
   setLocalData(STORAGE_KEYS.ANNOUNCEMENTS, updated);
   return newAnn;
@@ -33,7 +52,9 @@ export async function saveAnnouncement(announcement: Omit<Announcement, 'id' | '
 
 export async function deleteAnnouncement(id: string): Promise<void> {
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('announcements').delete().eq('id', id);
+    const { error } = await supabase.from('announcements').delete().eq('id', id);
+    if (error) throw error;
+    return;
   }
   const announcements = getLocalData<Announcement[]>(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
   setLocalData(STORAGE_KEYS.ANNOUNCEMENTS, announcements.filter(a => a.id !== id));

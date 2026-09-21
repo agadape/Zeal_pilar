@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Group, Person } from '@/lib/types';
 import { IconArrowsExchange, IconX, IconInfoCircle, IconCheck } from '@tabler/icons-react';
@@ -17,6 +17,14 @@ export default function GroupHandoverModal({ handoverGroup, people, onClose, onS
   const [handoverReason, setHandoverReason] = useState<string>('GRADUATED');
   const [handoverNotes, setHandoverNotes] = useState<string>('');
   const [submittingHandover, setSubmittingHandover] = useState(false);
+
+  useEffect(() => {
+    if (handoverGroup) {
+      setNewLeaderId('');
+      setHandoverReason('GRADUATED');
+      setHandoverNotes('');
+    }
+  }, [handoverGroup]);
 
   if (!handoverGroup) return null;
 

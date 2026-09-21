@@ -6,6 +6,7 @@ import { IconPlus, IconUsersGroup } from '@tabler/icons-react';
 import GroupHandoverModal from './Groups/GroupHandoverModal';
 import GroupFormModal from './Groups/GroupFormModal';
 import GroupMembersModal from './Groups/GroupMembersModal';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface GroupsViewProps {
   groups: Group[];
@@ -18,6 +19,7 @@ interface GroupsViewProps {
 }
 
 export default function GroupsView({ groups, people, currentUser, onSaveGroup, onDeleteGroup, onHandoverLeadership, onRefreshData }: GroupsViewProps) {
+  const isAdmin = isAdminPerson(currentUser);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -63,7 +65,7 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
             Manajemen dan daftar grup kecil (PDG Brother/Sister).
           </p>
         </div>
-        {(!currentUser || currentUser.role === 'SUPER_ADMIN') && (
+        {isAdmin && (
           <button
             onClick={openAddGroupModal}
             className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-500/30 flex items-center space-x-2 transition-transform hover:-translate-y-0.5 shrink-0"

@@ -12,6 +12,7 @@ import {
   IconRefresh
 } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface AdminAccountsViewProps {
   currentUser: Person | null;
@@ -32,7 +33,7 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
   const [selectedPersonId, setSelectedPersonId] = useState('');
 
   // Only allow SUPER_ADMIN to see this
-  if (currentUser?.role !== 'SUPER_ADMIN') {
+  if (!isAdminPerson(currentUser)) {
     return (
       <div className="py-24 text-center bg-white/50 rounded-[2rem] border-2 border-red-100 border-dashed backdrop-blur-sm max-w-2xl mx-auto mt-10">
         <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-red-200/50">
@@ -44,8 +45,8 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
     );
   }
 
-  const unlinkedLeaders = people.filter(p => p.status === 'LEADER' && !p.auth_id);
-  const linkedAccounts = people.filter(p => p.auth_id);
+  const unlinkedLeaders = people.filter(p => p.status === 'LEADER' && !p.auth_user_id && !p.auth_id);
+  const linkedAccounts = people.filter(p => p.auth_user_id || p.auth_id);
 
   const handleSubmitCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,14 +89,15 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
     setSuccessMsg('');
 
     const targetPerson = people.find(p => p.id === selectedPersonId);
-    if (!targetPerson?.auth_id) {
+    const targetAuthId = targetPerson?.auth_user_id || targetPerson?.auth_id;
+    if (!targetAuthId) {
       setErrorMsg('User tidak memiliki auth_id yang valid.');
       setSubmitting(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append('auth_id', targetPerson.auth_id);
+    formData.append('auth_id', targetAuthId);
     formData.append('password', password);
 
     const result = await resetLeaderPassword(formData);
@@ -252,7 +254,7 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Sementara</label>
             <input
-              type="text"
+              type="password"
               required
               minLength={6}
               value={password}
@@ -297,7 +299,7 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Baru</label>
             <input
-              type="text"
+              type="password"
               required
               minLength={6}
               value={password}

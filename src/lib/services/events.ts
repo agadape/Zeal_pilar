@@ -1,19 +1,59 @@
-import { MinistryEvent } from '../types';
+import { EventRoster, MinistryEvent } from '../types';
 import { INITIAL_EVENTS } from '../mockData';
 import { supabase, isSupabaseConfigured, getLocalData, setLocalData, STORAGE_KEYS } from './core';
 
 export async function fetchEvents(): Promise<MinistryEvent[]> {
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.from('events').select('*').order('event_date', { ascending: true });
-    if (!error && data) return data as MinistryEvent[];
+    const { data, error } = await supabase.from('events').select(`
+      *,
+      event_rosters (*, people:person_id (full_name))
+    `).order('event_date', { ascending: true });
+    if (error) throw error;
+    return (data || []).map(event => ({
+      ...event,
+      roster: (event.event_rosters || []).map((entry: EventRoster & { people?: { full_name?: string } | null }) => ({
+        id: entry.id,
+        event_id: entry.event_id,
+        person_id: entry.person_id,
+        role: entry.role,
+        person_name: entry.people?.full_name
+      }))
+    })) as MinistryEvent[];
   }
   return getLocalData<MinistryEvent[]>(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
 }
 
 export async function saveEvent(event: Omit<MinistryEvent, 'id'> & { id?: string }): Promise<MinistryEvent> {
   if (isSupabaseConfigured && supabase) {
-    const { data, error } = await supabase.from('events').insert([event]).select().single();
-    if (!error && data) return data as MinistryEvent;
+    const eventPayload = {
+      title: event.title,
+      type: event.type,
+      event_date: event.event_date,
+      location: event.location || null,
+      description: event.description || null
+    };
+
+    const result = event.id
+      ? await supabase.from('events').update(eventPayload).eq('id', event.id).select().single()
+      : await supabase.from('events').insert([eventPayload]).select().single();
+    if (result.error) throw result.error;
+
+    const savedEvent = result.data as MinistryEvent;
+    const { error: deleteRosterError } = await supabase.from('event_rosters').delete().eq('event_id', savedEvent.id);
+    if (deleteRosterError) throw deleteRosterError;
+
+    if (event.roster && event.roster.length > 0) {
+      const rosterRows = event.roster.map(entry => ({
+        event_id: savedEvent.id,
+        person_id: entry.person_id,
+        role: entry.role
+      }));
+      const { error: rosterError } = await supabase.from('event_rosters').insert(rosterRows);
+      if (rosterError) throw rosterError;
+    }
+
+    const refreshedEvents = await fetchEvents();
+    return refreshedEvents.find(item => item.id === savedEvent.id) || savedEvent;
   }
 
   const events = getLocalData<MinistryEvent[]>(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
@@ -25,7 +65,9 @@ export async function saveEvent(event: Omit<MinistryEvent, 'id'> & { id?: string
 
 export async function deleteEvent(id: string): Promise<void> {
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('events').delete().eq('id', id);
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (error) throw error;
+    return;
   }
   const events = getLocalData<MinistryEvent[]>(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
   setLocalData(STORAGE_KEYS.EVENTS, events.filter(e => e.id !== id));

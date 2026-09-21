@@ -1,6 +1,7 @@
 import React from 'react';
 import { IconHistory, IconTrash } from '@tabler/icons-react';
 import { WeeklyStat, Group, Person } from '@/lib/types';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface Props {
   stats: WeeklyStat[];
@@ -10,7 +11,7 @@ interface Props {
 }
 
 export default function StatistikaHistory({ stats, groups, currentUser, onDeleteStat }: Props) {
-  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = isAdminPerson(currentUser);
 
   return (
     <div className="p-6 sm:p-8 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 space-y-6">

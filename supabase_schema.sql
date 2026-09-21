@@ -19,6 +19,18 @@ CREATE TABLE IF NOT EXISTS people (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 1B. BIBLE STUDY LOGS
+CREATE TABLE IF NOT EXISTS bible_study_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    person_id UUID NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+    mentor_id UUID REFERENCES people(id) ON DELETE SET NULL,
+    week_number INT NOT NULL,
+    study_date DATE NOT NULL,
+    lesson_topic TEXT NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 2. GROUPS TABLE (Small Groups / PDG)
 CREATE TABLE IF NOT EXISTS groups (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -86,6 +98,7 @@ CREATE TABLE IF NOT EXISTS announcements (
 
 -- RLS POLICIES (Allow public access for Tugu Leaders demo/app)
 ALTER TABLE people ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bible_study_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE weekly_stats ENABLE ROW LEVEL SECURITY;
@@ -94,6 +107,7 @@ ALTER TABLE event_rosters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read/write on people" ON people FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public read/write on bible_study_logs" ON bible_study_logs FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read/write on groups" ON groups FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read/write on group_members" ON group_members FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read/write on weekly_stats" ON weekly_stats FOR ALL USING (true) WITH CHECK (true);

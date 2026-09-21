@@ -23,7 +23,7 @@ export default function GroupFormModal({ isOpen, onClose, editingGroup, people, 
         setGroupName(editingGroup.group_name);
         setCategory(editingGroup.category);
         setLeaderId(editingGroup.leader_id || '');
-        setBaptismGoal(editingGroup.baptism_goal || 5);
+        setBaptismGoal(editingGroup.baptism_goal ?? 5);
       } else {
         setGroupName('');
         setCategory('SISTER');

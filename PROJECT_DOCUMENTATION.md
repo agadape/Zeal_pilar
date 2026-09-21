@@ -1,59 +1,42 @@
-# 📊 TUGU LEADERS PORTAL — System Architecture & UX Mission
+# Tugu Leaders Portal — Technical Documentation
 
-**"Rumah Tuhan Rumah Kita"**
-A mobile-first, intentionally designed leadership portal for ZEAL GKDI Tugu Jogja.
+## Runtime flow
 
----
+1. Middleware memperbarui cookie Supabase dan mengarahkan user tanpa sesi ke `/login`.
+2. `src/app/page.tsx` mengambil people, groups, stats, announcements, events, dan profile secara paralel.
+3. Profile dicari melalui `auth_user_id`; `auth_id` hanya fallback transisi.
+4. View menerima data dan handler dari root orchestrator.
+5. Mutation service melempar error Supabase. Root menampilkan error dan hanya reload data setelah mutation berhasil.
 
-## 🎯 The Mission: Task-Oriented UX Redesign
+## Data model
 
-The application was recently overhauled from a raw "Database Administration Interface" to a **Task-Oriented Leadership Product**. 
-The goal was to stop making Ministry Leaders think like Database Administrators, and instead build an interface that answers their real-world needs immediately.
+- `people` menyimpan profil, status ministry, tanggal lahir/baptis, identitas auth, dan role.
+- `bible_study_logs` menyimpan sesi BA; `mentor_id` menunjuk mentor sesi.
+- `groups` dan `group_members` membentuk struktur PDG.
+- `group_leadership_history` menyimpan masa jabatan; trigger menangani assignment awal dan handover.
+- `weekly_stats` adalah header unik per grup/tanggal; absence dan study progress disimpan pada tabel relasi.
+- `events` menyimpan metadata dan `event_rosters` menyimpan assignment pelayanan.
+- `announcements.author_id` dipakai RLS; `author_name` adalah snapshot display.
 
-### Core UX Principles Implemented:
-1. **Action-Oriented Dashboard**: The dashboard no longer just dumps raw charts. It is split into **"Needs Attention"** (Follow-up reminders, Milestones) and **"This Week"** (Weekly Report statuses, Upcoming events), directly answering the question: *"What do I need to do today?"*
-2. **Directory, Not Database**: `PeopleView` and `GroupsView` were transformed from dense data tables into beautiful, tappable **Directory Cards**. 
-3. **Dedicated Detail Views**: Instead of cramming editing, reading, and history into a single screen or inline accordion, we introduced **Person Detail View** and **Group Detail View** modals. This cleanly separates *scanning* from *deep diving*.
-4. **"Holy Grail" Modal Layout**: All modals use a strict `flex-col h-full`, fixed-height container, `flex-shrink-0` for headers/footers, and `flex-1 overflow-y-auto min-h-0` for content. This guarantees native app-like scrolling on iOS/Android without pushing headers off-screen.
+## Authorization
 
----
+RLS bersifat permissive/OR. Tidak boleh ada policy `ALL USING (true)` bersama policy aman. Migrasi alignment menghapus seluruh policy lama tersebut.
 
-## 🏛️ Information Architecture (IA)
+- Semua user authenticated dapat membaca data operasional yang dibutuhkan portal.
+- Admin mengelola people, pembuatan/penghapusan grup, event, history, dan akun.
+- Group leader mengelola member dan statistik grup yang dipimpinnya.
+- Group leader dapat mencatat BA dan membuat pengumuman.
+- Author dapat mengubah/menghapus pengumumannya sendiri.
 
-The navigation has been carefully renamed to reflect human actions and concepts, not SQL tables:
+Server action `createLeaderAccount` dan `resetLeaderPassword` memverifikasi Super Admin dari sesi server sebelum membuat admin client.
 
-1. **Dashboard** (`DashboardView.tsx`) - Prioritized daily tasks and community health overview.
-2. **Data Jemaat** (`PeopleView.tsx`) - Directory of all people (Disciples, Visitors, Bible Study).
-3. **Kelompok (PDG)** (`GroupsView.tsx`) - Directory of Small Groups and their members.
-4. **Laporan Mingguan** (`StatistikaView.tsx`) - Step-by-step wizard to report weekly stats and generate WhatsApp summaries.
-5. **Jadwal & Pelayanan** (`EventsView.tsx`) - Duty roster and event schedule.
-6. **Pengumuman** (`AnnouncementsView.tsx`) - Pinned visions and team directives.
+## Local development fallback
 
----
+Jika URL/key Supabase kosong, service memakai LocalStorage dengan prefix `tugu_*`. Jika Supabase dikonfigurasi namun request gagal, service tidak boleh jatuh ke LocalStorage. Tombol Refresh hanya menghapus key milik Tugu, bukan seluruh storage origin.
 
-## 🛠️ Tech Stack & Constraints
+## Known boundaries
 
-* **Framework**: Next.js 15.5 App Router (React 19)
-* **Styling**: Tailwind CSS v4, Geist Sans font family, GKDI Warm Light Theme (`#f8fafc` bg, `#b5852e` gold accent)
-* **Data Visualization**: `recharts` (Area charts for statistical trends)
-* **Database / Backend**: Supabase PostgreSQL (via `src/lib/supabase.ts`)
-* **Deployment**: Vercel
-
-### Critical Engineering Notes:
-* **Supabase Vercel Edge Case**: Environment variables from Vercel often contain hidden trailing whitespaces. The `supabase.ts` client implements `.trim()` to prevent `404 Not Found` API route duplication bugs.
-* **Flexbox iOS Safari Bug**: Always apply `min-h-0` to scrolling `flex-1` elements inside flex columns, otherwise content expansion will break the layout height on Safari mobile.
-* **Motto Integrity**: The ZEAL motto is strictly "•Love God •Love People •Love Life". Do not use the heart symbol (♥).
-
----
-
-## 🗄️ Database Schema Summary (Supabase)
-
-1. **`people`**: Core directory (id, full_name, status, gender, campus, birth_date, baptism_date).
-2. **`groups`**: Small groups (id, group_name, category, leader_id).
-3. **`group_members`**: Junction mapping people to groups.
-4. **`weekly_stats`**: Statistical snapshots generated by leaders weekly.
-5. **`bible_study_logs`**: Tracking history of bible studies for individuals.
-6. **`events` & `event_rosters`**: Event schedules and duty assignments (MC, Speaker, etc).
-7. **`announcements`**: Ministry directives.
-
-Row Level Security (RLS) is enabled and defaults to Public Read/Write for rapid internal deployment.
+- Penggantian seluruh anggota grup masih berupa delete lalu insert dan belum dibungkus database transaction/RPC.
+- Belum ada test automation untuk RLS dan server actions.
+- Legacy columns `auth_id` dan `is_admin` belum dihapus agar deployment backward-compatible.
+- PWA service worker masih network-only dan belum menyediakan offline cache penuh.

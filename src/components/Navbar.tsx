@@ -10,8 +10,10 @@ import {
   IconRefresh,
   IconLogout,
   IconSpeakerphone,
+  IconCalendarEvent,
   IconShieldLock
 } from '@tabler/icons-react';
+import { isAdminPerson } from '@/lib/permissions';
 
 interface NavbarProps {
   activeTab: string;
@@ -25,10 +27,11 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
     { id: 'people', label: 'Data Disciple', icon: IconUsers },
     { id: 'groups', label: 'Grup PDG', icon: IconUsersGroup },
     { id: 'statistika', label: 'Statistik Grup', icon: IconClipboardCheck },
+    { id: 'events', label: 'Jadwal', icon: IconCalendarEvent },
     { id: 'announcements', label: 'Pengumuman', icon: IconSpeakerphone },
   ];
 
-  if (currentUser?.role === 'SUPER_ADMIN') {
+  if (isAdminPerson(currentUser)) {
     navItems.push({ id: 'admin', label: 'Admin', icon: IconShieldLock });
   }
 
@@ -62,9 +65,10 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
 
           <div className="flex items-center shrink-0 ml-2 space-x-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (typeof window !== 'undefined') {
-                  localStorage.clear();
+                  const { clearLocalCache } = await import('@/lib/supabase');
+                  clearLocalCache();
                   window.location.reload();
                 }
               }}

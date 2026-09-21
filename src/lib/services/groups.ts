@@ -9,9 +9,8 @@ export async function fetchGroups(): Promise<Group[]> {
       people:leader_id (full_name),
       group_members (count)
     `).order('group_name');
-    if (error) console.error("Supabase error (fetchGroups):", error);
-    
-    if (!error && groupsData) {
+    if (error) throw error;
+    if (groupsData) {
       return groupsData.map((g: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
         const memberCountData = g.group_members;
         const count = Array.isArray(memberCountData) 
@@ -51,8 +50,8 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
         leader_id: group.leader_id,
         baptism_goal: group.baptism_goal
       }).eq('id', group.id).select().single();
-      if (error) console.error("Supabase error (saveGroup update):", error);
-      if (!error && data) return data as Group;
+      if (error) throw error;
+      return data as Group;
     } else {
       const { data, error } = await supabase.from('groups').insert([{
         group_name: group.group_name,
@@ -60,8 +59,8 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
         leader_id: group.leader_id,
         baptism_goal: group.baptism_goal
       }]).select().single();
-      if (error) console.error("Supabase error (saveGroup insert):", error);
-      if (!error && data) return data as Group;
+      if (error) throw error;
+      return data as Group;
     }
   }
 
@@ -81,8 +80,8 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
 export async function deleteGroup(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
     const { error } = await supabase.from('groups').delete().eq('id', id);
-    if (error) console.error("Supabase error (deleteGroup):", error);
-    if (!error) return true;
+    if (error) throw error;
+    return true;
   }
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
   setLocalData(STORAGE_KEYS.GROUPS, groups.filter(g => g.id !== id));
@@ -95,8 +94,8 @@ export async function fetchGroupMembers(groupId: string): Promise<Person[]> {
       .from('group_members')
       .select('person_id, people (*)')
       .eq('group_id', groupId);
-    if (error) console.error("Supabase error (fetchGroupMembers):", error);
-    if (!error && data) {
+    if (error) throw error;
+    if (data) {
       return (data as unknown as Array<{ person_id: string; people: Person | null }>).map(item => item.people).filter(Boolean) as Person[];
     }
   }
@@ -110,10 +109,12 @@ export async function fetchGroupMembers(groupId: string): Promise<Person[]> {
 
 export async function updateGroupMembers(groupId: string, personIds: string[]): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('group_members').delete().eq('group_id', groupId);
+    const { error: deleteError } = await supabase.from('group_members').delete().eq('group_id', groupId);
+    if (deleteError) throw deleteError;
     if (personIds.length > 0) {
       const inserts = personIds.map(pid => ({ group_id: groupId, person_id: pid }));
-      await supabase.from('group_members').insert(inserts);
+      const { error: insertError } = await supabase.from('group_members').insert(inserts);
+      if (insertError) throw insertError;
     }
     return true;
   }
@@ -139,27 +140,58 @@ export async function handoverGroupLeadership(params: {
   const { group_id, new_leader_id, reason, notes } = params;
 
   if (isSupabaseConfigured && supabase) {
+    const { data: currentGroup, error: currentGroupError } = await supabase
+      .from('groups')
+      .select('leader_id')
+      .eq('id', group_id)
+      .single();
+    if (currentGroupError) throw currentGroupError;
+
+    const oldLeaderId = currentGroup.leader_id as string | null;
+    let previousHistoryId: string | null = null;
+    if (oldLeaderId) {
+      const { data: history, error: historyLookupError } = await supabase
+        .from('group_leadership_history')
+        .select('id')
+        .eq('group_id', group_id)
+        .eq('leader_id', oldLeaderId)
+        .is('ended_at', null)
+        .maybeSingle();
+      if (historyLookupError) throw historyLookupError;
+      previousHistoryId = history?.id || null;
+    }
+
     const { error: groupErr } = await supabase
       .from('groups')
       .update({ leader_id: new_leader_id, updated_at: new Date().toISOString() })
       .eq('id', group_id);
 
     if (groupErr) {
-      console.error('Handover group update error:', groupErr);
-      return false;
+      throw groupErr;
     }
 
-    const { error: historyErr } = await supabase
-      .from('group_leadership_history')
-      .update({
-        handover_reason: reason,
-        handover_notes: notes || null
-      })
-      .eq('group_id', group_id)
-      .eq('leader_id', new_leader_id)
-      .is('ended_at', null);
+    if (previousHistoryId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      let transferredBy: string | null = null;
+      if (user) {
+        const { data: profile } = await supabase
+          .from('people')
+          .select('id')
+          .or(`auth_user_id.eq.${user.id},auth_id.eq.${user.id}`)
+          .maybeSingle();
+        transferredBy = profile?.id || null;
+      }
 
-    if (historyErr) console.error('Handover history update error:', historyErr);
+      const { error: historyErr } = await supabase
+        .from('group_leadership_history')
+        .update({
+          handover_reason: reason,
+          handover_notes: notes || null,
+          transferred_by: transferredBy
+        })
+        .eq('id', previousHistoryId);
+      if (historyErr) throw historyErr;
+    }
 
     return true;
   }
@@ -168,4 +200,26 @@ export async function handoverGroupLeadership(params: {
   const updated = groups.map(g => g.id === group_id ? { ...g, leader_id: new_leader_id } : g);
   setLocalData(STORAGE_KEYS.GROUPS, updated);
   return true;
+}
+
+export async function fetchPersonGroups(personId: string): Promise<Group[]> {
+  if (isSupabaseConfigured && supabase) {
+    const [memberResult, leaderResult] = await Promise.all([
+      supabase.from('group_members').select('groups (*)').eq('person_id', personId),
+      supabase.from('groups').select('*').eq('leader_id', personId)
+    ]);
+    if (memberResult.error) throw memberResult.error;
+    if (leaderResult.error) throw leaderResult.error;
+
+    const memberGroups = (memberResult.data || [])
+      .map(item => item.groups as unknown as Group | null)
+      .filter((group): group is Group => Boolean(group));
+    const allGroups = [...memberGroups, ...((leaderResult.data || []) as Group[])];
+    return Array.from(new Map(allGroups.map(group => [group.id, group])).values());
+  }
+
+  const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const groupIds = members.filter(member => member.person_id === personId).map(member => member.group_id);
+  return groups.filter(group => groupIds.includes(group.id) || group.leader_id === personId);
 }
