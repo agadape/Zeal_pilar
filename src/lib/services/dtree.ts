@@ -123,6 +123,10 @@ export async function saveDTreeRoots(
   brotherRootId: string | null,
   sisterRootId: string | null
 ): Promise<DTreeSettings> {
+  if (!brotherRootId || !sisterRootId) {
+    throw new Error('Dua Pemimpin Jemaat wajib dipilih: satu Brother dan satu Sister.');
+  }
+
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.rpc('set_dtree_roots', {
       p_brother_root_id: brotherRootId,
@@ -249,6 +253,8 @@ export async function endMentorship(
   }
 
   const relationships = getLocalData<MentorshipRelationship[]>(STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS, []);
+  const activeRelationship = relationships.find(item => item.id === relationshipId && !item.ended_at);
+  if (!activeRelationship) throw new Error('Relasi pembimbingan aktif tidak ditemukan.');
   const now = new Date().toISOString();
   let updatedRelationship: MentorshipRelationship | undefined;
   const updated = relationships.map(item => {
@@ -261,7 +267,7 @@ export async function endMentorship(
     };
     return updatedRelationship;
   });
-  if (!updatedRelationship) throw new Error('Relasi pembimbingan tidak ditemukan.');
+  if (!updatedRelationship) throw new Error('Relasi pembimbingan aktif tidak ditemukan.');
   setLocalData(STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS, updated);
   return updatedRelationship;
 }

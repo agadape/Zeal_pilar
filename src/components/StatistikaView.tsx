@@ -8,7 +8,7 @@ import { IconDownload, IconChartBar } from '@tabler/icons-react';
 import StatistikaForm from './Statistika/StatistikaForm';
 import StatistikaAnalytics from './Statistika/StatistikaAnalytics';
 import StatistikaHistory from './Statistika/StatistikaHistory';
-import { isAdminPerson } from '@/lib/permissions';
+import { isAdminPerson, isGroupLeaderPerson } from '@/lib/permissions';
 
 interface StatistikaViewProps {
   groups: Group[];
@@ -21,9 +21,17 @@ interface StatistikaViewProps {
 
 export default function StatistikaView({ groups, stats = [], currentUser, onSaveStat, onDeleteStat }: StatistikaViewProps) {
   const isSuperAdmin = isAdminPerson(currentUser);
-  const allowedGroups = isSuperAdmin ? groups : groups.filter(g => g.leader_id === currentUser?.id);
-  const visibleStats = isSuperAdmin ? stats : stats.filter(stat => allowedGroups.some(group => group.id === stat.group_id));
-  const [activeSubTab, setActiveSubTab] = useState<'form' | 'analytics'>('form');
+  const canManageStats = isGroupLeaderPerson(currentUser);
+  const allowedGroups = isSuperAdmin
+    ? groups
+    : canManageStats
+      ? groups.filter(g => g.leader_id === currentUser?.id)
+      : [];
+  const visibleStats = !canManageStats || isSuperAdmin
+    ? stats
+    : stats.filter(stat => allowedGroups.some(group => group.id === stat.group_id));
+  const canSubmitStats = allowedGroups.length > 0;
+  const [activeSubTab, setActiveSubTab] = useState<'form' | 'analytics'>(canSubmitStats ? 'form' : 'analytics');
 
   // Analytics Metrics Calculation
   const totalDisciplesTracked = visibleStats.reduce((acc, curr) => acc + (curr.active_disciples_count || 0), 0);
@@ -57,7 +65,7 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
           </button>
 
           <div className="flex bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/60 w-full sm:w-auto shadow-inner">
-            <button
+            {canSubmitStats && <button
               onClick={() => setActiveSubTab('form')}
               className={`flex-1 sm:flex-none whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 activeSubTab === 'form'
@@ -66,7 +74,7 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
               }`}
             >
               📝 Isi Laporan Mingguan
-            </button>
+            </button>}
             
             <button
               onClick={() => setActiveSubTab('analytics')}
@@ -88,7 +96,7 @@ export default function StatistikaView({ groups, stats = [], currentUser, onSave
         </div>
       </div>
 
-      {activeSubTab === 'form' ? (
+      {activeSubTab === 'form' && canSubmitStats ? (
         <StatistikaForm 
           groups={allowedGroups} 
           stats={visibleStats}

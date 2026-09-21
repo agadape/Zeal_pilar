@@ -3,7 +3,8 @@ import { supabase, isSupabaseConfigured } from './core';
 
 export async function getCurrentUserProfile(): Promise<Person | null> {
   if (!isSupabaseConfigured || !supabase) return null;
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
   if (!user) return null;
   
   const { data: canonicalProfile, error: canonicalError } = await supabase
@@ -13,6 +14,7 @@ export async function getCurrentUserProfile(): Promise<Person | null> {
     .maybeSingle();
 
   if (canonicalError) throw canonicalError;
+  if (canonicalProfile?.archived_at) return null;
   if (canonicalProfile) return canonicalProfile as Person;
 
   // Temporary compatibility while the alignment migration is being deployed.
@@ -23,6 +25,7 @@ export async function getCurrentUserProfile(): Promise<Person | null> {
     .maybeSingle();
 
   if (legacyError) throw legacyError;
+  if (legacyProfile?.archived_at) return null;
   if (legacyProfile) return legacyProfile as Person;
   return null;
 }

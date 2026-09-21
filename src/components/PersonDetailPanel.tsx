@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Person, Group } from '@/lib/types';
 import { fetchPersonGroups } from '@/lib/supabase';
 import FormPanel from './FormPanel';
+import { formatDateOnly } from '@/lib/dateUtils';
 import { 
   IconPhone, 
   IconSchool, 
@@ -119,13 +120,13 @@ export default function PersonDetailPanel({ person, isOpen, canEdit = false, can
                 {person.birth_date && (
                   <div className="flex justify-between w-full items-center">
                     <span className="text-xs font-bold text-slate-500">Tanggal Lahir</span>
-                    <span className="text-xs font-extrabold text-slate-900">{new Date(person.birth_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</span>
+                    <span className="text-xs font-extrabold text-slate-900">{formatDateOnly(person.birth_date, {day: 'numeric', month: 'long', year: 'numeric'})}</span>
                   </div>
                 )}
                 {person.baptism_date && (
                   <div className="flex justify-between w-full items-center mt-2 pt-2 border-t border-slate-100">
                     <span className="text-xs font-bold text-slate-500">Tanggal Baptis</span>
-                    <span className="text-xs font-extrabold text-slate-900">{new Date(person.baptism_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}</span>
+                    <span className="text-xs font-extrabold text-slate-900">{formatDateOnly(person.baptism_date, {day: 'numeric', month: 'long', year: 'numeric'})}</span>
                   </div>
                 )}
               </div>
@@ -169,7 +170,7 @@ export default function PersonDetailPanel({ person, isOpen, canEdit = false, can
                   <div key={log.id} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-bold text-slate-900">Minggu {log.week_number}: {log.lesson_topic}</span>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(log.study_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{formatDateOnly(log.study_date, {day: 'numeric', month: 'short'})}</span>
                     </div>
                     {log.notes && <p className="text-xs font-medium text-slate-600 leading-relaxed">{log.notes}</p>}
                     {log.mentor_name && <p className="text-[10px] font-bold text-indigo-500 mt-2">Mentor: {log.mentor_name}</p>}

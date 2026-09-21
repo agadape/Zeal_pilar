@@ -62,19 +62,25 @@ Jika Supabase terkonfigurasi, error database harus dilempar ke UI. Jangan melaku
 8. d-Tree mewajibkan satu grup per orang serta gender/grup yang sama antara pembimbing dan anggota.
 9. Leader grup diturunkan langsung dari `groups.leader_id`; jangan membuat relasi primary untuk leader.
 10. Jangan menghapus histori mentorship. Akhiri relasi dengan mengisi `ended_at` dan `end_reason`.
+11. Pemimpin Jemaat d-Tree wajib selalu berjumlah dua: satu Brother dan satu Sister.
+12. Penghapusan people adalah soft-delete melalui `archived_at`; leader grup harus di-handover dan root d-Tree harus diganti lebih dahulu.
+13. Input tanggal-only harus memakai helper `dateUtils.ts`, bukan parsing UTC langsung, agar tanggal WIB tidak bergeser.
 
 ## Status verifikasi
 
-- TypeScript: gunakan `npx tsc --noEmit`.
+- TypeScript: gunakan `npm run typecheck`.
 - ESLint: gunakan `npm run lint`; generated `.next` sudah diabaikan.
+- Pemeriksaan cepat gabungan: gunakan `npm run check`.
 - Build tidak lagi mengambil Google Fonts saat build sehingga dapat berjalan offline.
 - Belum ada automated test suite; test auth/RLS tetap harus dilakukan di Supabase staging.
+- Audit bug 2026-09-21 memperbaiki permission UI, duplikasi edit LocalStorage, atribusi pengumuman, tanggal WIB, async error handling, arsip people, keamanan CSV, dan constraint integritas tambahan.
 
 ## Deployment berikutnya
 
 1. Backup database Supabase.
 2. Jalankan `supabase_security_alignment.sql` bila belum pernah diterapkan.
 3. Jalankan `supabase_dtree.sql`.
-4. Ikuti verifikasi `DATABASE_MIGRATION.md` menggunakan akun admin dan group leader.
-5. Deploy kode.
-6. Pantau error PostgREST dan Auth setelah deployment.
+4. Jalankan `supabase_bugfixes.sql`.
+5. Ikuti verifikasi `DATABASE_MIGRATION.md` menggunakan akun admin dan group leader.
+6. Deploy kode.
+7. Pantau error PostgREST dan Auth setelah deployment.

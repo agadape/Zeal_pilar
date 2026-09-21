@@ -46,12 +46,13 @@ Untuk database lama yang sudah berjalan, jalankan berurutan:
 
 1. `supabase_security_alignment.sql` untuk instalasi yang belum pernah menjalankannya
 2. `supabase_dtree.sql` untuk mengaktifkan d-Tree
-3. Verifikasi menggunakan query pada `DATABASE_MIGRATION.md`
-4. Deploy aplikasi setelah migrasi berhasil
+3. `supabase_bugfixes.sql` untuk constraint integritas laporan, d-Tree, dan progres BA
+4. Verifikasi menggunakan query pada `DATABASE_MIGRATION.md`
+5. Deploy aplikasi setelah migrasi berhasil
 
 Migrasi alignment menambah kontrak yang hilang, menyatukan identitas, menghapus policy public `USING (true)`, memasang RLS final, memperbaiki trigger handover, dan mengamankan view.
 
-Untuk instalasi baru, jalankan schema lama berurutan, lanjutkan `supabase_security_alignment.sql`, lalu `supabase_dtree.sql`. Alignment juga membuat `bible_study_logs` bila tabel tersebut belum tersedia.
+Untuk instalasi baru, jalankan schema lama berurutan, lanjutkan `supabase_security_alignment.sql`, `supabase_dtree.sql`, lalu `supabase_bugfixes.sql`. Schema lama kini memulai RLS dalam keadaan tertutup; policy akses final hanya dibuat oleh alignment. Alignment juga membuat `bible_study_logs` bila tabel tersebut belum tersedia.
 
 ## Model akses
 
@@ -74,7 +75,7 @@ Identitas kanonik adalah `people.auth_user_id`. `auth_id` dan `is_admin` masih d
 
 ```bash
 npm run lint
-npx tsc --noEmit
+npm run typecheck
 npm run build
 ```
 
@@ -91,5 +92,6 @@ src/lib/types.ts                 kontrak TypeScript
 src/utils/supabase/              client browser/server/middleware
 supabase_security_alignment.sql  migrasi final skema dan RLS
 supabase_dtree.sql               tabel, validasi, RPC, dan RLS d-Tree
+supabase_bugfixes.sql            constraint integritas pasca d-Tree
 DATABASE_MIGRATION.md            panduan deployment database
 ```

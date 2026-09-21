@@ -1,6 +1,11 @@
-import { Group, GroupMember, Person } from '../types';
-import { INITIAL_GROUPS, INITIAL_GROUP_MEMBERS, INITIAL_PEOPLE } from '../mockData';
+import { Group, GroupMember, MentorshipRelationship, Person, WeeklyStat } from '../types';
+import { INITIAL_GROUPS, INITIAL_GROUP_MEMBERS, INITIAL_PEOPLE, INITIAL_STATS } from '../mockData';
 import { supabase, isSupabaseConfigured, getLocalData, setLocalData, STORAGE_KEYS } from './core';
+
+interface GroupQueryRow extends Group {
+  people?: { full_name?: string } | null;
+  group_members?: Array<{ count?: number }> | { count?: number } | null;
+}
 
 export async function fetchGroups(): Promise<Group[]> {
   if (isSupabaseConfigured && supabase) {
@@ -8,10 +13,10 @@ export async function fetchGroups(): Promise<Group[]> {
       *,
       people:leader_id (full_name),
       group_members (count)
-    `).order('group_name');
+    `).is('archived_at', null).order('group_name');
     if (error) throw error;
     if (groupsData) {
-      return groupsData.map((g: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+      return (groupsData as GroupQueryRow[]).map(g => {
         const memberCountData = g.group_members;
         const count = Array.isArray(memberCountData) 
           ? (memberCountData[0]?.count || 0) 
@@ -26,9 +31,9 @@ export async function fetchGroups(): Promise<Group[]> {
     }
   }
 
-  const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
+  const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS).filter(group => !group.archived_at);
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS);
   
   return groups.map(g => {
     const leader = people.find(p => p.id === g.leader_id);
@@ -42,22 +47,28 @@ export async function fetchGroups(): Promise<Group[]> {
 }
 
 export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Promise<Group> {
+  const groupName = group.group_name.trim();
+  if (!groupName) throw new Error('Nama grup wajib diisi.');
+  if (group.baptism_goal !== undefined && (!Number.isInteger(group.baptism_goal) || group.baptism_goal < 0)) {
+    throw new Error('Goal baptisan harus berupa angka bulat nol atau lebih.');
+  }
+
   if (isSupabaseConfigured && supabase) {
     if (group.id) {
       const { data, error } = await supabase.from('groups').update({
-        group_name: group.group_name,
+        group_name: groupName,
         category: group.category,
-        leader_id: group.leader_id,
-        baptism_goal: group.baptism_goal
+        leader_id: group.leader_id || null,
+        baptism_goal: group.baptism_goal ?? null
       }).eq('id', group.id).select().single();
       if (error) throw error;
       return data as Group;
     } else {
       const { data, error } = await supabase.from('groups').insert([{
-        group_name: group.group_name,
+        group_name: groupName,
         category: group.category,
-        leader_id: group.leader_id,
-        baptism_goal: group.baptism_goal
+        leader_id: group.leader_id || null,
+        baptism_goal: group.baptism_goal ?? null
       }]).select().single();
       if (error) throw error;
       return data as Group;
@@ -66,11 +77,11 @@ export async function saveGroup(group: Omit<Group, 'id'> & { id?: string }): Pro
 
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
   if (group.id) {
-    const updated = groups.map(g => g.id === group.id ? { ...g, ...group } as Group : g);
+    const updated = groups.map(g => g.id === group.id ? { ...g, ...group, group_name: groupName } as Group : g);
     setLocalData(STORAGE_KEYS.GROUPS, updated);
     return updated.find(g => g.id === group.id)!;
   } else {
-    const newGroup: Group = { ...group, id: 'g_' + Date.now() } as Group;
+    const newGroup: Group = { ...group, group_name: groupName, id: `g_${crypto.randomUUID()}` } as Group;
     const updated = [...groups, newGroup];
     setLocalData(STORAGE_KEYS.GROUPS, updated);
     return newGroup;
@@ -85,6 +96,12 @@ export async function deleteGroup(id: string): Promise<boolean> {
   }
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
   setLocalData(STORAGE_KEYS.GROUPS, groups.filter(g => g.id !== id));
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS);
+  setLocalData(STORAGE_KEYS.GROUP_MEMBERS, members.filter(member => member.group_id !== id));
+  const relationships = getLocalData<MentorshipRelationship[]>(STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS, []);
+  setLocalData(STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS, relationships.filter(relationship => relationship.group_id !== id));
+  const stats = getLocalData<WeeklyStat[]>(STORAGE_KEYS.STATS, INITIAL_STATS);
+  setLocalData(STORAGE_KEYS.STATS, stats.filter(stat => stat.group_id !== id));
   return true;
 }
 
@@ -93,18 +110,19 @@ export async function fetchGroupMembers(groupId: string): Promise<Person[]> {
     const { data, error } = await supabase
       .from('group_members')
       .select('person_id, people (*)')
-      .eq('group_id', groupId);
+      .eq('group_id', groupId)
+      .is('people.archived_at', null);
     if (error) throw error;
     if (data) {
       return (data as unknown as Array<{ person_id: string; people: Person | null }>).map(item => item.people).filter(Boolean) as Person[];
     }
   }
 
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS);
   const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
   
   const memberPersonIds = members.filter(m => m.group_id === groupId).map(m => m.person_id);
-  return people.filter(p => memberPersonIds.includes(p.id));
+  return people.filter(p => !p.archived_at && memberPersonIds.includes(p.id));
 }
 
 export async function updateGroupMembers(groupId: string, personIds: string[]): Promise<boolean> {
@@ -132,24 +150,33 @@ export async function updateGroupMembers(groupId: string, personIds: string[]): 
       }
     }
 
+    if (addedIds.length > 0) {
+      const inserts = addedIds.map(pid => ({ group_id: groupId, person_id: pid }));
+      const { error: insertError } = await supabase.from('group_members').insert(inserts);
+      if (insertError) throw insertError;
+    }
+
     if (removedIds.length > 0) {
       const { error: deleteError } = await supabase
         .from('group_members')
         .delete()
         .eq('group_id', groupId)
         .in('person_id', removedIds);
-      if (deleteError) throw deleteError;
-    }
-
-    if (addedIds.length > 0) {
-      const inserts = addedIds.map(pid => ({ group_id: groupId, person_id: pid }));
-      const { error: insertError } = await supabase.from('group_members').insert(inserts);
-      if (insertError) throw insertError;
+      if (deleteError) {
+        if (addedIds.length > 0) {
+          await supabase
+            .from('group_members')
+            .delete()
+            .eq('group_id', groupId)
+            .in('person_id', addedIds);
+        }
+        throw deleteError;
+      }
     }
     return true;
   }
 
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS);
   const assignedElsewhere = members.find(member => member.group_id !== groupId && personIds.includes(member.person_id));
   if (assignedElsewhere) {
     throw new Error('Ada anggota yang masih terdaftar di grup lain. Pindahkan dari grup lama terlebih dahulu.');
@@ -158,7 +185,7 @@ export async function updateGroupMembers(groupId: string, personIds: string[]): 
   const removedPersonIds = [...currentPersonIds].filter(personId => !personIds.includes(personId));
   const filtered = members.filter(m => m.group_id !== groupId);
   const newEntries: GroupMember[] = personIds.map(pid => ({
-    id: 'gm_' + Math.random().toString(36).substr(2, 9),
+    id: `gm_${crypto.randomUUID()}`,
     group_id: groupId,
     person_id: pid
   }));
@@ -256,17 +283,33 @@ export async function handoverGroupLeadership(params: {
 
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
   const currentGroup = groups.find(group => group.id === group_id);
+  if (!currentGroup || currentGroup.archived_at) throw new Error('Grup aktif tidak ditemukan.');
+  const people = getLocalData<Person[]>(STORAGE_KEYS.PEOPLE, INITIAL_PEOPLE);
+  const newLeader = people.find(person => person.id === new_leader_id && !person.archived_at);
+  if (!newLeader || newLeader.status !== 'LEADER') throw new Error('Leader baru tidak valid.');
+  if (newLeader.gender !== currentGroup.category) throw new Error('Gender leader harus sama dengan kategori grup.');
+  if (groups.some(group => !group.archived_at && group.id !== group_id && group.leader_id === new_leader_id)) {
+    throw new Error('Leader baru masih memimpin grup lain.');
+  }
+  const roots = getLocalData<{ brother_root_id?: string | null; sister_root_id?: string | null }>(STORAGE_KEYS.DTREE_SETTINGS, {});
+  if (roots.brother_root_id === new_leader_id || roots.sister_root_id === new_leader_id) {
+    throw new Error('Pemimpin Jemaat tidak boleh menjadi leader grup.');
+  }
+
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS);
+  if (members.some(member => member.person_id === new_leader_id && member.group_id !== group_id)) {
+    throw new Error('Leader baru masih terdaftar sebagai anggota grup lain.');
+  }
   const updated = groups.map(g => g.id === group_id ? { ...g, leader_id: new_leader_id } : g);
   setLocalData(STORAGE_KEYS.GROUPS, updated);
 
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
   const withoutNewLeader = members.filter(member => !(member.group_id === group_id && member.person_id === new_leader_id));
   const oldLeaderId = currentGroup?.leader_id;
   const withOldLeader = oldLeaderId
     && oldLeaderId !== new_leader_id
     && !withoutNewLeader.some(member => member.person_id === oldLeaderId)
     ? [...withoutNewLeader, {
-        id: `gm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        id: `gm_${crypto.randomUUID()}`,
         group_id,
         person_id: oldLeaderId
       }]
@@ -296,20 +339,20 @@ export async function fetchPersonGroups(personId: string): Promise<Group[]> {
   if (isSupabaseConfigured && supabase) {
     const [memberResult, leaderResult] = await Promise.all([
       supabase.from('group_members').select('groups (*)').eq('person_id', personId),
-      supabase.from('groups').select('*').eq('leader_id', personId)
+      supabase.from('groups').select('*').eq('leader_id', personId).is('archived_at', null)
     ]);
     if (memberResult.error) throw memberResult.error;
     if (leaderResult.error) throw leaderResult.error;
 
     const memberGroups = (memberResult.data || [])
       .map(item => item.groups as unknown as Group | null)
-      .filter((group): group is Group => Boolean(group));
+      .filter((group): group is Group => group !== null && !group.archived_at);
     const allGroups = [...memberGroups, ...((leaderResult.data || []) as Group[])];
     return Array.from(new Map(allGroups.map(group => [group.id, group])).values());
   }
 
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
-  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS);
   const groupIds = members.filter(member => member.person_id === personId).map(member => member.group_id);
-  return groups.filter(group => groupIds.includes(group.id) || group.leader_id === personId);
+  return groups.filter(group => !group.archived_at && (groupIds.includes(group.id) || group.leader_id === personId));
 }

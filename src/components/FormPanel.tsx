@@ -31,13 +31,11 @@ export default function FormPanel({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
@@ -61,7 +59,7 @@ export default function FormPanel({
       <div
         ref={panelRef}
         className="
-          absolute inset-x-0 bottom-0 max-h-[92vh] rounded-t-3xl
+          absolute inset-x-0 bottom-0 max-h-[92dvh] rounded-t-3xl
           sm:inset-x-auto sm:right-0 sm:top-0 sm:bottom-0 sm:h-full sm:max-h-full
           sm:w-full sm:max-w-md sm:rounded-none
           bg-white shadow-2xl

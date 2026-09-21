@@ -35,14 +35,20 @@ export default function GroupDetailPanel({
 }: GroupDetailPanelProps) {
   const [members, setMembers] = useState<Person[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (isOpen && group) {
       setLoading(true);
-      fetchGroupMembers(group.id).then(data => {
-        setMembers(data);
-        setLoading(false);
-      });
+      setLoadError('');
+      let active = true;
+      fetchGroupMembers(group.id)
+        .then(data => { if (active) setMembers(data); })
+        .catch(error => {
+          if (active) setLoadError(error instanceof Error ? error.message : 'Gagal memuat anggota grup.');
+        })
+        .finally(() => { if (active) setLoading(false); });
+      return () => { active = false; };
     }
   }, [isOpen, group]);
 
@@ -91,8 +97,12 @@ export default function GroupDetailPanel({
                 type="button"
                 onClick={async () => {
                   if (confirm('Yakin ingin menghapus grup ini? Semua data statistik yang terhubung akan hilang.')) {
-                    await onDelete(group.id);
-                    onClose();
+                    try {
+                      await onDelete(group.id);
+                      onClose();
+                    } catch {
+                      // The page-level mutation handler already reports the database error.
+                    }
                   }
                 }}
                 className="p-2.5 bg-rose-50 hover:bg-rose-100 rounded-2xl text-rose-600 transition-colors"
@@ -108,12 +118,12 @@ export default function GroupDetailPanel({
         <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-3xl flex items-center justify-between shadow-inner">
           <div>
             <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Pemimpin Grup PDG</p>
-            <p className="text-base font-extrabold text-amber-900 flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">
+            <div className="text-base font-extrabold text-amber-900 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">
                 <IconShield className="w-3.5 h-3.5" stroke={3} />
-              </div>
+              </span>
               {group.leader_name || 'Belum Ada Leader'}
-            </p>
+            </div>
           </div>
           {isSuperAdmin && (
             <button
@@ -147,6 +157,8 @@ export default function GroupDetailPanel({
 
           {loading ? (
             <p className="text-sm font-bold text-slate-500 text-center py-8">Memuat anggota...</p>
+          ) : loadError ? (
+            <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-center text-sm font-bold text-rose-700">{loadError}</p>
           ) : members.filter(m => m.id !== group.leader_id).length === 0 ? (
             <div className="text-center py-10 bg-slate-50 border-2 border-slate-100 border-dashed rounded-[2rem]">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">

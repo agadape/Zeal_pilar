@@ -43,6 +43,8 @@ export default function AnnouncementsView({ announcements, currentUser, onSaveAn
       setTitle('');
       setContent('');
       setIsModalOpen(false);
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSubmitting(false);
     }
@@ -138,7 +140,9 @@ export default function AnnouncementsView({ announcements, currentUser, onSaveAn
                 
                 {(isAdminPerson(currentUser) || a.author_id === currentUser?.id) && <button
                   onClick={() => {
-                    if (confirm('Yakin ingin menghapus pengumuman ini?')) onDeleteAnnouncement(a.id);
+                    if (confirm('Yakin ingin menghapus pengumuman ini?')) {
+                      void onDeleteAnnouncement(a.id).catch(() => undefined);
+                    }
                   }}
                   className="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-400 transition-all shadow-sm self-end sm:self-auto"
                 >

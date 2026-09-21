@@ -15,7 +15,8 @@ import {
   IconFlame
 } from '@tabler/icons-react';
 import Image from 'next/image';
-import { isAdminPerson } from '@/lib/permissions';
+import { isAdminPerson, isGroupLeaderPerson } from '@/lib/permissions';
+import { parseDateOnly } from '@/lib/dateUtils';
 
 interface DashboardViewProps {
   people: Person[];
@@ -35,7 +36,14 @@ export default function DashboardView({ people, groups, stats, events = [], curr
   const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
-    fetchUpcomingMilestones().then(data => setMilestones(data));
+    let active = true;
+    fetchUpcomingMilestones()
+      .then(data => { if (active) setMilestones(data); })
+      .catch(error => {
+        console.error('Milestone loading error:', error);
+        if (active) setMilestones([]);
+      });
+    return () => { active = false; };
   }, [people]);
 
   const weakPeople = people.filter(p => p.status === 'WEAK' || p.status === 'INACTIVE');
@@ -49,9 +57,15 @@ export default function DashboardView({ people, groups, stats, events = [], curr
   const visibleGroupIds = isAdminPerson(currentUser)
     ? groups.map(group => group.id)
     : groups.filter(group => group.leader_id === currentUser?.id).map(group => group.id);
+  const canSubmitStats = isGroupLeaderPerson(currentUser) && visibleGroupIds.length > 0;
   const relevantStats = stats.filter(stat => visibleGroupIds.includes(stat.group_id));
-  const latestRelevantStat = [...relevantStats].sort((a, b) => new Date(b.week_date).getTime() - new Date(a.week_date).getTime())[0];
-  const isReportCompleted = Boolean(latestRelevantStat && (new Date().getTime() - new Date(latestRelevantStat.week_date).getTime() < 7 * 24 * 60 * 60 * 1000));
+  const latestRelevantStat = [...relevantStats].sort((a, b) => b.week_date.localeCompare(a.week_date))[0];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const reportAgeInDays = latestRelevantStat
+    ? Math.floor((today.getTime() - parseDateOnly(latestRelevantStat.week_date).getTime()) / 86_400_000)
+    : null;
+  const isReportCompleted = reportAgeInDays !== null && reportAgeInDays >= 0 && reportAgeInDays < 7;
 
   const firstName = currentUser?.full_name?.split(' ')[0] || 'Leaders';
 
@@ -194,7 +208,9 @@ export default function DashboardView({ people, groups, stats, events = [], curr
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Laporan Mingguan</h2>
                 <p className="text-slate-400 text-sm">
-                  {isReportCompleted 
+                  {!canSubmitStats
+                    ? "Lihat perkembangan laporan mingguan seluruh grup Tugu."
+                    : isReportCompleted
                     ? "Wow! Kamu sudah menyelesaikan laporan minggu ini. Awesome job!" 
                     : "Belum ngisi laporan kehadiran dan PDG? Yuk isi sekarang biar datanya update."}
                 </p>
@@ -203,12 +219,12 @@ export default function DashboardView({ people, groups, stats, events = [], curr
               <button 
                 onClick={() => onNavigate('statistika')}
                 className={`w-full py-4 rounded-2xl font-bold transition-all shadow-lg ${
-                  isReportCompleted 
+                  !canSubmitStats || isReportCompleted
                     ? 'bg-white/10 text-white hover:bg-white/20' 
                     : 'bg-indigo-500 text-white hover:bg-indigo-400 shadow-indigo-500/50'
                 }`}
               >
-                {isReportCompleted ? 'Lihat Laporan' : 'Gass Isi Laporan!'}
+                {!canSubmitStats || isReportCompleted ? 'Lihat Laporan' : 'Gass Isi Laporan!'}
               </button>
             </div>
           </div>
@@ -269,15 +285,20 @@ export default function DashboardView({ people, groups, stats, events = [], curr
           }
           setPasswordLoading(true);
           setPasswordError('');
-          const { error } = await updateUserPassword(newPassword);
-          setPasswordLoading(false);
-          if (error) {
-            setPasswordError(error.message);
-          } else {
-            alert('Password berhasil diubah!');
-            setIsPasswordModalOpen(false);
-            setNewPassword('');
-            setConfirmPassword('');
+          try {
+            const { error } = await updateUserPassword(newPassword);
+            if (error) {
+              setPasswordError(error.message);
+            } else {
+              alert('Password berhasil diubah!');
+              setIsPasswordModalOpen(false);
+              setNewPassword('');
+              setConfirmPassword('');
+            }
+          } catch (error) {
+            setPasswordError(error instanceof Error ? error.message : 'Gagal memperbarui password.');
+          } finally {
+            setPasswordLoading(false);
           }
         }}
       >

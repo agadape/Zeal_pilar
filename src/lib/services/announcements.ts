@@ -12,11 +12,30 @@ export async function fetchAnnouncements(): Promise<Announcement[]> {
 }
 
 export async function saveAnnouncement(announcement: Omit<Announcement, 'id' | 'author_name'> & { id?: string }): Promise<Announcement> {
-  let authorName = 'System';
-  let authorId: string | null = null;
-  
+  const title = announcement.title.trim();
+  const content = announcement.content.trim();
+  if (!title || !content) throw new Error('Judul dan isi pengumuman wajib diisi.');
+
   if (isSupabaseConfigured && supabase) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const editableFields = {
+      title,
+      content,
+      is_pinned: announcement.is_pinned
+    };
+
+    if (announcement.id) {
+      const result = await supabase
+        .from('announcements')
+        .update(editableFields)
+        .eq('id', announcement.id)
+        .select()
+        .single();
+      if (result.error) throw result.error;
+      return result.data as Announcement;
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
     if (!user) throw new Error('Sesi login tidak valid.');
 
     const { data: profile, error: profileError } = await supabase
@@ -26,25 +45,42 @@ export async function saveAnnouncement(announcement: Omit<Announcement, 'id' | '
       .maybeSingle();
     if (profileError) throw profileError;
     if (!profile) throw new Error('Profil user tidak terhubung ke data people.');
-    authorId = profile.id;
-    authorName = profile.full_name;
-    
-    const annToSave = {
-      title: announcement.title,
-      content: announcement.content,
-      is_pinned: announcement.is_pinned,
-      author_name: authorName,
-      author_id: authorId
-    };
-    const result = announcement.id
-      ? await supabase.from('announcements').update(annToSave).eq('id', announcement.id).select().single()
-      : await supabase.from('announcements').insert([annToSave]).select().single();
+
+    const result = await supabase.from('announcements').insert([{
+      ...editableFields,
+      author_name: profile.full_name,
+      author_id: profile.id
+    }]).select().single();
     if (result.error) throw result.error;
     return result.data as Announcement;
   }
 
   const announcements = getLocalData<Announcement[]>(STORAGE_KEYS.ANNOUNCEMENTS, INITIAL_ANNOUNCEMENTS);
-  const newAnn: Announcement = { ...announcement, author_name: authorName, author_id: authorId || undefined, id: 'an_' + Date.now(), created_at: new Date().toISOString() } as Announcement;
+  if (announcement.id) {
+    const existing = announcements.find(item => item.id === announcement.id);
+    if (!existing) throw new Error('Pengumuman tidak ditemukan.');
+    const updatedAnnouncement: Announcement = {
+      ...existing,
+      title,
+      content,
+      is_pinned: announcement.is_pinned
+    };
+    setLocalData(
+      STORAGE_KEYS.ANNOUNCEMENTS,
+      announcements.map(item => item.id === announcement.id ? updatedAnnouncement : item)
+    );
+    return updatedAnnouncement;
+  }
+
+  const newAnn: Announcement = {
+    ...announcement,
+    title,
+    content,
+    author_name: 'Local Admin',
+    author_id: 'local_admin',
+    id: `an_${crypto.randomUUID()}`,
+    created_at: new Date().toISOString()
+  } as Announcement;
   const updated = [newAnn, ...announcements];
   setLocalData(STORAGE_KEYS.ANNOUNCEMENTS, updated);
   return newAnn;

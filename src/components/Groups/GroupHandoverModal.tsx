@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Group, Person } from '@/lib/types';
+import { Group, GroupMember, Person } from '@/lib/types';
 import { IconArrowsExchange, IconX, IconInfoCircle, IconCheck } from '@tabler/icons-react';
 
 interface Props {
   handoverGroup: Group | null;
+  groups: Group[];
   people: Person[];
+  memberships: GroupMember[];
   onClose: () => void;
   onSubmit: (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => Promise<void>;
   onSaveGroup: (group: Omit<Group, 'id'> & { id?: string }) => Promise<void>; // fallback
   isLegacyOnHandover?: boolean;
 }
 
-export default function GroupHandoverModal({ handoverGroup, people, onClose, onSubmit, onSaveGroup, isLegacyOnHandover }: Props) {
+export default function GroupHandoverModal({ handoverGroup, groups, people, memberships, onClose, onSubmit, onSaveGroup, isLegacyOnHandover }: Props) {
   const [newLeaderId, setNewLeaderId] = useState<string>('');
   const [handoverReason, setHandoverReason] = useState<string>('GRADUATED');
   const [handoverNotes, setHandoverNotes] = useState<string>('');
@@ -49,6 +51,8 @@ export default function GroupHandoverModal({ handoverGroup, people, onClose, onS
         });
       }
       onClose();
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSubmittingHandover(false);
     }
@@ -94,7 +98,21 @@ export default function GroupHandoverModal({ handoverGroup, people, onClose, onS
               >
                 <option value="">-- Pilih Leader Baru --</option>
                 {people
-                  .filter(p => p.gender === handoverGroup.category && p.id !== handoverGroup.leader_id && p.status === 'LEADER')
+                  .filter(p => {
+                    const leadsAnotherGroup = groups.some(group =>
+                      !group.archived_at
+                      && group.id !== handoverGroup.id
+                      && group.leader_id === p.id
+                    );
+                    const membership = memberships.find(item => item.person_id === p.id);
+                    const belongsToAnotherGroup = membership && membership.group_id !== handoverGroup.id;
+                    return !p.archived_at
+                      && p.gender === handoverGroup.category
+                      && p.id !== handoverGroup.leader_id
+                      && p.status === 'LEADER'
+                      && !leadsAnotherGroup
+                      && !belongsToAnotherGroup;
+                  })
                   .map(p => (
                     <option key={p.id} value={p.id}>
                       {p.full_name} ({p.campus || 'Umum'})

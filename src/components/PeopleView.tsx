@@ -10,6 +10,7 @@ import {
 import FormPanel from './FormPanel';
 import PersonDetailPanel from './PersonDetailPanel';
 import { isAdminPerson, isGroupLeaderPerson } from '@/lib/permissions';
+import { toLocalDateValue } from '@/lib/dateUtils';
 
 interface PeopleViewProps {
   people: Person[];
@@ -61,6 +62,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
 
   // Form State for Adding/Editing
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+  const isSelfEdit = Boolean(editingPerson && editingPerson.id === currentUser?.id && !canManagePeople);
   const [fullName, setFullName] = useState('');
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender>('BROTHER');
@@ -78,7 +80,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
   // BA Form State
   const [newLogWeekNum, setNewLogWeekNum] = useState<number>(1);
   const [newLogTopic, setNewLogTopic] = useState<string>('Pelajaran 1: Cinta Alkitab');
-  const [newLogDate, setNewLogDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [newLogDate, setNewLogDate] = useState<string>(toLocalDateValue());
   const [newLogNotes, setNewLogNotes] = useState<string>('');
   const [newLogMentorId, setNewLogMentorId] = useState<string>('');
 
@@ -123,7 +125,8 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
     setIsDetailOpen(false);
     setTrackingBAPerson(p);
     const existingLogs = p.study_history || [];
-    setNewLogWeekNum(existingLogs.length + 1);
+    const nextWeekNumber = Math.max(0, ...existingLogs.map(log => log.week_number)) + 1;
+    setNewLogWeekNum(nextWeekNumber);
     const LESSON_PRESETS = [
       'Pelajaran 1: Cinta Alkitab',
       'Pelajaran 2: Perilaku & Dosa',
@@ -132,10 +135,10 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
       'Pelajaran 5: Baptis & Gereja',
       'Pelajaran 6: Pemuridan & Hidup Baru'
     ];
-    setNewLogTopic(LESSON_PRESETS[Math.min(existingLogs.length, LESSON_PRESETS.length - 1)]);
-    setNewLogDate(new Date().toISOString().split('T')[0]);
+    setNewLogTopic(LESSON_PRESETS[Math.min(nextWeekNumber - 1, LESSON_PRESETS.length - 1)]);
+    setNewLogDate(toLocalDateValue());
     setNewLogNotes('');
-    setNewLogMentorId('');
+    setNewLogMentorId(currentUser?.id || '');
   };
 
   const handleSavePersonSubmit = async (e: React.FormEvent) => {
@@ -158,6 +161,8 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         notes: notes.trim() || undefined
       });
       setIsFormOpen(false);
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSubmittingPerson(false);
     }
@@ -180,6 +185,8 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
         });
       }
       setTrackingBAPerson(null);
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSubmittingBA(false);
     }
@@ -187,11 +194,14 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
 
   // Filter Logic
   const groupedPeople = useMemo(() => {
-    let list = people;
+    let list = people.filter(person => !person.archived_at);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(p => p.full_name.toLowerCase().includes(q) || 
+             (p.nickname && p.nickname.toLowerCase().includes(q)) ||
              (p.campus && p.campus.toLowerCase().includes(q)) ||
+             (p.phone_number && p.phone_number.toLowerCase().includes(q)) ||
+             p.status.toLowerCase().includes(q) ||
              (p.notes && p.notes.toLowerCase().includes(q)));
     }
     
@@ -272,13 +282,13 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
             <span className="hidden sm:inline">Export CSV</span>
           </button>}
 
-          <button
+          {canManagePeople && <button
             onClick={openAddModal}
             className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-blue-500/30 flex items-center space-x-2 transition-transform hover:-translate-y-0.5"
           >
             <IconUserPlus className="w-5 h-5" stroke={2} />
             <span>Tambah Data</span>
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -372,7 +382,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
       <PersonDetailPanel 
         person={selectedPerson} 
         isOpen={isDetailOpen} 
-        canEdit={canManagePeople}
+        canEdit={canManagePeople || selectedPerson?.id === currentUser?.id}
         canTrackBA={canTrackBA}
         onClose={() => setIsDetailOpen(false)}
         onEdit={openEditModal}
@@ -421,6 +431,7 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
                 <select
                   value={gender}
                   onChange={e => setGender(e.target.value as Gender)}
+                  disabled={isSelfEdit}
                   className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
                 >
                   <option value="BROTHER">BROTHER 👦🏻</option>
@@ -511,9 +522,10 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Status Pelayanan *</label>
-                <select
-                  value={status}
-                  onChange={e => setStatus(e.target.value as PersonStatus)}
+              <select
+                value={status}
+                onChange={e => setStatus(e.target.value as PersonStatus)}
+                disabled={isSelfEdit}
                   className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
                 >
                   <optgroup label="Sudah Disciple">
@@ -571,9 +583,13 @@ export default function PeopleView({ people, currentUser, onSavePerson, onDelete
                  <button
                    type="button"
                    onClick={async () => {
-                     if (confirm('Yakin ingin menghapus data disciple ini secara permanen?')) {
-                       await onDeletePerson(editingPerson.id);
-                       setIsFormOpen(false);
+                     if (confirm('Arsipkan data disciple ini? Data historinya tetap tersimpan.')) {
+                       try {
+                         await onDeletePerson(editingPerson.id);
+                         setIsFormOpen(false);
+                       } catch {
+                         // The page-level mutation handler already reports the database error.
+                       }
                      }
                    }}
                    className="text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 px-4 py-3.5 rounded-2xl w-full transition-colors shadow-lg shadow-rose-500/30"

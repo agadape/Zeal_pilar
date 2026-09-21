@@ -45,21 +45,6 @@ CREATE TABLE IF NOT EXISTS weekly_stat_study_progress (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- RLS POLICIES FOR NEW TABLES
+-- RLS starts closed. supabase_security_alignment.sql installs the authenticated policies.
 ALTER TABLE weekly_stat_absences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE weekly_stat_study_progress ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_policies WHERE policyname = 'Public Read/Write weekly_stat_absences'
-    ) THEN
-        CREATE POLICY "Public Read/Write weekly_stat_absences" ON weekly_stat_absences FOR ALL USING (true) WITH CHECK (true);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_policies WHERE policyname = 'Public Read/Write weekly_stat_study_progress'
-    ) THEN
-        CREATE POLICY "Public Read/Write weekly_stat_study_progress" ON weekly_stat_study_progress FOR ALL USING (true) WITH CHECK (true);
-    END IF;
-END $$;

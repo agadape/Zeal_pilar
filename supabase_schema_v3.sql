@@ -49,15 +49,7 @@ CREATE TABLE IF NOT EXISTS group_leadership_history (
 
 CREATE INDEX IF NOT EXISTS idx_leadership_history_group ON group_leadership_history(group_id, started_at);
 ALTER TABLE group_leadership_history ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_policies WHERE policyname = 'Public Read/Write group_leadership_history'
-    ) THEN
-        CREATE POLICY "Public Read/Write group_leadership_history" ON group_leadership_history FOR ALL USING (true) WITH CHECK (true);
-    END IF;
-END $$;
+-- RLS starts closed. supabase_security_alignment.sql installs the authenticated policies.
 
 -- 4. TRIGGER FUNCTION FOR AUTO LOGGING LEADERSHIP CHANGE
 CREATE OR REPLACE FUNCTION log_leadership_change()

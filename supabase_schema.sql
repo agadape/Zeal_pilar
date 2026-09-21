@@ -63,7 +63,8 @@ CREATE TABLE IF NOT EXISTS weekly_stats (
     event_visitors_count INT DEFAULT 0,
     baptisms_count INT DEFAULT 0,
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uniq_group_week UNIQUE (group_id, week_date)
 );
 
 -- 5. EVENTS TABLE
@@ -96,7 +97,8 @@ CREATE TABLE IF NOT EXISTS announcements (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- RLS POLICIES (Allow public access for Tugu Leaders demo/app)
+-- RLS is enabled here with no permissive public policies. The final authenticated
+-- policies are installed by supabase_security_alignment.sql.
 ALTER TABLE people ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bible_study_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
@@ -105,15 +107,6 @@ ALTER TABLE weekly_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_rosters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow public read/write on people" ON people FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on bible_study_logs" ON bible_study_logs FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on groups" ON groups FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on group_members" ON group_members FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on weekly_stats" ON weekly_stats FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on events" ON events FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on event_rosters" ON event_rosters FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read/write on announcements" ON announcements FOR ALL USING (true) WITH CHECK (true);
 
 -- SEED INITIAL DATA FOR ZEAL TUGU LEADERS
 INSERT INTO people (full_name, gender, campus, status, notes) VALUES

@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Group, Person, Gender } from '@/lib/types';
+import { Group, GroupMember, Person, Gender } from '@/lib/types';
 import FormPanel from '../FormPanel';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   editingGroup: Group | null;
+  groups: Group[];
   people: Person[];
+  memberships: GroupMember[];
   onSaveGroup: (group: Omit<Group, 'id'> & { id?: string }) => Promise<void>;
+  canManageLeadership: boolean;
 }
 
-export default function GroupFormModal({ isOpen, onClose, editingGroup, people, onSaveGroup }: Props) {
+export default function GroupFormModal({ isOpen, onClose, editingGroup, groups, people, memberships, onSaveGroup, canManageLeadership }: Props) {
   const [groupName, setGroupName] = useState('');
   const [category, setCategory] = useState<Gender>('SISTER');
   const [leaderId, setLeaderId] = useState<string>('');
@@ -46,6 +49,8 @@ export default function GroupFormModal({ isOpen, onClose, editingGroup, people, 
         baptism_goal: baptismGoal
       });
       onClose();
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSubmittingGroup(false);
     }
@@ -78,6 +83,7 @@ export default function GroupFormModal({ isOpen, onClose, editingGroup, people, 
           <select
             value={category}
             onChange={e => setCategory(e.target.value as Gender)}
+            disabled={!canManageLeadership}
             className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
           >
             <option value="SISTER">SISTER 👧🏻</option>
@@ -90,11 +96,25 @@ export default function GroupFormModal({ isOpen, onClose, editingGroup, people, 
           <select
             value={leaderId}
             onChange={e => setLeaderId(e.target.value)}
+            disabled={!canManageLeadership}
             className="w-full bg-white border-2 border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
           >
             <option value="">-- Pilih Leader --</option>
             {people
-              .filter(p => p.gender === category && p.status === 'LEADER')
+              .filter(p => {
+                const leadsAnotherGroup = groups.some(group =>
+                  !group.archived_at
+                  && group.id !== editingGroup?.id
+                  && group.leader_id === p.id
+                );
+                const membership = memberships.find(item => item.person_id === p.id);
+                const belongsToAnotherGroup = membership && membership.group_id !== editingGroup?.id;
+                return !p.archived_at
+                  && p.gender === category
+                  && p.status === 'LEADER'
+                  && !leadsAnotherGroup
+                  && !belongsToAnotherGroup;
+              })
               .map(p => (
                 <option key={p.id} value={p.id}>
                   {p.full_name} ({p.status})

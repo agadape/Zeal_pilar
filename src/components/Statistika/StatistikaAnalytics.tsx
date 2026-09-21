@@ -2,6 +2,7 @@ import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { IconTrendingUp } from '@tabler/icons-react';
 import { WeeklyStat } from '@/lib/types';
+import { formatDateOnly } from '@/lib/dateUtils';
 
 interface Props {
   stats: WeeklyStat[];
@@ -10,9 +11,9 @@ interface Props {
 export default function StatistikaAnalytics({ stats }: Props) {
   // Chart Data preparation
   const chartData = [...stats]
-    .sort((a, b) => new Date(a.week_date).getTime() - new Date(b.week_date).getTime())
+    .sort((a, b) => a.week_date.localeCompare(b.week_date))
     .map(s => ({
-      date: new Date(s.week_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+      date: formatDateOnly(s.week_date, { day: 'numeric', month: 'short' }),
       Reachout: s.reachout_count,
       Visitor: s.sunday_visitors_count + (s.event_visitors_count || 0)
     }));

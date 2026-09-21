@@ -238,6 +238,7 @@ export default function Home() {
                   groups={groups} 
                   people={people} 
                   currentUser={currentUser}
+                  memberships={dTreeData.memberships}
                   onSaveGroup={handleSaveGroup} 
                   onDeleteGroup={handleDeleteGroup} 
                   onHandoverLeadership={handleHandoverLeadership}

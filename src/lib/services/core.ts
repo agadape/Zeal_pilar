@@ -22,28 +22,6 @@ export const STORAGE_KEYS = {
   MENTORSHIP_RELATIONSHIPS: 'tugu_mentorship_relationships_v1',
 };
 
-// Automatic one-time purge of legacy seed data cached in browser LocalStorage
-if (typeof window !== 'undefined') {
-  const PURGE_KEY = 'tugu_legacy_purged_v3';
-  if (!localStorage.getItem(PURGE_KEY)) {
-    localStorage.removeItem('tugu_people');
-    localStorage.removeItem('tugu_groups');
-    localStorage.removeItem('tugu_group_members');
-    localStorage.removeItem('tugu_stats');
-    localStorage.removeItem('tugu_events');
-    localStorage.removeItem('tugu_announcements');
-    localStorage.removeItem('tugu_people_v2');
-    localStorage.removeItem('tugu_groups_v2');
-    localStorage.setItem(PURGE_KEY, 'true');
-  }
-}
-
-export function clearLocalCache(): void {
-  if (typeof window === 'undefined') return;
-  Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
-  localStorage.removeItem('tugu_campus_list');
-}
-
 export function getLocalData<T>(key: string, initialDefault: T): T {
   if (typeof window === 'undefined') return initialDefault;
   try {
@@ -60,6 +38,6 @@ export function setLocalData<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
-    console.error('LocalStorage write error:', e);
+    throw new Error(`Data lokal gagal disimpan: ${e instanceof Error ? e.message : 'storage tidak tersedia'}`);
   }
 }

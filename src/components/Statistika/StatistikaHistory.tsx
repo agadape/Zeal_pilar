@@ -2,6 +2,7 @@ import React from 'react';
 import { IconHistory, IconTrash } from '@tabler/icons-react';
 import { WeeklyStat, Group, Person } from '@/lib/types';
 import { isAdminPerson } from '@/lib/permissions';
+import { formatDateOnly } from '@/lib/dateUtils';
 
 interface Props {
   stats: WeeklyStat[];
@@ -43,7 +44,7 @@ export default function StatistikaHistory({ stats, groups, currentUser, onDelete
                 <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="font-extrabold text-slate-900 text-sm tracking-tight">{s.group_name}</div>
-                    <div className="font-black text-[10px] uppercase tracking-widest text-slate-400 mt-1">{new Date(s.week_date).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</div>
+                    <div className="font-black text-[10px] uppercase tracking-widest text-slate-400 mt-1">{formatDateOnly(s.week_date, {day:'numeric', month:'short', year:'numeric'})}</div>
                   </td>
                   <td className="px-5 py-4 text-center">
                     <span className="font-black text-slate-700">{s.active_disciples_count}</span>
@@ -68,7 +69,9 @@ export default function StatistikaHistory({ stats, groups, currentUser, onDelete
                     {onDeleteStat && (isSuperAdmin || groups.find(g => g.id === s.group_id)?.leader_id === currentUser?.id) && (
                       <button
                         onClick={() => {
-                          if (confirm('Yakin ingin menghapus statistik minggu ini?')) onDeleteStat(s.id);
+                          if (confirm('Yakin ingin menghapus statistik minggu ini?')) {
+                            void onDeleteStat(s.id).catch(() => undefined);
+                          }
                         }}
                         className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-400 transition-all shadow-sm"
                         title="Hapus Laporan"

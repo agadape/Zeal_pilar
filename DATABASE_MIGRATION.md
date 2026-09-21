@@ -111,6 +111,47 @@ order by tablename, policyname;
 
 Setelah itu buka tab d-Tree sebagai Admin, atur dua Pemimpin Jemaat, lalu tempatkan satu anggota dari panel Belum Ditempatkan.
 
+## Migrasi integritas pasca-audit
+
+Setelah dua migrasi di atas, jalankan `supabase_bugfixes.sql`. Migrasi ini:
+
+- memastikan satu laporan per kombinasi grup dan tanggal;
+- mewajibkan dua root d-Tree pada setiap perubahan settings berikutnya;
+- menolak angka statistik negatif;
+- menolak nomor sesi BA nol atau negatif;
+- memasang RPC arsip people yang menjaga histori dan membersihkan relasi aktif.
+
+Sebelum menjalankan, query berikut harus menghasilkan nol baris:
+
+```sql
+select group_id, week_date, count(*)
+from public.weekly_stats
+group by group_id, week_date
+having count(*) > 1;
+```
+
+Jika ada hasil, tentukan laporan yang benar dan rapikan duplikat secara manual. Script sengaja berhenti agar tidak menghapus histori secara otomatis.
+
+Verifikasi setelah migrasi:
+
+```sql
+select indexname
+from pg_indexes
+where schemaname = 'public'
+  and tablename = 'weekly_stats'
+  and indexname = 'weekly_stats_one_report_per_group_week';
+
+select conname, convalidated
+from pg_constraint
+where conname in (
+  'dtree_requires_two_roots',
+  'weekly_stats_non_negative_counts',
+  'bible_study_week_positive'
+);
+```
+
+Constraint bertanda `NOT VALID` tetap memeriksa semua insert/update baru. Status tersebut hanya mengizinkan data lama diperbaiki tanpa menggagalkan pemasangan migrasi.
+
 ## Smoke test akun
 
 - Super Admin: seluruh tab, people/group/event/account management, semua statistik.

@@ -61,22 +61,21 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
     formData.append('password', password);
     formData.append('person_id', selectedPersonId);
 
-    const result = await createLeaderAccount(formData);
-
-    if (result?.error) {
-      setErrorMsg(result.error);
-      setSubmitting(false);
-    } else {
-      setSuccessMsg('Akun berhasil dibuat dan disambungkan!');
-      await onRefreshData();
-      setTimeout(() => {
-        setIsModalOpen(false);
+    try {
+      const result = await createLeaderAccount(formData);
+      if (result?.error) {
+        setErrorMsg(result.error);
+      } else {
+        await onRefreshData();
+        setSuccessMsg('Akun berhasil dibuat dan disambungkan!');
         setEmail('');
         setPassword('');
         setSelectedPersonId('');
-        setSuccessMsg('');
-        setSubmitting(false);
-      }, 1500);
+      }
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : 'Gagal membuat akun Leader.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -100,20 +99,18 @@ export default function AdminAccountsView({ currentUser, people, onRefreshData }
     formData.append('auth_id', targetAuthId);
     formData.append('password', password);
 
-    const result = await resetLeaderPassword(formData);
-
-    if (result?.error) {
-      setErrorMsg(result.error);
-      setSubmitting(false);
-    } else {
-      setSuccessMsg('Password berhasil direset!');
-      setTimeout(() => {
-        setIsResetModalOpen(false);
+    try {
+      const result = await resetLeaderPassword(formData);
+      if (result?.error) {
+        setErrorMsg(result.error);
+      } else {
+        setSuccessMsg('Password berhasil direset!');
         setPassword('');
-        setSelectedPersonId('');
-        setSuccessMsg('');
-        setSubmitting(false);
-      }, 1500);
+      }
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : 'Gagal mereset password.');
+    } finally {
+      setSubmitting(false);
     }
   };
 

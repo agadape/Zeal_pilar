@@ -67,10 +67,8 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
 
           <div className="flex items-center shrink-0 ml-2 space-x-2">
             <button
-              onClick={async () => {
+              onClick={() => {
                 if (typeof window !== 'undefined') {
-                  const { clearLocalCache } = await import('@/lib/supabase');
-                  clearLocalCache();
                   window.location.reload();
                 }
               }}
@@ -81,7 +79,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
               <span className="text-xs hidden lg:inline-block font-bold">Refresh</span>
             </button>
 
-            <button
+            {currentUser?.id !== 'local_admin' && <button
               onClick={async () => {
                 if (typeof window !== 'undefined') {
                   const { supabase } = await import('@/lib/supabase');
@@ -94,7 +92,7 @@ export default function Navbar({ activeTab, setActiveTab, currentUser }: NavbarP
             >
               <IconLogout className="w-4 h-4 shrink-0" stroke={2} />
               <span className="text-xs hidden sm:inline-block">Logout</span>
-            </button>
+            </button>}
           </div>
 
         </div>

@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Group, Person } from '@/lib/types';
+import { Group, GroupMember, Person } from '@/lib/types';
 import { fetchGroupMembers, updateGroupMembers } from '@/lib/supabase';
 import { IconX, IconCheck } from '@tabler/icons-react';
 
 interface Props {
   managingMembersGroup: Group | null;
   people: Person[];
+  memberships: GroupMember[];
   onClose: () => void;
   onRefreshData?: () => Promise<void>;
 }
 
-export default function GroupMembersModal({ managingMembersGroup, people, onClose, onRefreshData }: Props) {
+export default function GroupMembersModal({ managingMembersGroup, people, memberships, onClose, onRefreshData }: Props) {
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [submittingMembers, setSubmittingMembers] = useState(false);
@@ -21,12 +22,15 @@ export default function GroupMembersModal({ managingMembersGroup, people, onClos
     if (managingMembersGroup) {
       let isMounted = true;
       setLoadingMembers(true);
-      fetchGroupMembers(managingMembersGroup.id).then(currentMembers => {
-        if (isMounted) {
-          setSelectedMemberIds(currentMembers.map(m => m.id));
-          setLoadingMembers(false);
-        }
-      });
+      setSubmitError('');
+      fetchGroupMembers(managingMembersGroup.id)
+        .then(currentMembers => {
+          if (isMounted) setSelectedMemberIds(currentMembers.map(m => m.id));
+        })
+        .catch(error => {
+          if (isMounted) setSubmitError(error instanceof Error ? error.message : 'Gagal memuat anggota grup.');
+        })
+        .finally(() => { if (isMounted) setLoadingMembers(false); });
       return () => { isMounted = false; };
     }
   }, [managingMembersGroup]);
@@ -79,7 +83,13 @@ export default function GroupMembersModal({ managingMembersGroup, people, onClos
           ) : (
             <div className="space-y-3">
               {people
-                .filter(p => p.gender === managingMembersGroup.category && p.id !== managingMembersGroup.leader_id)
+                .filter(p => {
+                  const assignment = memberships.find(membership => membership.person_id === p.id);
+                  return !p.archived_at
+                    && p.gender === managingMembersGroup.category
+                    && p.id !== managingMembersGroup.leader_id
+                    && (!assignment || assignment.group_id === managingMembersGroup.id);
+                })
                 .map(p => {
                   const isSelected = selectedMemberIds.includes(p.id);
                   return (

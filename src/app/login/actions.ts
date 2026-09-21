@@ -8,8 +8,12 @@ export async function login(formData: FormData) {
   const supabase = await createClient()
 
   const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: String(formData.get('email') || '').trim().toLowerCase(),
+    password: String(formData.get('password') || ''),
+  }
+
+  if (!data.email || !data.password) {
+    return { error: 'Email dan password wajib diisi.' }
   }
 
   const { error } = await supabase.auth.signInWithPassword(data)

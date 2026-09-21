@@ -41,15 +41,16 @@ export async function createLeaderAccount(formData: FormData) {
   if ('error' in authorization) return { error: authorization.error };
   const supabaseAdmin = authorization.adminClient;
 
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const personId = formData.get('person_id') as string;
+  const email = String(formData.get('email') || '').trim().toLowerCase();
+  const password = String(formData.get('password') || '');
+  const personId = String(formData.get('person_id') || '');
 
   if (!email || !password || !personId) {
     return { error: 'Email, password, dan pilihan Leader wajib diisi.' };
   }
 
   if (password.length < 6) return { error: 'Password minimal 6 karakter.' };
+  if (!/^\S+@\S+\.\S+$/.test(email)) return { error: 'Format email tidak valid.' };
 
   try {
     const { data: targetPerson, error: targetError } = await supabaseAdmin
@@ -81,7 +82,7 @@ export async function createLeaderAccount(formData: FormData) {
     }
 
     // 2. Link the canonical auth identity to the people table.
-    const { error: updateError } = await supabaseAdmin
+    const { data: linkedPerson, error: updateError } = await supabaseAdmin
       .from('people')
       .update({
         auth_user_id: authData.user.id,
@@ -89,12 +90,20 @@ export async function createLeaderAccount(formData: FormData) {
         role: 'GROUP_LEADER',
         is_admin: false
       })
-      .eq('id', personId);
+      .eq('id', personId)
+      .is('auth_user_id', null)
+      .is('auth_id', null)
+      .select('id')
+      .maybeSingle();
 
-    if (updateError) {
+    if (updateError || !linkedPerson) {
       // Rollback auth user creation if linking fails
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      return { error: `Gagal menyambungkan akun ke data Leader: ${updateError.message}` };
+      return {
+        error: updateError
+          ? `Gagal menyambungkan akun ke data Leader: ${updateError.message}`
+          : 'Leader tersebut baru saja terhubung ke akun lain. Silakan muat ulang halaman.'
+      };
     }
 
     return { success: true };
@@ -115,8 +124,8 @@ export async function resetLeaderPassword(formData: FormData) {
   if ('error' in authorization) return { error: authorization.error };
   const supabaseAdmin = authorization.adminClient;
 
-  const authId = formData.get('auth_id') as string;
-  const newPassword = formData.get('password') as string;
+  const authId = String(formData.get('auth_id') || '');
+  const newPassword = String(formData.get('password') || '');
 
   if (!authId || !newPassword) {
     return { error: 'Auth ID dan password baru wajib diisi.' };

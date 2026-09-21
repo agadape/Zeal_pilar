@@ -150,7 +150,7 @@ export default function DTreeRootModal({
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !brotherRootId || !sisterRootId}
             className="btn-primary btn-tactile disabled:cursor-not-allowed disabled:opacity-60"
           >
             <IconCheck className="h-4 w-4" stroke={2.2} />

@@ -14,6 +14,7 @@ import {
   } from '@tabler/icons-react';
 import FormPanel from './FormPanel';
 import { isAdminPerson } from '@/lib/permissions';
+import { toLocalDateTimeValue } from '@/lib/dateUtils';
 
 interface EventsViewProps {
   events: MinistryEvent[];
@@ -46,7 +47,7 @@ export default function EventsView({ events, people, currentUser, onSaveEvent, o
     setEditingEvent(null);
     setTitle('');
     setType('PDA_COMBINED');
-    setEventDate(new Date().toISOString().slice(0, 16));
+    setEventDate(toLocalDateTimeValue());
     setLocation('Gedung GKDI Jogja / Online');
     setDescription('');
     setSpeakerId('');
@@ -60,7 +61,7 @@ export default function EventsView({ events, people, currentUser, onSaveEvent, o
     setEditingEvent(ev);
     setTitle(ev.title);
     setType(ev.type);
-    setEventDate(new Date(ev.event_date).toISOString().slice(0, 16));
+    setEventDate(toLocalDateTimeValue(ev.event_date));
     setLocation(ev.location || '');
     setDescription(ev.description || '');
 
@@ -99,6 +100,8 @@ export default function EventsView({ events, people, currentUser, onSaveEvent, o
       });
 
       setIsModalOpen(false);
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +171,9 @@ export default function EventsView({ events, people, currentUser, onSaveEvent, o
                     </button>
                     <button
                       onClick={() => {
-                        if (confirm('Yakin ingin menghapus event ini?')) onDeleteEvent(ev.id);
+                        if (confirm('Yakin ingin menghapus event ini?')) {
+                          void onDeleteEvent(ev.id).catch(() => undefined);
+                        }
                       }}
                       className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-400 transition-all shadow-sm"
                     >

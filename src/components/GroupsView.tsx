@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Group, Person } from '@/lib/types';
+import { Group, GroupMember, Person } from '@/lib/types';
 import GroupDetailPanel from './GroupDetailPanel';
 import { IconPlus, IconUsersGroup } from '@tabler/icons-react';
 
@@ -12,13 +12,14 @@ interface GroupsViewProps {
   groups: Group[];
   people: Person[];
   currentUser?: Person | null;
+  memberships?: GroupMember[];
   onSaveGroup: (group: Omit<Group, 'id'> & { id?: string }) => Promise<void>;
   onDeleteGroup: (id: string) => Promise<void>;
   onHandoverLeadership?: (params: { group_id: string; new_leader_id: string; reason: string; notes?: string }) => Promise<void>;
   onRefreshData?: () => Promise<void>;
 }
 
-export default function GroupsView({ groups, people, currentUser, onSaveGroup, onDeleteGroup, onHandoverLeadership, onRefreshData }: GroupsViewProps) {
+export default function GroupsView({ groups, people, currentUser, memberships = [], onSaveGroup, onDeleteGroup, onHandoverLeadership, onRefreshData }: GroupsViewProps) {
   const isAdmin = isAdminPerson(currentUser);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -136,7 +137,9 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
       {mounted && (
         <GroupHandoverModal
           handoverGroup={handoverGroup}
+          groups={groups}
           people={people}
+          memberships={memberships}
           onClose={() => setHandoverGroup(null)}
           onSubmit={onHandoverLeadership || (async () => {})}
           onSaveGroup={onSaveGroup}
@@ -149,8 +152,11 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
         isOpen={isGroupModalOpen}
         onClose={() => setIsGroupModalOpen(false)}
         editingGroup={editingGroup}
+        groups={groups}
         people={people}
+        memberships={memberships}
         onSaveGroup={onSaveGroup}
+        canManageLeadership={isAdmin}
       />
 
       {/* MANAGE MEMBERS MODAL */}
@@ -158,6 +164,7 @@ export default function GroupsView({ groups, people, currentUser, onSaveGroup, o
         <GroupMembersModal
           managingMembersGroup={managingMembersGroup}
           people={people}
+          memberships={memberships}
           onClose={() => setManagingMembersGroup(null)}
           onRefreshData={onRefreshData}
         />

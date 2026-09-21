@@ -3,6 +3,10 @@ import { Group, Person, WeeklyStat, MissingReason } from '@/lib/types';
 import { fetchGroupMembers } from '@/lib/supabase';
 import confetti from 'canvas-confetti';
 import { IconCopy, IconSend, IconUsers, IconX, IconSparkles } from '@tabler/icons-react';
+import { formatDateOnly, toLocalDateValue } from '@/lib/dateUtils';
+
+const DISCIPLE_STATUSES = new Set(['LEADER', 'DISCIPLE', 'WEAK']);
+const PRESET_MISSING_REASONS = ['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'];
 
 interface Props {
   groups: Group[];
@@ -16,12 +20,13 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
   const getMostRecentSunday = () => {
     const d = new Date();
     d.setDate(d.getDate() - d.getDay());
-    return d.toISOString().split('T')[0];
+    return toLocalDateValue(d);
   };
   const [weekDate, setWeekDate] = useState<string>(getMostRecentSunday());
   
   const [groupMembers, setGroupMembers] = useState<Person[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [membersError, setMembersError] = useState('');
 
   const [missingMembers, setMissingMembers] = useState<MissingReason[]>([]);
   const [reachoutMembers, setReachoutMembers] = useState<{person_id: string, person_name: string}[]>([]);
@@ -30,32 +35,54 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
   const [notes, setNotes] = useState<string>('');
 
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState('');
+  const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!selectedGroupId) return;
     let isMounted = true;
     setLoadingMembers(true);
-    fetchGroupMembers(selectedGroupId).then(members => {
-      if (isMounted) {
-        setGroupMembers(members);
-        setMissingMembers([]);
-        setLoadingMembers(false);
-      }
-    });
+    setMembersError('');
+    fetchGroupMembers(selectedGroupId)
+      .then(members => {
+        if (isMounted) {
+          setGroupMembers(members.filter(member => DISCIPLE_STATUSES.has(member.status)));
+        }
+      })
+      .catch(error => {
+        if (isMounted) {
+          setGroupMembers([]);
+          setMembersError(error instanceof Error ? error.message : 'Gagal memuat anggota grup.');
+        }
+      })
+      .finally(() => { if (isMounted) setLoadingMembers(false); });
     return () => { isMounted = false; };
   }, [selectedGroupId]);
+
+  const existingStat = stats.find(stat =>
+    stat.group_id === selectedGroupId && stat.week_date === weekDate
+  );
+
+  useEffect(() => {
+    setMissingMembers(existingStat?.missing_reasons || []);
+    setReachoutMembers(existingStat?.reachouts_list || []);
+    setSundayVisitorsCount(existingStat?.sunday_visitors_count || 0);
+    setBaptismsCount(existingStat?.baptisms_count || 0);
+    setNotes(existingStat?.notes || '');
+    setFormError('');
+  }, [existingStat]);
 
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
   const activeDisciplesCount = groupMembers.length;
   
   const groupTotalBaptisms = stats
-    .filter(s => s.group_id === selectedGroupId)
+    .filter(s => s.group_id === selectedGroupId && s.week_date !== weekDate)
     .reduce((acc, curr) => acc + (curr.baptisms_count || 0), 0);
   const baptismGoal = selectedGroup?.baptism_goal || 0;
 
   const generateWAText = () => {
-    const formattedDate = new Date(weekDate).toLocaleDateString('id-ID', {
+    const formattedDate = formatDateOnly(weekDate, {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
@@ -80,17 +107,27 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
 * Jlh Baptis : ${baptismsCount}${baptismGoal > 0 ? ` (Goal: ${groupTotalBaptisms + baptismsCount}/${baptismGoal})` : ''}${notes ? `\n\nCatatan: ${notes}` : ''}`;
   };
 
-  const handleCopyWA = () => {
+  const handleCopyWA = async () => {
     const text = generateWAText();
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
-    setTimeout(() => setCopied(false), 2500);
+    setCopyError('');
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopyError('Clipboard tidak dapat diakses. Salin teks dari preview secara manual.');
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedGroupId) return;
+    setFormError('');
+    if (missingMembers.some(member => !member.reason.trim())) {
+      setFormError('Alasan missing wajib diisi sebelum laporan disimpan.');
+      return;
+    }
     setSaving(true);
     try {
       await onSaveStat({
@@ -107,7 +144,7 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
         baptisms_count: baptismsCount,
         notes
       });
-      handleCopyWA();
+      void handleCopyWA();
       
       setMissingMembers([]);
       setReachoutMembers([]);
@@ -116,6 +153,8 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
       setNotes('');
       
       onSuccess();
+    } catch {
+      // The page-level mutation handler already reports the database error.
     } finally {
       setSaving(false);
     }
@@ -125,6 +164,11 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
       <div className="xl:col-span-2 p-6 sm:p-8 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
         <form onSubmit={handleSave} className="space-y-8">
+          {existingStat && (
+            <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm font-bold text-blue-800">
+              Laporan untuk grup dan tanggal ini sudah ada. Form dimuat dalam mode edit dan penyimpanan akan memperbarui laporan lama.
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Pilih Group</label>
@@ -155,9 +199,16 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
               <IconUsers className="w-4 h-4" stroke={2} />
               <span>Daftar Absensi Disciple</span>
             </label>
+            {formError && (
+              <p role="alert" className="mb-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-700">{formError}</p>
+            )}
             {loadingMembers ? (
               <div className="animate-pulse flex flex-col gap-3">
                 {[1, 2, 3].map(i => <div key={i} className="h-16 bg-slate-100 rounded-2xl w-full"></div>)}
+              </div>
+            ) : membersError ? (
+              <div role="alert" className="text-sm font-bold text-rose-700 p-4 text-center bg-rose-50 rounded-2xl border border-rose-200">
+                {membersError}
               </div>
             ) : groupMembers.length === 0 ? (
               <div className="text-sm font-bold text-slate-400 py-8 text-center bg-slate-50 rounded-2xl border-2 border-slate-100 border-dashed">
@@ -185,7 +236,7 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
 
                         <div className="flex-1 sm:max-w-xs">
                           <select
-                            value={isMissing ? (['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].includes(missingReason) ? missingReason : 'Lainnya') : 'Hadir'}
+                            value={isMissing ? (PRESET_MISSING_REASONS.includes(missingReason) ? missingReason : 'Lainnya') : 'Hadir'}
                             onChange={e => {
                               const val = e.target.value;
                               if (val === 'Hadir') {
@@ -218,7 +269,7 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
                             </optgroup>
                           </select>
                           
-                          {isMissing && missingReason && !['Sakit', 'Pulang Kampung', 'Kerja/OJT', 'Tugas Kampus', 'MIA'].includes(missingReason) && (
+                          {isMissing && !PRESET_MISSING_REASONS.includes(missingReason) && (
                             <input
                               type="text"
                               placeholder="Ketik alasan spesifik..."
@@ -319,7 +370,7 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
             <button
               type="button"
-              onClick={handleCopyWA}
+              onClick={() => void handleCopyWA()}
               className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-bold flex items-center justify-center gap-2 transition-all"
             >
               <IconCopy className="w-5 h-5" stroke={2} />
@@ -349,6 +400,7 @@ export default function StatistikaForm({ groups, stats, onSaveStat, onSuccess }:
           <div className="p-5 rounded-2xl bg-slate-900 text-emerald-400 font-mono text-xs whitespace-pre-wrap leading-relaxed select-all shadow-inner overflow-x-auto">
             {generateWAText()}
           </div>
+          {copyError && <p role="alert" className="text-xs font-bold text-rose-600">{copyError}</p>}
         </div>
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-xs text-amber-900 space-y-2 font-medium">
           <p className="font-bold text-amber-950">Database & Format WA:</p>
