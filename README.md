@@ -1,6 +1,6 @@
 # GKDI Tugu — Leaders Portal
 
-Portal internal ZEAL Youth & Campus Ministry GKDI Jogja untuk mengelola disciple, grup PDG, laporan mingguan, progres Belajar Alkitab, event pelayanan, milestone, dan pengumuman.
+Portal internal ZEAL Youth & Campus Ministry GKDI Jogja untuk mengelola disciple, grup PDG, pohon pembimbingan, laporan mingguan, progres Belajar Alkitab, event pelayanan, milestone, dan pengumuman.
 
 ## Stack
 
@@ -15,6 +15,7 @@ Portal internal ZEAL Youth & Campus Ministry GKDI Jogja untuk mengelola disciple
 - Dashboard ringkas, milestone ulang tahun, status laporan, dan event terdekat
 - Direktori jemaat dengan data pribadi, status, kampus, dan histori BA
 - Grup PDG, assignment anggota, target baptisan, dan handover leader
+- d-Tree interaktif dengan dua Pemimpin Jemaat, cabang per grup, pembimbing utama/pendamping, histori, pencarian, zoom, dan drag-and-drop terkonfirmasi
 - Laporan mingguan, formatter WhatsApp, analitik, histori, dan ekspor CSV
 - Jadwal event beserta duty roster
 - Pengumuman yang dapat dibuat leader dan dikelola author/admin
@@ -41,15 +42,16 @@ SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 
 ## Database
 
-Untuk database lama yang sudah berjalan, jalankan hanya:
+Untuk database lama yang sudah berjalan, jalankan berurutan:
 
-1. `supabase_security_alignment.sql`
-2. Verifikasi menggunakan query pada `DATABASE_MIGRATION.md`
-3. Deploy aplikasi setelah migrasi berhasil
+1. `supabase_security_alignment.sql` untuk instalasi yang belum pernah menjalankannya
+2. `supabase_dtree.sql` untuk mengaktifkan d-Tree
+3. Verifikasi menggunakan query pada `DATABASE_MIGRATION.md`
+4. Deploy aplikasi setelah migrasi berhasil
 
 Migrasi alignment menambah kontrak yang hilang, menyatukan identitas, menghapus policy public `USING (true)`, memasang RLS final, memperbaiki trigger handover, dan mengamankan view.
 
-Untuk instalasi baru, jalankan schema lama berurutan lalu selalu akhiri dengan `supabase_security_alignment.sql`. Alignment juga membuat `bible_study_logs` bila tabel tersebut belum tersedia.
+Untuk instalasi baru, jalankan schema lama berurutan, lanjutkan `supabase_security_alignment.sql`, lalu `supabase_dtree.sql`. Alignment juga membuat `bible_study_logs` bila tabel tersebut belum tersedia.
 
 ## Model akses
 
@@ -58,6 +60,9 @@ Untuk instalasi baru, jalankan schema lama berurutan lalu selalu akhiri dengan `
 | Melihat direktori, grup, statistik, event | Ya | Ya | Ya |
 | Mengelola data jemaat | Ya | Diri sendiri via RLS | Diri sendiri via RLS |
 | Mengelola anggota/statistik grup | Ya | Grup sendiri | Tidak |
+| Melihat d-Tree | Ya | Ya | Ya |
+| Mengelola relasi d-Tree | Ya | Semua cabang | Tidak |
+| Mengganti Pemimpin Jemaat d-Tree | Ya | Tidak | Tidak |
 | Mencatat progres BA | Ya | Ya | Tidak |
 | Mengelola event | Ya | Tidak | Tidak |
 | Membuat pengumuman | Ya | Ya | Tidak |
@@ -80,9 +85,11 @@ src/app/page.tsx                 orkestrasi state dan navigasi
 src/app/actions.ts               server actions khusus Super Admin
 src/components/                  seluruh view dan panel UI
 src/lib/services/                akses Supabase per domain
+src/lib/services/dtree.ts        query dan mutation pohon pembimbingan
 src/lib/permissions.ts           helper permission UI
 src/lib/types.ts                 kontrak TypeScript
 src/utils/supabase/              client browser/server/middleware
 supabase_security_alignment.sql  migrasi final skema dan RLS
+supabase_dtree.sql               tabel, validasi, RPC, dan RLS d-Tree
 DATABASE_MIGRATION.md            panduan deployment database
 ```

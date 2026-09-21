@@ -109,10 +109,40 @@ export async function fetchGroupMembers(groupId: string): Promise<Person[]> {
 
 export async function updateGroupMembers(groupId: string, personIds: string[]): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
-    const { error: deleteError } = await supabase.from('group_members').delete().eq('group_id', groupId);
-    if (deleteError) throw deleteError;
-    if (personIds.length > 0) {
-      const inserts = personIds.map(pid => ({ group_id: groupId, person_id: pid }));
+    const { data: currentRows, error: currentError } = await supabase
+      .from('group_members')
+      .select('id, group_id, person_id')
+      .eq('group_id', groupId);
+    if (currentError) throw currentError;
+
+    const currentPersonIds = new Set((currentRows || []).map(row => row.person_id as string));
+    const requestedPersonIds = new Set(personIds);
+    const removedIds = [...currentPersonIds].filter(personId => !requestedPersonIds.has(personId));
+    const addedIds = personIds.filter(personId => !currentPersonIds.has(personId));
+
+    if (addedIds.length > 0) {
+      const { data: otherAssignments, error: assignmentError } = await supabase
+        .from('group_members')
+        .select('person_id, group_id')
+        .in('person_id', addedIds)
+        .neq('group_id', groupId);
+      if (assignmentError) throw assignmentError;
+      if (otherAssignments?.length) {
+        throw new Error('Ada anggota yang masih terdaftar di grup lain. Pindahkan dari grup lama terlebih dahulu.');
+      }
+    }
+
+    if (removedIds.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .in('person_id', removedIds);
+      if (deleteError) throw deleteError;
+    }
+
+    if (addedIds.length > 0) {
+      const inserts = addedIds.map(pid => ({ group_id: groupId, person_id: pid }));
       const { error: insertError } = await supabase.from('group_members').insert(inserts);
       if (insertError) throw insertError;
     }
@@ -120,6 +150,12 @@ export async function updateGroupMembers(groupId: string, personIds: string[]): 
   }
 
   const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const assignedElsewhere = members.find(member => member.group_id !== groupId && personIds.includes(member.person_id));
+  if (assignedElsewhere) {
+    throw new Error('Ada anggota yang masih terdaftar di grup lain. Pindahkan dari grup lama terlebih dahulu.');
+  }
+  const currentPersonIds = new Set(members.filter(member => member.group_id === groupId).map(member => member.person_id));
+  const removedPersonIds = [...currentPersonIds].filter(personId => !personIds.includes(personId));
   const filtered = members.filter(m => m.group_id !== groupId);
   const newEntries: GroupMember[] = personIds.map(pid => ({
     id: 'gm_' + Math.random().toString(36).substr(2, 9),
@@ -128,6 +164,28 @@ export async function updateGroupMembers(groupId: string, personIds: string[]): 
   }));
 
   setLocalData(STORAGE_KEYS.GROUP_MEMBERS, [...filtered, ...newEntries]);
+  if (removedPersonIds.length > 0) {
+    const relationships = getLocalData<Array<{
+      id: string;
+      mentor_id: string;
+      mentee_id: string;
+      group_id: string;
+      ended_at?: string | null;
+      end_reason?: string | null;
+      updated_at?: string;
+    }>>(STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS, []);
+    const now = new Date().toISOString();
+    setLocalData(
+      STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS,
+      relationships.map(relationship => (
+        !relationship.ended_at
+        && relationship.group_id === groupId
+        && (removedPersonIds.includes(relationship.mentor_id) || removedPersonIds.includes(relationship.mentee_id))
+          ? { ...relationship, ended_at: now.slice(0, 10), end_reason: 'Keluar dari grup', updated_at: now }
+          : relationship
+      ))
+    );
+  }
   return true;
 }
 
@@ -197,8 +255,40 @@ export async function handoverGroupLeadership(params: {
   }
 
   const groups = getLocalData<Group[]>(STORAGE_KEYS.GROUPS, INITIAL_GROUPS);
+  const currentGroup = groups.find(group => group.id === group_id);
   const updated = groups.map(g => g.id === group_id ? { ...g, leader_id: new_leader_id } : g);
   setLocalData(STORAGE_KEYS.GROUPS, updated);
+
+  const members = getLocalData<GroupMember[]>(STORAGE_KEYS.GROUP_MEMBERS, INITIAL_GROUP_MEMBERS as unknown as GroupMember[]);
+  const withoutNewLeader = members.filter(member => !(member.group_id === group_id && member.person_id === new_leader_id));
+  const oldLeaderId = currentGroup?.leader_id;
+  const withOldLeader = oldLeaderId
+    && oldLeaderId !== new_leader_id
+    && !withoutNewLeader.some(member => member.person_id === oldLeaderId)
+    ? [...withoutNewLeader, {
+        id: `gm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        group_id,
+        person_id: oldLeaderId
+      }]
+    : withoutNewLeader;
+  setLocalData(STORAGE_KEYS.GROUP_MEMBERS, withOldLeader);
+
+  const relationships = getLocalData<Array<{
+    id: string;
+    mentee_id: string;
+    ended_at?: string | null;
+    end_reason?: string | null;
+    updated_at?: string;
+  }>>(STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS, []);
+  const now = new Date().toISOString();
+  setLocalData(
+    STORAGE_KEYS.MENTORSHIP_RELATIONSHIPS,
+    relationships.map(relationship => (
+      relationship.mentee_id === new_leader_id && !relationship.ended_at
+        ? { ...relationship, ended_at: now.slice(0, 10), end_reason: 'Menjadi leader grup', updated_at: now }
+        : relationship
+    ))
+  );
   return true;
 }
 

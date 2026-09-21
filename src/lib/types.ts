@@ -96,6 +96,37 @@ export interface GroupMember {
   created_at?: string;
 }
 
+export type MentorshipType = 'PRIMARY' | 'SECONDARY';
+
+export interface MentorshipRelationship {
+  id: string;
+  mentor_id: string;
+  mentee_id: string;
+  group_id: string;
+  relationship_type: MentorshipType;
+  started_at: string;
+  ended_at?: string | null;
+  end_reason?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DTreeSettings {
+  id: number;
+  brother_root_id?: string | null;
+  sister_root_id?: string | null;
+  updated_by?: string | null;
+  updated_at?: string;
+}
+
+export interface DTreeData {
+  settings: DTreeSettings;
+  relationships: MentorshipRelationship[];
+  memberships: GroupMember[];
+  migration_required?: boolean;
+}
+
 export interface MissingReason {
   id?: string;
   weekly_stat_id?: string;

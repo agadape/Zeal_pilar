@@ -5,3 +5,4 @@ export * from './services/groups';
 export * from './services/stats';
 export * from './services/events';
 export * from './services/announcements';
+export * from './services/dtree';

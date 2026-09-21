@@ -9,8 +9,9 @@ import StatistikaView from '@/components/StatistikaView';
 import AnnouncementsView from '@/components/AnnouncementsView';
 import AdminAccountsView from '@/components/AdminAccountsView';
 import EventsView from '@/components/EventsView';
+import DTreeView from '@/components/DTree/DTreeView';
 
-import { Person, Group, WeeklyStat, Announcement, MinistryEvent } from '@/lib/types';
+import { Person, Group, WeeklyStat, Announcement, MinistryEvent, DTreeData } from '@/lib/types';
 import { 
   fetchPeople, 
   savePerson, 
@@ -29,6 +30,11 @@ import {
   fetchEvents,
   saveEvent,
   deleteEvent,
+  fetchDTreeData,
+  saveDTreeRoots,
+  setPrimaryMentor,
+  addSecondaryMentor,
+  endMentorship,
   isSupabaseConfigured,
   getCurrentUserProfile
   } from '@/lib/supabase';
@@ -40,6 +46,12 @@ const LOCAL_ADMIN_PROFILE: Person = {
   status: 'LEADER',
   role: 'SUPER_ADMIN',
   is_admin: true
+};
+
+const EMPTY_DTREE_DATA: DTreeData = {
+  settings: { id: 1, brother_root_id: null, sister_root_id: null },
+  relationships: [],
+  memberships: []
 };
 
 export default function Home() {
@@ -54,18 +66,20 @@ export default function Home() {
   const [stats, setStats] = useState<WeeklyStat[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<MinistryEvent[]>([]);
+  const [dTreeData, setDTreeData] = useState<DTreeData>(EMPTY_DTREE_DATA);
 
   // Load all initial data
   const loadAllData = async () => {
     setLoading(true);
     setLoadError('');
     try {
-      const [peopleData, groupsData, statsData, announcementsData, eventsData, userProfile] = await Promise.all([
+      const [peopleData, groupsData, statsData, announcementsData, eventsData, dTreeResult, userProfile] = await Promise.all([
         fetchPeople(),
         fetchGroups(),
         fetchWeeklyStats(),
         fetchAnnouncements(),
         fetchEvents(),
+        fetchDTreeData(),
         getCurrentUserProfile()
       ]);
 
@@ -82,6 +96,7 @@ export default function Home() {
       setStats(statsData);
       setAnnouncements(announcementsData);
       setEvents(eventsData);
+      setDTreeData(dTreeResult);
       setCurrentUser(userProfile || LOCAL_ADMIN_PROFILE);
     } catch (err) {
       console.error('Data loading error:', err);
@@ -153,6 +168,22 @@ export default function Home() {
 
   const handleDeleteEvent = async (id: string) => {
     await runMutation(() => deleteEvent(id));
+  };
+
+  const handleSaveDTreeRoots = async (brotherRootId: string | null, sisterRootId: string | null) => {
+    await runMutation(() => saveDTreeRoots(brotherRootId, sisterRootId));
+  };
+
+  const handleSetPrimaryMentor = async (menteeId: string, mentorId: string, reason?: string) => {
+    await runMutation(() => setPrimaryMentor(menteeId, mentorId, reason));
+  };
+
+  const handleAddSecondaryMentor = async (menteeId: string, mentorId: string) => {
+    await runMutation(() => addSecondaryMentor(menteeId, mentorId));
+  };
+
+  const handleEndMentorship = async (relationshipId: string, reason?: string) => {
+    await runMutation(() => endMentorship(relationshipId, reason));
   };
 
   return (
@@ -241,6 +272,19 @@ export default function Home() {
                   currentUser={currentUser}
                   onSaveEvent={handleSaveEvent}
                   onDeleteEvent={handleDeleteEvent}
+                />
+              )}
+
+              {activeTab === 'dtree' && (
+                <DTreeView
+                  people={people}
+                  groups={groups}
+                  data={dTreeData}
+                  currentUser={currentUser}
+                  onSaveRoots={handleSaveDTreeRoots}
+                  onSetPrimaryMentor={handleSetPrimaryMentor}
+                  onAddSecondaryMentor={handleAddSecondaryMentor}
+                  onEndMentorship={handleEndMentorship}
                 />
               )}
 

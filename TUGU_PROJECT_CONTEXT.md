@@ -4,7 +4,7 @@ Dokumen ini adalah konteks utama untuk developer atau AI agent yang melanjutkan 
 
 ## Produk
 
-Tugu adalah portal internal ZEAL Youth & Campus Ministry GKDI Jogja. Aplikasi menangani data jemaat, grup PDG, statistik ibadah mingguan, reachout, visitor, baptisan, progres Belajar Alkitab, event pelayanan, milestone, dan pengumuman leadership.
+Tugu adalah portal internal ZEAL Youth & Campus Ministry GKDI Jogja. Aplikasi menangani data jemaat, grup PDG, pohon pembimbingan d-Tree, statistik ibadah mingguan, reachout, visitor, baptisan, progres Belajar Alkitab, event pelayanan, milestone, dan pengumuman leadership.
 
 ## Arsitektur
 
@@ -35,6 +35,7 @@ Server action admin wajib melakukan pemeriksaan role di server sebelum memakai s
 - `stats.ts`: weekly stats, absence rows, dan study-progress rows.
 - `events.ts`: event dan event roster.
 - `announcements.ts`: pengumuman beserta author identity.
+- `dtree.ts`: settings akar, relasi pembimbingan, perpindahan utama, pendamping, histori, dan LocalStorage fallback.
 
 Jika Supabase terkonfigurasi, error database harus dilempar ke UI. Jangan melakukan fallback write ke LocalStorage karena hal itu dapat membuat kegagalan produksi terlihat sukses. Fallback hanya digunakan ketika environment Supabase memang tidak dikonfigurasi.
 
@@ -43,6 +44,7 @@ Jika Supabase terkonfigurasi, error database harus dilempar ke UI. Jangan melaku
 - Dashboard: ringkasan, laporan terbaru sesuai grup user, milestone, event, dan settings password.
 - Data Disciple: direktori; pengelolaan data dibatasi admin, pencatatan BA dibatasi leader/admin.
 - Grup PDG: detail, anggota, target baptisan, dan handover.
+- d-Tree: dua akar Pemimpin Jemaat, cabang per grup, pohon interaktif, pencarian, zoom/pan, panel belum ditempatkan, dan popup pengelolaan.
 - Statistik: form untuk grup milik leader, formatter WA, grafik, histori, dan CSV.
 - Jadwal: event dan duty roster; mutation hanya admin.
 - Pengumuman: create oleh leader/admin, delete oleh author/admin.
@@ -57,6 +59,9 @@ Jika Supabase terkonfigurasi, error database harus dilempar ke UI. Jangan melaku
 5. Modal memakai flex column, header/footer fixed, serta content `flex-1 min-h-0 overflow-y-auto` untuk Safari mobile.
 6. Jangan mengembalikan policy RLS public `USING (true)`.
 7. Jangan mengekspos `SUPABASE_SERVICE_ROLE_KEY` ke client.
+8. d-Tree mewajibkan satu grup per orang serta gender/grup yang sama antara pembimbing dan anggota.
+9. Leader grup diturunkan langsung dari `groups.leader_id`; jangan membuat relasi primary untuk leader.
+10. Jangan menghapus histori mentorship. Akhiri relasi dengan mengisi `ended_at` dan `end_reason`.
 
 ## Status verifikasi
 
@@ -68,7 +73,8 @@ Jika Supabase terkonfigurasi, error database harus dilempar ke UI. Jangan melaku
 ## Deployment berikutnya
 
 1. Backup database Supabase.
-2. Jalankan `supabase_security_alignment.sql`.
-3. Ikuti verifikasi `DATABASE_MIGRATION.md` menggunakan akun admin dan group leader.
-4. Deploy kode.
-5. Pantau error PostgREST dan Auth setelah deployment.
+2. Jalankan `supabase_security_alignment.sql` bila belum pernah diterapkan.
+3. Jalankan `supabase_dtree.sql`.
+4. Ikuti verifikasi `DATABASE_MIGRATION.md` menggunakan akun admin dan group leader.
+5. Deploy kode.
+6. Pantau error PostgREST dan Auth setelah deployment.

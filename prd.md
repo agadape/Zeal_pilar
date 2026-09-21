@@ -24,6 +24,12 @@ Admin mengelola profil. Leader/admin mencatat sesi BA termasuk tanggal, urutan, 
 
 Admin membuat atau menghapus grup. Leader mengelola anggota dan metadata grup sendiri. Admin melakukan handover tanpa menghapus statistik atau anggota.
 
+### d-Tree pembimbingan
+
+Semua user authenticated dapat melihat pohon pembimbingan. Dua Pemimpin Jemaat yang sejajar menjadi akar global, leader grup menjadi cabang pertama sesuai gender, lalu relasi pembimbing utama membentuk generasi berikutnya. Pembimbing dan anggota harus berada dalam grup serta gender yang sama.
+
+Admin dan semua Group Leader dapat mencari orang, membuka detail tanpa pindah halaman, menempatkan anggota yang belum dibimbing, memindahkan pembimbing dengan konfirmasi, dan menambah pembimbing pendamping. Hanya Admin dapat mengganti pasangan Pemimpin Jemaat. Semua perpindahan mempertahankan histori.
+
 ### Events and announcements
 
 Semua user melihat jadwal dan roster; admin mengelola event. Admin dan group leader membuat pengumuman, author mengelola tulisannya sendiri, dan admin dapat mengelola semuanya.

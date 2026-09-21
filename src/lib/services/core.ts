@@ -18,6 +18,8 @@ export const STORAGE_KEYS = {
   EVENTS: 'tugu_events_v2',
   ANNOUNCEMENTS: 'tugu_announcements_v2',
   BIBLE_STUDY_LOGS: 'tugu_bs_logs_v2',
+  DTREE_SETTINGS: 'tugu_dtree_settings_v1',
+  MENTORSHIP_RELATIONSHIPS: 'tugu_mentorship_relationships_v1',
 };
 
 // Automatic one-time purge of legacy seed data cached in browser LocalStorage
